@@ -236,16 +236,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Peacenet.Objects\WatercolorGames.Utilities.csproj">
-      <Project>{A069089A-8962-4607-B2B2-4CF4A371066E}</Project>
-      <Name>WatercolorGames.Utilities</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\WatercolorGames.CommandLine\WatercolorGames.CommandLine.csproj">
-      <Project>{583EDB9B-F51C-4BC9-87AD-8BC203DA5F92}</Project>
-      <Name>WatercolorGames.CommandLine</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <COMReference Include="MediaPlayer">
       <Guid>{22D6F304-B0F6-11D0-94AB-0080C74C7E95}</Guid>
       <VersionMajor>1</VersionMajor>
@@ -349,6 +339,12 @@
       <Link>x86\soft_oal.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WatercolorGames.Utilities\WatercolorGames.Utilities.csproj">
+      <Project>{a069089a-8962-4607-b2b2-4cf4a371066e}</Project>
+      <Name>WatercolorGames.Utilities</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
