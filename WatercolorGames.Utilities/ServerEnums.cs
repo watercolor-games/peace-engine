@@ -130,6 +130,9 @@ namespace Plex.Objects
         SYSTEM_CONNECTED = 0x20,
 
         GovernmentAlert = 0x30,
+
+        EmailReceived = 0x40,
+        EmailsUnread = 0x41,
     }
 
     /// <summary>
