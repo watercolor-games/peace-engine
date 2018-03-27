@@ -112,7 +112,10 @@ namespace Plex.Objects
         /// </summary>
         SAVE_RESTORESNAPSHOT = 0xA3,
 
-        SP_SIMULATE_CONNECTION_TO_PLAYER = 0xA4
+        SP_SIMULATE_CONNECTION_TO_PLAYER = 0xA4,
+
+        MAIL_GETALL = 0xB0,
+        MAIL_SEND = 0xB1
     }
     
     /// <summary>

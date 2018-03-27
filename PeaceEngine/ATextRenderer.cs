@@ -104,7 +104,7 @@ namespace Plex.Engine
                     if(lineWidth + measure.X > maxLineWidth)
                     {
                         newstr += "\n";
-                        lineWidth = 0;
+                        lineWidth = measure.X;
                     }
                     else
                     {

@@ -273,14 +273,10 @@ namespace Plex.Engine.GUI
             }
             set
             {
-                if (_wid == null)
-                {
-                    if (_title == value)
-                        return;
-                    _title = value;
-
-                }
-                else
+                if (_title == value)
+                    return;
+                _title = value;
+                if (_wid != null)
                 {
                     _winsystem.SetWindowTitle((int)_wid, _title);
                 }

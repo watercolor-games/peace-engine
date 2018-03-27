@@ -26,7 +26,20 @@ namespace Plex.Engine.GUI
         private int _lastWidth = -1;
         private bool _caretVisible = true;
         private double _caretTime = 0;
-        
+        private bool _autoheight = false;
+
+        public bool AutoHeight
+        {
+            get
+            {
+                return _autoheight;
+            }
+            set
+            {
+                _autoheight = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the text in this control.
         /// </summary>
@@ -229,7 +242,7 @@ namespace Plex.Engine.GUI
             int x = 0;
             int y = 0;
             int i = 0;
-            string wrapped = TextRenderer.WrapText(_font, _textRaw, Width, TextRenderers.WrapMode.Letters);
+            string wrapped = TextRenderer.WrapText(_font, _textRaw, Width-4, TextRenderers.WrapMode.Letters);
             if (_currentIndex > 0)
             {
                 foreach (char c in wrapped)
@@ -284,18 +297,23 @@ namespace Plex.Engine.GUI
             {
                 _caretTime += time.ElapsedGameTime.TotalMilliseconds;
             }
+            if(_autoheight)
+            {
+                Height = ((int)_font.MeasureString("#").Y * _lines.Length) + 4;
+            }
             base.OnUpdate(time);
         }
 
         /// </inheritdoc/>
         protected override void OnPaint(GameTime time, GraphicsContext gfx)
         {
-            Theme.DrawControlDarkBG(gfx, 0, 0, Width, Height);
+            Theme.DrawControlLightBG(gfx, 0, 0, Width, Height);
+            Theme.DrawControlDarkBG(gfx, 1, 1, Width-2, Height-2);
             int lineHeight = (int)_font.MeasureString("#").Y;
             if(string.IsNullOrEmpty(_textRaw))
             {
                 if(HasFocused && _caretVisible)
-                    gfx.DrawRectangle(0, 0, 1, lineHeight, Theme.GetFontColor(Themes.TextFontStyle.System));
+                    gfx.DrawRectangle(2, 2, 1, lineHeight, Theme.GetFontColor(Themes.TextFontStyle.System));
             }
             else
             {
@@ -304,17 +322,17 @@ namespace Plex.Engine.GUI
                     string line = _lines[i];
                     if(i == _currentLine && HasFocused)
                     {
-                        gfx.DrawString(line, 0, lineHeight * i, Theme.GetFontColor(Themes.TextFontStyle.System), _font, TextAlignment.Left, 0, TextRenderers.WrapMode.None);
+                        gfx.DrawString(line, 2, 2+(lineHeight * i), Theme.GetFontColor(Themes.TextFontStyle.System), _font, TextAlignment.Left, 0, TextRenderers.WrapMode.None);
                         if (_caretVisible)
                         {
                             string toCaret = (_currentChar == 0) ? "" : line.Substring(0, _currentChar);
                             int caretX = (int)_font.MeasureString(toCaret).X;
-                            gfx.DrawRectangle(caretX, lineHeight * i, 1, lineHeight, Theme.GetFontColor(Themes.TextFontStyle.System));
+                            gfx.DrawRectangle(2+caretX, 2+(lineHeight * i), 1, lineHeight, Theme.GetFontColor(Themes.TextFontStyle.System));
                         }
                     }
                     else
                     {
-                        gfx.DrawString(line, 0, lineHeight * i, Theme.GetFontColor(Themes.TextFontStyle.System)*0.5f, _font, TextAlignment.Left, 0, TextRenderers.WrapMode.None);
+                        gfx.DrawString(line, 2, 2+(lineHeight * i), Theme.GetFontColor(Themes.TextFontStyle.System)*0.5f, _font, TextAlignment.Left, 0, TextRenderers.WrapMode.None);
                     }
                 }
             }
