@@ -1,8 +1,4 @@
 #!/bin/bash
-# assumes 64 bit for now
-target=${1:-Debug}
+# All you had to do was build the damn solution, CJ.
+target=${1:-Release} # The engine runs a lot better in Release mode. Use it by default.
 xbuild -property:Configuration=$target
-pushd PlexNative
-make
-popd
-cp PlexNative/x64/* ShiftOS.Frontend/bin/DesktopGL/AnyCPU/$target

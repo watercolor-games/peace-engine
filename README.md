@@ -1,21 +1,21 @@
-# The Peacenet
+# The Peace Engine
 
-[itch.io](https://watercolorgames.itch.io/the-peacenet)
+Peace Engine is a game engine written ontop of the MonoGame framework, compatible with Windows, macOS and Linux using OpenGL.
 
-The Peacenet is a unique open-world game built on The Peace Engine. The Peacenet features both a single-player and online multiplayer mode, both of which have different goals.
+There are three main key features of Peace Engine that may interest you.
 
-In Single-player, you are an undercover operative recruited by the government whose goal is to enter The Peacenet posing as a sentient program to find out what caused a massive war in the world, and put an end to it. In Multiplayer, you are an actual sentient program participating in this war effort, trying to gain as many resources as you can.
+1. **Modular components** - Every API and feature of the engine is inside a modular component managed completely by the engine. You should never have to tell the engine that you're adding a feature to your game. You just tell it what other components you'll need, and it'll do the rest.
+2. **Layered entity system** - Everything you see, hear or interact with in youur game is a Peace Engine entity. Entities can be spawned on different layers, they can render to the screen, accept mouse or keyboard input, and access any Engine Components you'd like. You can spaw them whenever you want.
+3. **Extended Content Pipeline** - You can save a lot of disk space in your game by using Peace Engine's built-in content pipeline extensions for sound effects and textures. Instead of letting MonoGame store your raw texture or audio data in .xnb files, you can keep your files in their compressed formats (.png, .jpg, etc for textures, and .ogg for audio) and load them in as `Texture2D` or `SoundEffect` just like you would in regular MonoGame.
 
-Both modes feature a natural AI based off the Kaizen algorithm, which allows you to interact with NPCs through text chat as if they were real people. Thanks to this algorithm, each NPC has their own unique personality and the things you say and do can affect their emotions and feelings toward you as a player, thus affecting how they respond to you.
+### Setting up the Peace Engine
 
-The world is interacted with through the Peacegate OS, a rebranded fork of the ShiftOS operating system built by The Peace Foundation to be more user-friendly, better looking to the eye, and follow POSIX standards more closely. Peacegate OS uses a derivative of the MATE desktop environment, known simply as the Peacegate Desktop. Peacegate OS also features many Linux utilities such as `bash`, `nmap`, `cowsay`, `man` and `ssh`, all usable in the command-line interface just like in Linux or any Unix-like.
+So you want to set up the engine for your own game? Well, all you need is to follow [this article](https://watercolorgames.net/wiki/setting-up-the-peace-engine) on our website.
 
-## Contributing to the project
+That article is a good spot to start for modding The Peacenet as well, but getting the code is a bit different.
 
-See `CONTRIBUTING.md` in the root of the repository.
+### Other neat features
 
-## Compiling the game
-
-First, you will need the [MonoGame 3.6 SDK](http://www.monogame.net/2017/03/01/monogame-3-6/). This is a free download, and should work on both Windows and Linux as well as the Macintosh operating system.
-
-Once that is downloaded, in most cases, you can get away with just opening the solution in Visual Studio or your favorite C# IDE and build the *Peacenet* project. Some users of MonoDevelop on Linux may need to use the `xbuild` command-line tool to get the game to compile properly, this is just so that the MonoGame Content Builder will kick in and compile the game's assets. You should only need to do this when the Content Project is modified - once it's compiled, you can compile the game within your IDE.
+1. **Robust UI system** - The API is loosely based off Windows Forms for ease of use, but the UI itself can do many more things than Windows Forms will ever be able to. Scrollables, editables, labels, check boxes, list views, the list goes on. Animation is also extremely simple. You can very easily build complex user interfaces for your game.
+2. **Ready-made configuration and save system** - with Peace Engine, you don't have to worry about writing your own configuration manager or save system. You just need to know what you want to store. We'll take care of storing it for you.
+3. **Rendering things on screen has never been easier** - Thanks to our Graphics Context class, all the usual things you'd want to do in a paint program can be done in-engine - drawing circles, lines, rectangles, polygons, text, and more. Sprite shaders, scissor-testing and render offsets are also supported.

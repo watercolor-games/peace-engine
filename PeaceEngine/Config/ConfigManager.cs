@@ -54,7 +54,7 @@ namespace Plex.Engine.Config
 
             public void Update(GameTime time)
             {
-                float sfx = _config.GetValue("audioSfxVolume", 1.0F);
+                float sfx = _config.GetValue("audioSfxVolume", 0.5F); //default value of 50% so we don't fucking ear rape the player by default.
                 float sfxClamped = MathHelper.Clamp(sfx, 0, 1);
                 if (sfxClamped != sfx)
                 {
