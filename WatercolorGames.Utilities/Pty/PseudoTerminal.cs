@@ -78,6 +78,8 @@ namespace Plex.Objects.Pty
         {
             inputStream = inputPipe;
             outputStream = outputPipe;
+            inputStream.ThrowOnTerminationRequest = true;
+            outputStream.ThrowOnTerminationRequest = false;
             options = ptyOptions;
             this.isMaster = isMaster;
         }
