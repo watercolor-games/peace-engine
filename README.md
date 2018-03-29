@@ -19,3 +19,7 @@ That article is a good spot to start for modding The Peacenet as well, but getti
 1. **Robust UI system** - The API is loosely based off Windows Forms for ease of use, but the UI itself can do many more things than Windows Forms will ever be able to. Scrollables, editables, labels, check boxes, list views, the list goes on. Animation is also extremely simple. You can very easily build complex user interfaces for your game.
 2. **Ready-made configuration and save system** - with Peace Engine, you don't have to worry about writing your own configuration manager or save system. You just need to know what you want to store. We'll take care of storing it for you.
 3. **Rendering things on screen has never been easier** - Thanks to our Graphics Context class, all the usual things you'd want to do in a paint program can be done in-engine - drawing circles, lines, rectangles, polygons, text, and more. Sprite shaders, scissor-testing and render offsets are also supported.
+
+
+
+...I wonder if the commit that adds this line of text will appear on Developers Swearing.
