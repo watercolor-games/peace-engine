@@ -167,6 +167,17 @@ namespace Plex.Engine.GraphicsSubsystem
             }
         }
 
+        public void DrawPolygon(Color c, params Vector2[] points)
+        {
+            List<int> locs = new List<int>();
+            foreach(var loc in points)
+            {
+                locs.Add((int)loc.X);
+                locs.Add((int)loc.Y);
+            }
+            DrawPolygon(c, locs.ToArray());
+        }
+
         /// <summary>
         /// Draw an outlined polygon.
         /// </summary>
@@ -248,6 +259,11 @@ namespace Plex.Engine.GraphicsSubsystem
             DrawLine(x, y, x1, y1, thickness, tex2, Color.White);
         }
 
+        public void DrawLine(Vector2 pt1, Vector2 pt2, int thickness, Texture2D tex2)
+        {
+            DrawLine((int)pt1.X, (int)pt1.Y, (int)pt2.X, (int)pt2.Y, thickness, tex2);
+        }
+
         /// <summary>
         /// Draw a line with a tint between two separate points on the canvas
         /// </summary>
@@ -279,6 +295,11 @@ namespace Plex.Engine.GraphicsSubsystem
             _spritebatch.Draw(tex2, new Rectangle(x, y, distance, thickness), null, tint, rotation, Vector2.Zero, SpriteEffects.None, 0);
         }
 
+        public void DrawLine(Vector2 pt1, Vector2 pt2, int thickness, Texture2D tex2, Color tint)
+        {
+            DrawLine((int)pt1.X, (int)pt1.Y, (int)pt2.X, (int)pt2.Y, thickness, tex2, tint);
+        }
+
         /// <summary>
         /// Draw a line with a tint between two separate points on the canvas
         /// </summary>
@@ -306,6 +327,16 @@ namespace Plex.Engine.GraphicsSubsystem
             int distance = (int)Vector2.Distance(new Vector2(x, y), new Vector2(x1, y1));
             float rotation = getRotation(x, y, x1, y1);
             _spritebatch.Draw(white, new Rectangle(x, y, distance, thickness), null, color, rotation, Vector2.Zero, SpriteEffects.None, 0);
+        }
+
+        public void DrawLine(Vector2 pt1, Vector2 pt2, int thickness, Color color)
+        {
+            DrawLine(pt1, pt2, thickness, white, color);
+        }
+
+        public void DrawRectangle(Vector2 point, Vector2 size, Color color)
+        {
+            DrawRectangle((int)point.X, (int)point.Y, (int)size.X, (int)size.Y, color);
         }
 
         /// <summary>
@@ -349,6 +380,11 @@ namespace Plex.Engine.GraphicsSubsystem
             _spritebatch.End();
         }
 
+        public void DrawCircle(Vector2 center, int radius, Color color)
+        {
+            DrawCircle((int)center.X, (int)center.Y, radius, color);
+        }
+
         /// <summary>
         /// Draw a circle to the canvas.
         /// </summary>
@@ -384,6 +420,17 @@ namespace Plex.Engine.GraphicsSubsystem
         {
             DrawRectangle(x, y, width, height, tex2, Color.White, layout);
         }
+
+        public void DrawRectangle(Vector2 point, Vector2 size, Texture2D tex2, ImageLayout layout = ImageLayout.Stretch)
+        {
+            DrawRectangle((int)point.X, (int)point.Y, (int)size.X, (int)size.Y, tex2, layout);
+        }
+
+        public void DrawRectangle(Vector2 point, Vector2 size, Texture2D tex2, Color color, ImageLayout layout = ImageLayout.Stretch, bool opaque = false, bool premultiplied = true)
+        {
+            DrawRectangle((int)point.X, (int)point.Y, (int)size.X, (int)size.Y, tex2, color, layout, opaque, premultiplied);
+        }
+
 
         /// <summary>
         /// Retrieves a new <see cref="RasterizerState"/> preferred to be used by the graphics context. 
@@ -508,6 +555,11 @@ namespace Plex.Engine.GraphicsSubsystem
             if (string.IsNullOrEmpty(text))
                 return;
             Plex.Engine.TextRenderer.DrawText(this, x, y, text, font, color, wrapWidth, alignment, wrapMode);
+        }
+
+        public void DrawString(string text, Vector2 point, Color color, SpriteFont font, TextAlignment alignment = TextAlignment.Left, int wrapWidth = int.MaxValue, WrapMode wrapMode = WrapMode.None)
+        {
+            DrawString(text, (int)point.X, (int)point.Y, color, font, alignment, wrapWidth, wrapMode);
         }
 
         private float getRotation(float x, float y, float x2, float y2)
