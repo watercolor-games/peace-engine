@@ -277,7 +277,6 @@ namespace Plex.Engine.GraphicsSubsystem
 
             public void Load(ContentManager content)
             {
-                _monospace = content.Load<SpriteFont>("Fonts/Monospace");
                 _screenshots = Path.Combine(_appdata.GamePath, "screenshots");
                 if (!Directory.Exists(_screenshots))
                     Directory.CreateDirectory(_screenshots);

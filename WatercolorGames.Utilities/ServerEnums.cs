@@ -136,6 +136,11 @@ namespace Plex.Objects
 
         EmailReceived = 0x40,
         EmailsUnread = 0x41,
+
+        /// <summary>
+        /// Output from a server-side Console Context.
+        /// </summary>
+        TerminalOutput = 0x50
     }
 
     /// <summary>
@@ -230,7 +235,12 @@ namespace Plex.Objects
         /// <summary>
         /// Read a single byte from the stream.
         /// </summary>
-        ReadByte
+        ReadByte,
+
+        /// <summary>
+        /// Write a single byte to the stream.
+        /// </summary>
+        WriteByte
     }
 
     /// <summary>
