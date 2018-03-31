@@ -226,6 +226,11 @@ namespace Plex.Objects
         /// Closes the stream.
         /// </summary>
         Close,
+
+        /// <summary>
+        /// Read a single byte from the stream.
+        /// </summary>
+        ReadByte
     }
 
     /// <summary>
