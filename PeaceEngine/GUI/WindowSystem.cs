@@ -677,19 +677,19 @@ namespace Plex.Engine.GUI
                     break;
                 case WindowStyle.DialogNoDrag:
                 case WindowStyle.Dialog:
-                    _child.X = 0;
+                    _child.X = _borderWidth;
                     _child.Y = _titleHeight;
-                    Width = _child.Width;
-                    Height = _child.Y + _child.Height;
+                    Width = _child.Width + (_borderWidth * 2);
+                    Height = _child.Y + _child.Height + _borderWidth;
                     _closeHitbox.Visible = true;
                     _minimizeHitbox.Visible = false;
                     _maximizeHitbox.Visible = false;
                     _titleHitbox.Visible = true;
-                    _leftHitbox.Visible = false;
-                    _rightHitbox.Visible = false;
-                    _bottomHitbox.Visible = false;
-                    _bRightHitbox.Visible = false;
-                    _bLeftHitbox.Visible = false;
+                    _leftHitbox.Visible = true;
+                    _rightHitbox.Visible = true;
+                    _bottomHitbox.Visible = true;
+                    _bRightHitbox.Visible = true;
+                    _bLeftHitbox.Visible = true;
                     break;
             }
 
