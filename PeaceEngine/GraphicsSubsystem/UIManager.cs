@@ -342,6 +342,17 @@ namespace Plex.Engine.GraphicsSubsystem
             _plexgate.GetLayer(LayerType.UserInterface).AddEntity(_container);
         }
 
+        [Dependency]
+        private ThemeManager _themeManager = null;
+
+        public Theme Theme
+        {
+            get
+            {
+                return this._themeManager.Theme;
+            }
+        }
+
         /// <summary>
         /// Make the user interface invisible.
         /// </summary>

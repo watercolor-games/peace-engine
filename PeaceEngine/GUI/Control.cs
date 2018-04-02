@@ -409,7 +409,7 @@ namespace Plex.Engine.GUI
             {
                 if (Parent != null)
                     return Parent.Theme; //this will walk up the ui tree to the toplevel and grab the theme.
-                return _theme;
+                return Manager.Theme;
             }
         }
 
@@ -715,6 +715,9 @@ namespace Plex.Engine.GUI
                     //Also, we gain focus.
                     
                     Invalidate(true);
+                    //update the left state
+                    _left = leftState;
+                    return true;
                 }
                 //Now for left mouse-down...
                 else if(_left == ButtonState.Released && leftState == ButtonState.Pressed)
@@ -722,9 +725,10 @@ namespace Plex.Engine.GUI
                     //The mouse button has been pressed down.
                     MouseLeftDown?.Invoke(this, EventArgs.Empty);
                     Invalidate(true);
+                    //update the left state
+                    _left = leftState;
+                    return true;
                 }
-                //update the left state
-                _left = leftState;
 
                 //right-clicking
                 if(_right == ButtonState.Pressed && rightState == ButtonState.Released)
