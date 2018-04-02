@@ -224,6 +224,7 @@
     <None Include="x86\libSDL2-2.0.so.0">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Compile Include="AdvancedAudioPlayer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
