@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Audio;
 using System.IO;
+using Plex.Objects;
 
 namespace Plex.Engine.PlexContentManager
 {

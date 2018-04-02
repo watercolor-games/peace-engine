@@ -16,6 +16,7 @@ using System.IO;
 using System.Diagnostics;
 using Microsoft.Xna.Framework.Content;
 using System.Threading;
+using Plex.Objects;
 
 namespace Plex.Engine.GraphicsSubsystem
 {
@@ -315,7 +316,7 @@ namespace Plex.Engine.GraphicsSubsystem
 
             public void Dispose()
             {
-                Logger.Log("Clearing out ui controls...", LogType.Info, "ui");
+                Logger.Log("Clearing out ui controls...");
                 while(Controls.Length>0)
                 {
                     var ctrl = Controls[0];

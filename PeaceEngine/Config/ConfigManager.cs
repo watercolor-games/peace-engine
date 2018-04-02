@@ -11,6 +11,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Input;
+using Plex.Objects;
 
 namespace Plex.Engine.Config
 {

@@ -206,7 +206,7 @@ namespace Plex.Engine
                 System.Windows.Forms.MessageBox.Show(caption: "Uncaught .NET exception", text: $@"An uncaught exception has occurred in the Peace engine.
 
 {a.ExceptionObject}", icon: System.Windows.Forms.MessageBoxIcon.Error, buttons: System.Windows.Forms.MessageBoxButtons.OK);
-                Logger.Log("FATAL EXCEPTION: " + a.ExceptionObject.ToString(), LogType.Fatal);
+                Logger.Log("FATAL EXCEPTION: " + a.ExceptionObject.ToString(), System.ConsoleColor.Red);
                 this.UnloadContent();
                 Environment.Exit(0);
         };
@@ -222,10 +222,10 @@ namespace Plex.Engine
             {
                 if (type.GetConstructor(Type.EmptyTypes) == null)
                 {
-                    Logger.Log($"Found {type.Name}, but it doesn't have a parameterless constructor, so it's ignored.  Probably a mistake.", LogType.Warning, "moduleloader");
+                    Logger.Log($"Found {type.Name}, but it doesn't have a parameterless constructor, so it's ignored.  Probably a mistake.", System.ConsoleColor.Yellow);
                     continue;
                 }
-                Logger.Log($"Found {type.Name}", LogType.Info, "moduleloader");
+                Logger.Log($"Found {type.Name}", System.ConsoleColor.Yellow);
                 _splash.SetProgress(0, 100, $"Found module: {type.FullName} [{typesToInit.Count + 1}]");
                 typesToInit.Add(type);
             }
@@ -241,7 +241,7 @@ namespace Plex.Engine
             }
             foreach(var component in _components)
             {
-                Logger.Log($"{component.Component.GetType().Name}: Injecting dependencies...", LogType.Info, "moduleloader");
+                Logger.Log($"{component.Component.GetType().Name}: Injecting dependencies...");
                 Inject(component.Component);
             }
             //I know. This is redundant. I'm only doing this as a safety precaution, to prevent crashes with modules that try to access uninitiated modules as they're initiating.
@@ -415,7 +415,7 @@ namespace Plex.Engine
             while(_components.Count > 0)
             {
                 var component = _components[0];
-                Logger.Log("Unloading: " + component.Component.GetType().Name, LogType.Info, "moduleloader");
+                Logger.Log("Unloading: " + component.Component.GetType().Name);
                 if(component.Component is IDisposable)
                     (component.Component as IDisposable).Dispose();
                 _components.RemoveAt(0);

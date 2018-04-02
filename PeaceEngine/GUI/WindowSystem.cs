@@ -9,6 +9,7 @@ using MonoGame.Extended.Input.InputListeners;
 using Plex.Engine.GraphicsSubsystem;
 using Microsoft.Xna.Framework.Graphics;
 using Plex.Engine.Config;
+using Plex.Objects;
 
 namespace Plex.Engine.GUI
 {
@@ -225,7 +226,7 @@ namespace Plex.Engine.GUI
         /// <inheritdoc/>
         public void Initiate()
         {
-            Logger.Log("Starting window system.", LogType.Info, "pgwinsys");
+            Logger.Log("Starting window system.");
         }
 
         /// <inheritdoc/>

@@ -9,6 +9,7 @@ using Plex.Engine.GraphicsSubsystem;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using System.IO;
+using Plex.Objects;
 
 namespace Plex.Engine.GUI
 {
@@ -67,7 +68,7 @@ namespace Plex.Engine.GUI
                 catch (Exception ex)
                 {
                     Text = old;
-                    Logger.Log(ex.ToString(), Engine.LogType.Error, "texteditor");
+                    Logger.Log(ex.ToString(), System.ConsoleColor.Red);
                 }
             }
         }
