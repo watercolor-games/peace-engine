@@ -10,18 +10,25 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using NVorbis;
+using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Plex.Engine
 {
     public class AdvancedAudioPlayer : IDisposable
     {
-        const int bufferSize = 65536; // in samples
+        const int bufferSize = 8192; // in samples
 
         const double sc16 = 0x7FFF + 0.4999999999999999;
 
         DynamicSoundEffectInstance sfx;
         VorbisReader aread;
 
+        ConcurrentQueue<byte[]> buf = new ConcurrentQueue<byte[]>();
+
+        volatile bool disposed = false;
+
+        EventWaitHandle bufUsed = new AutoResetEvent(true), bufSent = new AutoResetEvent(true);
 
         int cur = 0;
 
@@ -44,9 +51,12 @@ namespace Plex.Engine
 
         Label[] labels;
         float[] samps = new float[bufferSize];
-        byte[] data = new byte[bufferSize * 2];
 
         long? fade = null;
+
+        public TimeSpan Duration => aread.TotalTime;
+
+        Thread readthread;
 
         public void Dispose()
         {
@@ -56,6 +66,12 @@ namespace Plex.Engine
             sfx = null;
             labels = null;
             samps = null;
+            buf = null;
+            disposed = true;
+            bufUsed.Set();
+            readthread.Join();
+            bufSent?.Dispose();
+            bufUsed?.Dispose();
         }
 
         void construct(Stream audio, Stream labels, bool close)
@@ -76,12 +92,26 @@ namespace Plex.Engine
                 default:
                     throw new InvalidDataException($"Unsupported channel count {aread.Channels} (must be mono or stereo).");
             }
+            if (this.labels?.Length > 0)
+                aread.DecodedTime = TimeSpan.FromSeconds(this.labels[0].Start);
             sfx = new DynamicSoundEffectInstance(aread.SampleRate, channels);
             sfx.BufferNeeded += update;
+            readthread = new Thread(readthreadfun);
+            readthread.Start();
         }
 
         void update(object sender, EventArgs e)
         {
+            byte[] data;
+            while (!buf.TryDequeue(out data))
+                bufSent.WaitOne();
+            sfx.SubmitBuffer(data);
+            bufUsed.Set();
+        }
+
+        void readbuffer()
+        {
+            byte[] data = new byte[bufferSize * 2];
             aread.ReadSamples(samps, 0, bufferSize);
             bool skipearly = false;
             if (fade != null)
@@ -98,7 +128,7 @@ namespace Plex.Engine
             using (var write = new BinaryWriter(ms))
                 foreach (var samp in samps)
                     write.Write((short)(samp * sc16)); // convert to S16 int PCM
-            sfx.SubmitBuffer(data);
+            buf.Enqueue(data);
             if (skipearly || aread.DecodedTime.TotalSeconds >= labels[cur].End)
             {
                 fade = null;
@@ -107,9 +137,23 @@ namespace Plex.Engine
                     Stop();
                     return;
                 }
+                double lastend = labels[cur].End;
                 cur = Next;
-                aread.DecodedTime = TimeSpan.FromSeconds(labels[cur].Start + aread.DecodedTime.TotalSeconds - labels[cur].End);
+                aread.DecodedTime = TimeSpan.FromSeconds(labels[cur].Start + aread.DecodedTime.TotalSeconds - lastend);
                 Next = cur + (labels[cur].OneShot ? 0 : 1);
+            }
+        }
+
+        void readthreadfun()
+        {
+            while (!disposed)
+            {
+                while (!disposed && buf.Count < 2 * aread.Channels * aread.SampleRate / bufferSize) // This theoretically gives about 2 seconds of skip prevention
+                {
+                    readbuffer();
+                    bufSent.Set();
+                }
+                bufUsed.WaitOne();
             }
         }
 
@@ -194,7 +238,7 @@ namespace Plex.Engine
         /// <param name="audio">An open Ogg Vorbis file.</param>
         /// <param name="loop">If set to <c>true</c>, the audio will loop.</param>
         /// <param name="close">If true, the audio stream will be closed on disposal.</param>
-        public AdvancedAudioPlayer(Stream audio, bool loop = false, bool close = false)
+        public AdvancedAudioPlayer(Stream audio, bool loop, bool close = false)
         {
             construct(audio, null, close);
             labels = new[] { new Label(0, aread.TotalTime.TotalSeconds, !loop) };
@@ -205,7 +249,7 @@ namespace Plex.Engine
         /// </summary>
         /// <param name="fname">The name of the song's Ogg Vorbis file.</param>
         /// <param name="loop">If set to <c>true</c>, the audio will loop.</param>
-        public AdvancedAudioPlayer(string fname, bool loop = false) : this(File.OpenRead(fname), loop, true)
+        public AdvancedAudioPlayer(string fname, bool loop) : this(File.OpenRead(fname), loop, true)
         {
         }
     }
