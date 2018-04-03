@@ -15,7 +15,7 @@ namespace Plex.Engine
 {
     public class AdvancedAudioPlayer : IDisposable
     {
-        const int bufferSize = 1024; // in samples
+        const int bufferSize = 65536; // in samples
 
         const double sc16 = 0x7FFF + 0.4999999999999999;
 
@@ -28,7 +28,7 @@ namespace Plex.Engine
         /// <summary>
         /// The audio section that will be played after the current one has finished.
         /// </summary>
-        int Next { get; set; } = 1;
+        public int Next { get; set; } = 1;
 
         struct Label
         {
@@ -46,6 +46,8 @@ namespace Plex.Engine
         float[] samps = new float[bufferSize];
         byte[] data = new byte[bufferSize * 2];
 
+        long? fade = null;
+
         public void Dispose()
         {
             aread?.Dispose();
@@ -60,7 +62,7 @@ namespace Plex.Engine
         {
             if (labels != null)
                 using (var read = new StreamReader(labels, Encoding.UTF8, true, 1024, !close))
-                    this.labels = read.IterLines().Select(l => l.Split()).Select(s => new Label(double.Parse(s[0]), double.Parse(s[1]), s[2] == "oneshot")).ToArray();
+                    this.labels = read.IterLines().Select(l => l.Split()).Where(s => s.Length == 3).Select(s => new Label(double.Parse(s[0]), double.Parse(s[1]), s[2] == "oneshot")).ToArray();
             aread = new VorbisReader(audio, close);
             AudioChannels channels;
             switch (aread.Channels)
@@ -78,16 +80,28 @@ namespace Plex.Engine
             sfx.BufferNeeded += update;
         }
 
-        public void update(object sender, EventArgs e)
+        void update(object sender, EventArgs e)
         {
             aread.ReadSamples(samps, 0, bufferSize);
+            bool skipearly = false;
+            if (fade != null)
+            {
+                for (int i = 0; i < samps.Length; i++)
+                {
+                    var mul = MathHelper.Clamp(1 - ((long)fade - (aread.DecodedPosition - (samps.Length - i))) / ((float)aread.SampleRate * aread.Channels), 0, 1);
+                    samps[i] *= mul;
+                    if (mul <= 0)
+                        skipearly = true;
+                }
+            }
             using (var ms = new MemoryStream(data))
             using (var write = new BinaryWriter(ms))
                 foreach (var samp in samps)
                     write.Write((short)(samp * sc16)); // convert to S16 int PCM
             sfx.SubmitBuffer(data);
-            if (aread.DecodedTime.TotalSeconds >= labels[cur].End)
+            if (skipearly || aread.DecodedTime.TotalSeconds >= labels[cur].End)
             {
+                fade = null;
                 if (Next >= labels.Length)
                 {
                     Stop();
@@ -99,6 +113,14 @@ namespace Plex.Engine
             }
         }
 
+        /// <summary>
+        /// Fades out the current section and then moves to the next one.
+        /// </summary>
+        /// <param name="duration">The time taken to fade out, in seconds.</param>
+        public void FadeToNextSection(double duration = 1)
+        {
+            fade = aread.DecodedPosition + (long)(aread.SampleRate * duration * aread.Channels);
+        }
 
         /// <summary>
         /// Read audio data and labels from streams you opened yourself.
@@ -119,7 +141,7 @@ namespace Plex.Engine
         /// <summary>
         /// Pauses playback.
         /// </summary>
-        void Pause()
+        public void Pause()
         {
             sfx.Pause();
         }
@@ -127,7 +149,7 @@ namespace Plex.Engine
         /// <summary>
         /// Starts or resumes playback.
         /// </summary>
-        void Play()
+        public void Play()
         {
             sfx.Play();
         }
@@ -135,7 +157,7 @@ namespace Plex.Engine
         /// <summary>
         /// Resumes playback.
         /// </summary>
-        void Resume()
+        public void Resume()
         {
             sfx.Resume();
         }
@@ -145,7 +167,7 @@ namespace Plex.Engine
         /// <summary>
         /// Stops the player immediately.
         /// </summary>
-        void Stop()
+        public void Stop()
         {
             sfx.Stop();
         }
@@ -153,7 +175,7 @@ namespace Plex.Engine
         /// <summary>
         /// Stops the player once the current section is over.
         /// </summary>
-        void StopNext()
+        public void StopNext()
         {
             Next = labels.Length;
         }
