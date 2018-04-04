@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 namespace Plex.Objects
 {
@@ -35,7 +36,7 @@ namespace Plex.Objects
             lock (Console.Out)
             {
                 Console.ForegroundColor = colour;
-                Console.WriteLine($"[{DateTime.Now}]{filePath.Substring(strip)}:{lineNumber} {callerName}: {message}");
+                Console.WriteLine($"[{DateTime.Now}] <{Path.GetFileName(filePath)}:line {lineNumber}> {callerName}: {message}");
             }
         }
     }
