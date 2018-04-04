@@ -111,7 +111,7 @@ namespace Plex.Engine
 
         void readbuffer()
         {
-            byte[] data = new byte[bufferSize * 2];
+            byte[] data = new byte[aread.Channels * aread.SampleRate / 5];
             aread.ReadSamples(samps, 0, bufferSize);
             bool skipearly = false;
             if (fade != null)
