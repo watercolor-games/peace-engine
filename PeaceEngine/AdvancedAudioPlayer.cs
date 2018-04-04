@@ -17,8 +17,6 @@ namespace Plex.Engine
 {
     public class AdvancedAudioPlayer : IDisposable
     {
-        const int bufferSize = 8192; // in samples
-
         const double sc16 = 0x7FFF + 0.4999999999999999;
 
         DynamicSoundEffectInstance sfx;
@@ -50,7 +48,8 @@ namespace Plex.Engine
         }
 
         Label[] labels;
-        float[] samps = new float[bufferSize];
+        float[] samps = null;
+        byte[] data = null;
 
         long? fade = null;
 
@@ -68,6 +67,7 @@ namespace Plex.Engine
             samps = null;
             buf = null;
             disposed = true;
+            data = null;
             bufUsed.Set();
             readthread.Join();
             bufSent?.Dispose();
@@ -94,6 +94,7 @@ namespace Plex.Engine
             }
             if (this.labels?.Length > 0)
                 aread.DecodedTime = TimeSpan.FromSeconds(this.labels[0].Start);
+            samps = new float[aread.Channels * aread.SampleRate / 5];
             sfx = new DynamicSoundEffectInstance(aread.SampleRate, channels);
             sfx.BufferNeeded += update;
             readthread = new Thread(readthreadfun);
@@ -102,17 +103,21 @@ namespace Plex.Engine
 
         void update(object sender, EventArgs e)
         {
-            byte[] data;
-            while (!buf.TryDequeue(out data))
-                bufSent.WaitOne();
-            sfx.SubmitBuffer(data);
+            while (buf.Count > 0)
+            {
+                byte[] b = null;
+                buf.TryDequeue(out b);
+                sfx.SubmitBuffer(b);
+            }
             bufUsed.Set();
         }
 
         void readbuffer()
         {
-            byte[] data = new byte[aread.Channels * aread.SampleRate / 5];
-            aread.ReadSamples(samps, 0, bufferSize);
+            if(samps == null)
+                samps = new float[aread.Channels * aread.SampleRate / 5];
+            data = new byte[samps.Length * sizeof(short)];
+            aread.ReadSamples(samps, 0, samps.Length);
             bool skipearly = false;
             if (fade != null)
             {
@@ -142,13 +147,14 @@ namespace Plex.Engine
                 aread.DecodedTime = TimeSpan.FromSeconds(labels[cur].Start + aread.DecodedTime.TotalSeconds - lastend);
                 Next = cur + (labels[cur].OneShot ? 0 : 1);
             }
+            data = null;
         }
 
         void readthreadfun()
         {
             while (!disposed)
             {
-                while (!disposed && buf.Count < 2 * aread.Channels * aread.SampleRate / bufferSize) // This theoretically gives about 2 seconds of skip prevention
+                while (!disposed && buf.Count < 2 * aread.Channels * aread.SampleRate / samps.Length) // This theoretically gives about 2 seconds of skip prevention
                 {
                     readbuffer();
                     bufSent.Set();
