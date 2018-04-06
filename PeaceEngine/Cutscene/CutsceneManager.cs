@@ -25,6 +25,14 @@ namespace Plex.Engine.Cutscene
         private List<Cutscene> _cutscenes = null;
         private Cutscene _current = null;
 
+        public Cutscene[] Cutscenes
+        {
+            get
+            {
+                return _cutscenes.ToArray();
+            }
+        }
+
         /// <summary>
         /// Retrieves whether a cutscene is playing.
         /// </summary>
