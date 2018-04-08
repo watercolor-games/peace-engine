@@ -402,7 +402,7 @@ namespace Plex.Engine.GraphicsSubsystem
             if (color.A == 0)
                 return; //no sense rendering if you CAN'T SEE IT
             float step = (float) Math.PI / (radius * 4);
-            var rect = new Rectangle(x, y, radius, 1);
+            var rect = new Rectangle(x+X, y+Y, radius, 1);
             for (float theta = 0; theta < 2 * Math.PI; theta += step)
                 _spritebatch.Draw(white, rect, null, color, theta, Vector2.Zero, SpriteEffects.None, 0);
         }

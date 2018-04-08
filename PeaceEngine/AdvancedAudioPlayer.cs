@@ -19,6 +19,20 @@ namespace Plex.Engine
     {
         const double sc16 = 0x7FFF + 0.4999999999999999;
 
+        internal static bool _reversed = false;
+
+        public bool Reversed
+        {
+            get
+            {
+                return _reversed;
+            }
+            set
+            {
+                _reversed = true;
+            }
+        }
+
         DynamicSoundEffectInstance sfx;
         VorbisReader aread;
 
@@ -114,7 +128,7 @@ namespace Plex.Engine
 
         void readbuffer()
         {
-            if(samps == null)
+            if (samps == null)
                 samps = new float[aread.Channels * aread.SampleRate / 5];
             data = new byte[samps.Length * sizeof(short)];
             aread.ReadSamples(samps, 0, samps.Length);
@@ -131,8 +145,18 @@ namespace Plex.Engine
             }
             using (var ms = new MemoryStream(data))
             using (var write = new BinaryWriter(ms))
-                foreach (var samp in samps)
-                    write.Write((short)(samp * sc16)); // convert to S16 int PCM
+            {
+                if (_reversed == true)
+                {
+                    foreach (var samp in samps)
+                        write.Write((short)((samp * sc16) - 32767)); // convert to S16 int PCM
+                }
+                else
+                {
+                    foreach (var samp in samps)
+                        write.Write((short)(samp * sc16)); // convert to S16 int PCM
+                }
+            }
             buf.Enqueue(data);
             if (skipearly || aread.DecodedTime.TotalSeconds >= labels[cur].End)
             {
@@ -267,6 +291,52 @@ namespace Plex.Engine
             string line;
             while ((line = src.ReadLine()) != null)
                 yield return line;
+        }
+    }
+
+    public class CheatManager : IEngineComponent
+    {
+        [Dependency]
+        private Plexgate _backend = null;
+
+        public void Initiate()
+        {
+            _backend.GetLayer(LayerType.NoDraw).AddEntity(_backend.New<CheatEntity>());
+        }
+
+        class CheatEntity : IEntity
+        {
+            private readonly Keys[] _cheatSequence = new Keys[] { Keys.A, Keys.N, Keys.D, Keys.E, Keys.R, Keys.S, Keys.J, Keys.E, Keys.N, Keys.S, Keys.E, Keys.N };
+            private List<Keys> _keys = new List<Keys>();
+
+            public void Draw(GameTime time, GraphicsContext gfx)
+            {
+            }
+
+            public void OnGameExit()
+            {
+            }
+
+            public void OnKeyEvent(KeyboardEventArgs e)
+            {
+                _keys.Add(e.Key);
+                if(_keys.Count == _cheatSequence.Length)
+                {
+                    if(_keys.ToArray().SequenceEqual(_cheatSequence))
+                    {
+                        AdvancedAudioPlayer._reversed = !AdvancedAudioPlayer._reversed;
+                    }
+                    _keys.Clear();
+                }
+            }
+
+            public void OnMouseUpdate(MouseState mouse)
+            {
+            }
+
+            public void Update(GameTime time)
+            {
+            }
         }
     }
 }

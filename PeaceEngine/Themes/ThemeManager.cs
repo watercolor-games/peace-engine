@@ -18,6 +18,7 @@ namespace Plex.Engine.Themes
     /// </summary>
     public class ThemeManager : IEngineComponent, IDisposable, IConfigurable
     {
+        public event Action ThemeChanged;
 
         [Dependency]
         private Plexgate _plexgate = null;
@@ -45,10 +46,13 @@ namespace Plex.Engine.Themes
             {
                 if (value == null)
                     throw new InvalidOperationException("You cannot operate Peace Engine without a theme object.");
+                if (value == _theme)
+                    return;
                 if (_theme != null)
                     _theme.UnloadThemeData();
                 _theme = value;
                 _theme.LoadThemeData(_plexgate.GraphicsDevice, _plexgate.Content);
+                ThemeChanged?.Invoke();
             }
         }
 

@@ -16,6 +16,8 @@ namespace Plex.Engine.Themes
     /// </summary>
     public abstract class Theme
     {
+        public abstract Color ControlBG { get; }
+
         /// <summary>
         /// Retrieves the width (in pixels) of a scroll bar.
         /// </summary>
