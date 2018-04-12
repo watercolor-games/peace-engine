@@ -367,7 +367,7 @@ namespace Plex.Engine.GraphicsSubsystem
         public void BeginDraw(Effect spriteEffect = null)
         {
             _spritebatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend,
-                        SamplerState.PointClamp, Device.DepthStencilState,
+                        SamplerState.LinearClamp, Device.DepthStencilState,
                         RasterizerState, spriteEffect);
 
         }

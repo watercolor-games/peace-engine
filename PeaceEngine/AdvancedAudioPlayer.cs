@@ -158,7 +158,7 @@ namespace Plex.Engine
                 }
             }
             buf.Enqueue(data);
-            if (skipearly || aread?.DecodedTime.TotalSeconds >= labels[cur].End)
+            if (skipearly || aread.DecodedTime.TotalSeconds >= labels[cur].End)
             {
                 fade = null;
                 if (Next >= labels.Length)

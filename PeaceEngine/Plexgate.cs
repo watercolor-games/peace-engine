@@ -325,9 +325,6 @@ namespace Plex.Engine
         private int _width = 0;
         private int _height = 0;
 
-        private const int _renderWidth = 3840;
-        private const int _renderHeight = 2160;
-
         /// <summary>
         /// Change the game resolution.
         /// </summary>
@@ -455,8 +452,11 @@ namespace Plex.Engine
             {
                 if (GameRenderTarget == null)
                     //Setup the game's rendertarget so it matches the desired resolution.
-                    GameRenderTarget = new RenderTarget2D(GraphicsDevice, _renderWidth, _renderHeight, false, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Format, DepthFormat.Depth24, 8, RenderTargetUsage.PreserveContents);
+                    GameRenderTarget = new RenderTarget2D(GraphicsDevice, _width, _height, false, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Format, DepthFormat.Depth24, 8, RenderTargetUsage.PreserveContents);
                 if (_ctx == null)
+                    _ctx = new GraphicsContext(GraphicsDevice, spriteBatch, 0, 0, GameRenderTarget.Width, GameRenderTarget.Height);
+
+                if (GameRenderTarget.Width != _width || GameRenderTarget.Height != _height)
                     _ctx = new GraphicsContext(GraphicsDevice, spriteBatch, 0, 0, GameRenderTarget.Width, GameRenderTarget.Height);
 
                 if (_ctx.Width != GameRenderTarget.Width)
@@ -468,9 +468,7 @@ namespace Plex.Engine
             //Let's get the mouse state
             var mouseState = Mouse.GetState(this.Window);
             bool doMouse = LastMouseState != mouseState;
-            int newMouseX = (int)MathHelper.Lerp(0, _renderWidth, (float)mouseState.X / _width);
-            int newMouseY = (int)MathHelper.Lerp(0, _renderHeight, (float)mouseState.Y / _height);
-            LastMouseState = new MouseState(newMouseX, newMouseY, mouseState.ScrollWheelValue, mouseState.LeftButton, mouseState.MiddleButton, mouseState.RightButton, mouseState.XButton1, mouseState.XButton2);
+            LastMouseState = mouseState;
 
             while (_actions.Count != 0)
             {
@@ -484,7 +482,7 @@ namespace Plex.Engine
                 foreach (var entity in layer.Entities)
                 {
                     if (doMouse)
-                        entity.OnMouseUpdate(LastMouseState);
+                        entity.OnMouseUpdate(mouseState);
                     entity.Update(gameTime);
                 }
             }
@@ -532,13 +530,7 @@ namespace Plex.Engine
                 GraphicsDevice.Clear(Color.Black);
                 foreach (var layer in _layers.ToArray())
                     foreach (var entity in layer.Entities)
-                    {
-                        _ctx.X = 0;
-                        _ctx.Y = 0;
-                        _ctx.Width = GameRenderTarget.Width;
-                        _ctx.Height = GameRenderTarget.Height;
                         entity.Draw(gameTime, this._ctx);
-                    }
 
                 spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied,
                                 SamplerState.LinearWrap, DepthStencilState.Default,
@@ -552,14 +544,10 @@ namespace Plex.Engine
             {
                 MultiSampleAntiAlias = true
             };
-            _ctx.X = 0;
-            _ctx.Y = 0;
-            _ctx.Width = _width;
-            _ctx.Height = _height;
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied,
                             SamplerState.LinearWrap, DepthStencilState.Default,
                             rstate);
-            _ctx.DrawRectangle(0, 0, _width, _height, GameRenderTarget, System.Windows.Forms.ImageLayout.Zoom);
+            spriteBatch.Draw(GameRenderTarget, new Rectangle(0, 0, GameRenderTarget.Width, GameRenderTarget.Height), Color.White);
             spriteBatch.End();
         }
     }
