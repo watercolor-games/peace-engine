@@ -183,7 +183,7 @@ namespace Plex.Engine
             List<string> _resolutions = new List<string>();
             foreach (var mode in modes.OrderByDescending(x => x.Width * x.Height))
             {
-                if (mode.Width * mode.Height < 800 * 600 || mode.Width * mode.Height > 1920 * 1080)
+                if (mode.Height < 600 || mode.Height > 1080)
                     continue;
                 string resString = $"{mode.Width}x{mode.Height}";
                 if (_resolutions.Contains(resString))
