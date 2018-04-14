@@ -155,6 +155,15 @@ namespace Plex.Engine
 
         private void KeyboardListener_KeyPressed(object sender, KeyboardEventArgs e)
         {
+#if DEBUG
+            if(e.Key == Keys.F12 && e.Modifiers.HasFlag(KeyboardModifiers.Control))
+            {
+                _do4kEmulation = !_do4kEmulation;
+                GameRenderTarget?.Dispose();
+                GameRenderTarget = null;
+            }
+#endif
+
             foreach(var layer in _layers.ToArray())
             {
                 foreach(var entity in layer.Entities)
@@ -439,6 +448,11 @@ namespace Plex.Engine
             _actions.Enqueue(act);
         }
 
+        private bool _do4kEmulation = false;
+
+        private const int _rWidth = 3840;
+        private const int _rHeight = 2160;
+
         private IEngineComponent[] _drawables = null;
         private MouseState LastMouseState;
         /// <summary>
@@ -452,23 +466,25 @@ namespace Plex.Engine
             {
                 if (GameRenderTarget == null)
                     //Setup the game's rendertarget so it matches the desired resolution.
-                    GameRenderTarget = new RenderTarget2D(GraphicsDevice, _width, _height, false, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Format, DepthFormat.Depth24, 8, RenderTargetUsage.PreserveContents);
+                    GameRenderTarget = new RenderTarget2D(GraphicsDevice, (_do4kEmulation) ? _rWidth : _width, (_do4kEmulation) ? _rHeight : _height, false, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Format, DepthFormat.Depth24, 8, RenderTargetUsage.PreserveContents);
                 if (_ctx == null)
-                    _ctx = new GraphicsContext(GraphicsDevice, spriteBatch, 0, 0, GameRenderTarget.Width, GameRenderTarget.Height);
-
-                if (GameRenderTarget.Width != _width || GameRenderTarget.Height != _height)
                     _ctx = new GraphicsContext(GraphicsDevice, spriteBatch, 0, 0, GameRenderTarget.Width, GameRenderTarget.Height);
 
                 if (_ctx.Width != GameRenderTarget.Width)
                     _ctx.Width = GameRenderTarget.Width;
                 if (_ctx.Height != GameRenderTarget.Height)
                     _ctx.Height = GameRenderTarget.Height;
+                _ctx.X = 0;
+                _ctx.Y = 0;
                 keyboardListener.Update(gameTime);
             }
             //Let's get the mouse state
             var mouseState = Mouse.GetState(this.Window);
             bool doMouse = LastMouseState != mouseState;
-            LastMouseState = mouseState;
+            if (_do4kEmulation)
+                LastMouseState = new MouseState((int)MathHelper.Lerp(0, _rWidth, (float)mouseState.X / _width), (int)MathHelper.Lerp(0, _rHeight, (float)mouseState.Y / _height), mouseState.ScrollWheelValue, mouseState.LeftButton, mouseState.MiddleButton, mouseState.RightButton, mouseState.XButton1, mouseState.XButton2);
+            else
+                LastMouseState = mouseState;
 
             while (_actions.Count != 0)
             {
@@ -482,7 +498,7 @@ namespace Plex.Engine
                 foreach (var entity in layer.Entities)
                 {
                     if (doMouse)
-                        entity.OnMouseUpdate(mouseState);
+                        entity.OnMouseUpdate(LastMouseState);
                     entity.Update(gameTime);
                 }
             }
@@ -530,7 +546,17 @@ namespace Plex.Engine
                 GraphicsDevice.Clear(Color.Black);
                 foreach (var layer in _layers.ToArray())
                     foreach (var entity in layer.Entities)
+                    {
+                        if (_ctx.Width != GameRenderTarget.Width)
+                            _ctx.Width = GameRenderTarget.Width;
+                        if (_ctx.Height != GameRenderTarget.Height)
+                            _ctx.Height = GameRenderTarget.Height;
+                        _ctx.X = 0;
+                        _ctx.Y = 0;
+
                         entity.Draw(gameTime, this._ctx);
+
+                    }
 
                 spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied,
                                 SamplerState.LinearWrap, DepthStencilState.Default,
@@ -544,10 +570,14 @@ namespace Plex.Engine
             {
                 MultiSampleAntiAlias = true
             };
+            _ctx.Width = _width;
+            _ctx.Height = _height;
+            _ctx.X = 0;
+            _ctx.Y = 0;
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied,
                             SamplerState.LinearWrap, DepthStencilState.Default,
                             rstate);
-            spriteBatch.Draw(GameRenderTarget, new Rectangle(0, 0, GameRenderTarget.Width, GameRenderTarget.Height), Color.White);
+            spriteBatch.Draw(GameRenderTarget, new Rectangle(0, 0, _ctx.Width, _ctx.Height), Color.White);
             spriteBatch.End();
         }
     }
