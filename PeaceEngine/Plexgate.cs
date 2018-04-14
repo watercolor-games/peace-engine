@@ -181,9 +181,9 @@ namespace Plex.Engine
         {
             var modes = GraphicsAdapter.DefaultAdapter.SupportedDisplayModes;
             List<string> _resolutions = new List<string>();
-            foreach(var mode in modes.OrderByDescending(x=>x.Width*x.Height))
+            foreach (var mode in modes.OrderByDescending(x => x.Width * x.Height))
             {
-                if (mode.Width < 800 || mode.Height < 600)
+                if (mode.Width * mode.Height < 800 * 600 || mode.Width * mode.Height > 1920 * 1080)
                     continue;
                 string resString = $"{mode.Width}x{mode.Height}";
                 if (_resolutions.Contains(resString))
