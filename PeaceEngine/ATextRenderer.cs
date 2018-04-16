@@ -4,27 +4,33 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
-using Plex.Engine.TextRenderers;
-using Plex.Engine.GraphicsSubsystem;
-using Plex.Objects;
 using Microsoft.Xna.Framework.Graphics;
+using Plex.Engine.GraphicsSubsystem;
+using Plex.Engine.Interfaces;
 
 namespace Plex.Engine
 {
     /// <summary>
     /// A class for rendering text.
     /// </summary>
-    public static class TextRenderer
+    public class TextRenderer : IEngineComponent
     {
-        private static string WrapLine(SpriteFont font, string text, float maxLineWidth)
+        [Dependency]
+        private UIManager _ui = null;
+
+        public void Initiate() { }
+
+        private string WrapLine(SpriteFont font, string text, float maxLineWidth)
         {
             if (string.IsNullOrEmpty(text))
                 return text;
             if (font.MeasureString(text).X <= maxLineWidth)
                 return text;
+            if (font.MeasureString(font.Characters.OrderBy(x => font.MeasureString(x.ToString()).X).Last().ToString()).X >= maxLineWidth)
+                throw new InvalidOperationException("Max line width must be greater than the width of the largest character in the font.");
             text = text.Trim();
             var sb = new StringBuilder();
-            
+
             return sb.ToString().TrimEnd();
         }
 
@@ -36,13 +42,15 @@ namespace Plex.Engine
         /// <param name="maxLineWidth">The maximum width (in pixels) that a line of text can be.</param>
         /// <param name="mode">The type of text wrapping to apply.</param>
         /// <returns>The resulting wrapped text.</returns>
-        public static string WrapText(SpriteFont font, string text, float maxLineWidth, WrapMode mode)
+        public string WrapText(SpriteFont font, string text, float maxLineWidth, WrapMode mode)
         {
             if (string.IsNullOrEmpty(text))
                 return text;
             if (font.MeasureString(text).X <= maxLineWidth)
                 return text;
-            if (mode == WrapMode.Words)
+            if (font.MeasureString(font.Characters.OrderBy(x => font.MeasureString(x.ToString()).X).Last().ToString()).X >= maxLineWidth)
+                return text;
+                if (mode == WrapMode.Words)
             {
                 float spacewidth = font.MeasureString(" ").X;
                 if (maxLineWidth < spacewidth)
@@ -54,7 +62,7 @@ namespace Plex.Engine
                 foreach (var line in lines)
                 {
                     lineWidth = 0;
-                    if (sb.Length>0)
+                    if (sb.Length > 0)
                         sb.Append("\n");
                     var words = line.Split(' ').ToList();
                     for (int i = 0; i < words.Count; i++)
@@ -73,7 +81,7 @@ namespace Plex.Engine
                         {
                             if (size.X >= maxLineWidth)
                             {
-                                if (sb.Length>0)
+                                if (sb.Length > 0)
                                     sb.Append("\n");
                                 int half = word.Length / 2;
                                 string first = word.Substring(0, half);
@@ -101,7 +109,7 @@ namespace Plex.Engine
                 foreach (char c in text)
                 {
                     var measure = font.MeasureString(c.ToString());
-                    if(lineWidth + measure.X > maxLineWidth)
+                    if (lineWidth + measure.X > maxLineWidth)
                     {
                         newstr += "\n";
                         lineWidth = measure.X;
@@ -130,14 +138,14 @@ namespace Plex.Engine
         /// <param name="maxwidth">The maximum width text can be before it is wrapped</param>
         /// <param name="wrapMode">The wrap mode to use</param>
         /// <returns>The size in pixels of the text.</returns>
-        public static Vector2 MeasureText(string text, SpriteFont font, int maxwidth, WrapMode wrapMode)
+        public Vector2 MeasureText(string text, SpriteFont font, float maxwidth, WrapMode wrapMode)
         {
             if (string.IsNullOrEmpty(text))
                 return Vector2.Zero;
             switch (wrapMode)
             {
                 case WrapMode.None:
-                    return font.MeasureString(text);
+                    return font.MeasureString(text) * _ui.GUIScale;
                 default:
                     return font.MeasureString(WrapText(font, text, maxwidth, wrapMode));
             }
@@ -155,7 +163,7 @@ namespace Plex.Engine
         /// <param name="alignment">The alignment of the text.</param>
         /// <param name="wrapMode">The type of text wrapping to use.</param>
         /// <param name="color">The color of the text to render</param>
-        public static void DrawText(GraphicsContext gfx, int x, int y, string text, SpriteFont font, Color color, int maxwidth, TextAlignment alignment, WrapMode wrapMode)
+        public void DrawText(SpriteBatch batch, int x, int y, string text, SpriteFont font, Color color, float maxwidth, TextAlignment alignment, WrapMode wrapMode)
         {
             if (string.IsNullOrEmpty(text))
                 return;
@@ -168,13 +176,13 @@ namespace Plex.Engine
                 switch (alignment)
                 {
                     case TextAlignment.Left:
-                        gfx.Batch.DrawString(font, line, new Vector2(x, y + (measure.Y * i)), color);
+                        batch.DrawString(font, line, new Vector2(x, y + ((measure.Y * i)*_ui.GUIScale)), color, 0, Vector2.Zero, _ui.GUIScale, SpriteEffects.None, 0);
                         break;
                     case TextAlignment.Center:
-                        gfx.Batch.DrawString(font, line, new Vector2(x + ((maxwidth-measure.X)/2), y + (measure.Y * i)), color);
+                        batch.DrawString(font, line, new Vector2((x + ((maxwidth - measure.X) / 2)*_ui.GUIScale), y + ((measure.Y * i)*_ui.GUIScale)), color, 0, Vector2.Zero, _ui.GUIScale, SpriteEffects.None, 0);
                         break;
                     case TextAlignment.Right:
-                        gfx.Batch.DrawString(font, line, new Vector2(x + (maxwidth - measure.X), y + (measure.Y * i)), color);
+                        batch.DrawString(font, line, new Vector2(x + ((maxwidth - measure.X)/2), y + ((measure.Y * i)*_ui.GUIScale)), color, 0, Vector2.Zero, _ui.GUIScale, SpriteEffects.None, 0);
                         break;
                 }
             }
@@ -203,21 +211,10 @@ namespace Plex.Engine
         Right = 2,
     }
 
-    /// <summary>
-    /// Indicates that this <see cref="ATextRenderer"/> should be the default renderer for the game. 
-    /// </summary>
-    [Obsolete("GDI fonts no longer supported.")]
-    public class DefaultRenderer : Attribute
+    public enum WrapMode
     {
-
-    }
-
-    /// <summary>
-    /// Indicates that this <see cref="ATextRenderer"/> should be the fallback renderer for the game. 
-    /// </summary>
-    [Obsolete("GDI fonts no longer supported.")]
-    public class FallbackRenderer : Attribute
-    {
-
+        None,
+        Letters,
+        Words
     }
 }

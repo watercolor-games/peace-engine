@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Plex.Engine.TextRenderers;
 
 namespace Plex.Engine.GraphicsSubsystem
 {
@@ -207,6 +206,17 @@ namespace Plex.Engine.GraphicsSubsystem
         private GraphicsDevice _graphicsDevice;
         private SpriteBatch _spritebatch;
 
+        [Dependency]
+        private TextRenderer _textRenderer = null;
+
+        public TextRenderer TextRenderer
+        {
+            get
+            {
+                return _textRenderer;
+            }
+        }
+
         /// <summary>
         /// Creates a new instance of the <see cref="GraphicsContext"/> class. 
         /// </summary>
@@ -233,7 +243,8 @@ namespace Plex.Engine.GraphicsSubsystem
             X = x;
             Y = y;
 
-            
+            TextScale = 1;
+            Plexgate.GetInstance().Inject(this);
         }
 
         /// <summary>
@@ -431,6 +442,7 @@ namespace Plex.Engine.GraphicsSubsystem
             DrawRectangle((int)point.X, (int)point.Y, (int)size.X, (int)size.Y, tex2, color, layout, opaque, premultiplied);
         }
 
+        public float TextScale { get; internal set; }
 
         /// <summary>
         /// Retrieves a new <see cref="RasterizerState"/> preferred to be used by the graphics context. 
@@ -524,9 +536,9 @@ namespace Plex.Engine.GraphicsSubsystem
         /// <param name="wrapWidth">The maximum width text can be before it is wrapped</param>
         /// <param name="wrapMode">The wrap mode of the text</param>
         /// <returns>The size of the text in pixels</returns>
-        public static Vector2 MeasureString(string text, SpriteFont font, int wrapWidth = int.MaxValue, WrapMode wrapMode = WrapMode.Words)
+        public Vector2 MeasureString(string text, SpriteFont font, int wrapWidth = int.MaxValue, WrapMode wrapMode = WrapMode.Words)
         {
-            return Plex.Engine.TextRenderer.MeasureText(text, font, wrapWidth, wrapMode);
+            return TextRenderer.MeasureText(text, font, wrapWidth, wrapMode);
 
         }
 
@@ -541,7 +553,7 @@ namespace Plex.Engine.GraphicsSubsystem
         /// <param name="alignment">The alignment of the text</param>
         /// <param name="wrapWidth">The maximum width text can be before it is wrapped.</param>
         /// <param name="wrapMode">The wrap mode of the text</param>
-        public void DrawString(string text, int x, int y, Color color, SpriteFont font, TextAlignment alignment, int wrapWidth = int.MaxValue, WrapMode wrapMode = WrapMode.Words)
+        public void DrawString(string text, int x, int y, Color color, SpriteFont font, TextAlignment alignment, float wrapWidth = float.MaxValue, WrapMode wrapMode = WrapMode.Words)
         {
             x += X;
             y += Y;
@@ -554,10 +566,10 @@ namespace Plex.Engine.GraphicsSubsystem
                 return; //no sense rendering if you CAN'T SEE IT
             if (string.IsNullOrEmpty(text))
                 return;
-            Plex.Engine.TextRenderer.DrawText(this, x, y, text, font, color, wrapWidth, alignment, wrapMode);
+            TextRenderer.DrawText(this.Batch, x, y, text, font, color, wrapWidth, alignment, wrapMode);
         }
 
-        public void DrawString(string text, Vector2 point, Color color, SpriteFont font, TextAlignment alignment = TextAlignment.Left, int wrapWidth = int.MaxValue, WrapMode wrapMode = WrapMode.None)
+        public void DrawString(string text, Vector2 point, Color color, SpriteFont font, TextAlignment alignment = TextAlignment.Left, float wrapWidth = float.MaxValue, WrapMode wrapMode = WrapMode.None)
         {
             DrawString(text, (int)point.X, (int)point.Y, color, font, alignment, wrapWidth, wrapMode);
         }

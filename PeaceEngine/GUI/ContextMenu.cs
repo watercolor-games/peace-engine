@@ -78,8 +78,8 @@ namespace Plex.Engine.GUI
 
         protected override void OnPaint(GameTime time, GraphicsContext gfx)
         {
-            Theme.DrawControlBG(gfx, 0, 0, Width, Height);
-            Theme.DrawControlLightBG(gfx, 0, 0, (_imageMargin * 2) + _imageSize, Height);
+            Theme.DrawControlBG(gfx, 0, 0, gfx.Width, gfx.Height);
+            Theme.DrawControlLightBG(gfx, 0, 0, (_imageMargin * 2) + _imageSize, gfx.Height);
             var font = Theme.GetFont(Themes.TextFontStyle.System);
             int fontHeight = (int)font.MeasureString("#").Y;
             int textLoc = 0;
@@ -97,7 +97,7 @@ namespace Plex.Engine.GUI
                 {
                     if (ContainsMouse && MouseY >= textLoc && MouseY <= textLoc + fontHeight)
                     {
-                        gfx.DrawRectangle(0, textLoc, Width, fontHeight, Theme.GetAccentColor());
+                        gfx.DrawRectangle(0, textLoc, gfx.Width, fontHeight, Theme.GetAccentColor());
                     }
                     if(item.Image!=null)
                     {

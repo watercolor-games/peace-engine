@@ -38,7 +38,7 @@ namespace Plex.Engine.GUI
         protected override void OnPaint(GameTime time, GraphicsContext gfx)
         {
             gfx.Clear(Color.Black);
-            gfx.DrawRectangle(0, 0, (int)MathHelper.Lerp(0, Width, _value), Height, Theme.GetAccentColor());
+            gfx.DrawRectangle(0, 0, (int)MathHelper.Lerp(0, gfx.Width, _value), gfx.Height, Theme.GetAccentColor());
         }
     }
 }

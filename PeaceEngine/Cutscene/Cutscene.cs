@@ -3,7 +3,6 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Plex.Engine.GraphicsSubsystem;
 using Plex.Engine.Interfaces;
-using Plex.Engine.TextRenderers;
 using Plex.Engine.Themes;
 using System;
 using System.Collections.Generic;
@@ -22,7 +21,12 @@ namespace Plex.Engine.Cutscene
         private ThemeManager _theme = null;
 
         [Dependency]
+        private TextRenderer _textRenderer = null;
+
+        [Dependency]
         private CutsceneManager _cutscene = null;
+
+        public TextRenderer TextRenderer => _textRenderer;
 
         private bool _hasFinished = false;
 

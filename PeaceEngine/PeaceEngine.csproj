@@ -180,7 +180,6 @@
     <Compile Include="SplashScreen.Designer.cs">
       <DependentUpon>SplashScreen.cs</DependentUpon>
     </Compile>
-    <Compile Include="TextRenderers\WrapMode.cs" />
     <Compile Include="Themes\Theme.cs" />
     <Compile Include="Themes\ThemeManager.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -333,6 +332,9 @@
     <Content Include="x86\soft_oal.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="TextRenderers\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

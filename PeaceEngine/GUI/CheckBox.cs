@@ -47,7 +47,7 @@ namespace Plex.Engine.GUI
         /// <inheritdoc/>
         protected override void OnPaint(GameTime time, GraphicsContext gfx)
         {
-            Theme.DrawCheckbox(gfx, 0, 0, Width, Height, _checked, ContainsMouse);
+            Theme.DrawCheckbox(gfx, 0, 0, gfx.Width, gfx.Height, _checked, ContainsMouse);
         }
     }
 }
