@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended.Input.InputListeners;
+using Plex.Engine.TextRenderers;
 using Plex.Engine.GUI;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -136,11 +137,6 @@ namespace Plex.Engine.GraphicsSubsystem
                     ctrl.Dispose();
             }
 
-            [Dependency]
-            private TextRenderer _textRenderer = null;
-
-            public TextRenderer TextRenderer => _textRenderer;
-
             public bool IsFocused(Control ctrl)
             {
                 return ctrl == _focused;
@@ -159,10 +155,9 @@ namespace Plex.Engine.GraphicsSubsystem
                 ctrl.Invalidate();
 
             }
-            
+
             public void Draw(GameTime time, GraphicsContext ctx)
             {
-                ctx.TextScale = _ui.GUIScale;
                 ctx.Opacity = 1f;
                 ctx.Grayout = false;
                 foreach (var ctrl in Controls)
@@ -174,12 +169,9 @@ namespace Plex.Engine.GraphicsSubsystem
                     if(ctrl._userfacingtarget != null)
                     {
                         ctx.BeginDraw();
-                        ctx.Batch.Draw(ctrl._userfacingtarget, _ui.VirtualToScreen(new Vector2(ctrl.X, ctrl.Y)), Color.White * ctrl.Opacity);
+                        ctx.Batch.Draw(ctrl._userfacingtarget, new Rectangle(ctrl.X, ctrl.Y, ctrl.Width, ctrl.Height), Color.White * ctrl.Opacity);
                         ctx.EndDraw();
                     }
-                    ctx.RenderOffsetX = 0;
-                    ctx.RenderOffsetY = 0;
-
                 }
 
                 ctx.Opacity = 1f;
@@ -187,8 +179,8 @@ namespace Plex.Engine.GraphicsSubsystem
 
                 ctx.X = 0;
                 ctx.Y = 0;
-                ctx.Width = _plexgate.GameRenderTarget.Width;
-                ctx.Height = _plexgate.GameRenderTarget.Height;
+                ctx.Width = _ui.ScreenWidth;
+                ctx.Height = _ui.ScreenHeight;
 
                 if (ShowPerfCounters == false)
                     return;
@@ -196,10 +188,10 @@ namespace Plex.Engine.GraphicsSubsystem
                 _debugUpdTimer += time.ElapsedGameTime.TotalSeconds;
                 if (_debugUpdTimer >= 1)
                 {
-                    _debug = $"{Math.Round(1 / time.ElapsedGameTime.TotalSeconds)} FPS | {GC.GetTotalMemory(false) / 1048576} MiB RAM | {Math.Round(_debugCpu.NextValue())}% CPU | Mouse scroll value: {_lastScrollValue} | Peace Engine resolution: {_plexgate.GameRenderTarget.Width}x{_plexgate.GameRenderTarget.Height} | UI virtual screen resolution: {_ui.ScreenWidth}x{_ui.ScreenHeight}";
+                    _debug = $"{Math.Round(1 / time.ElapsedGameTime.TotalSeconds)} FPS | {GC.GetTotalMemory(false) / 1048576} MiB RAM | {Math.Round(_debugCpu.NextValue())}% CPU | Mouse scroll value: {_lastScrollValue}";
                     _debugUpdTimer %= 1;
                 }
-                ctx.DrawString(_debug, Vector2.Zero, Color.White, _thememgr.Theme.GetFont(TextFontStyle.Muted), TextAlignment.Left, int.MaxValue, WrapMode.None);
+                ctx.Batch.DrawString(_thememgr.Theme.GetFont(TextFontStyle.Muted), _debug, Vector2.Zero, Color.White);
 
 
 
@@ -248,8 +240,6 @@ namespace Plex.Engine.GraphicsSubsystem
                 //Propagate mouse events.
                 var controls = Controls.OrderByDescending(x => Array.IndexOf(Controls, x)).ToArray();
                 bool hasBeenHandled = false;
-                var virtualMouseCoords = _ui.ScreenToVirtual(new Vector2(mouse.X, mouse.Y));
-                mouse = new MouseState((int)virtualMouseCoords.X, (int)virtualMouseCoords.Y, mouse.ScrollWheelValue, mouse.LeftButton, mouse.MiddleButton, mouse.RightButton, mouse.XButton1, mouse.XButton2);
                 foreach (var ctrl in controls)
                 {
                     if (ctrl.Visible == false)
@@ -341,48 +331,6 @@ namespace Plex.Engine.GraphicsSubsystem
 
         private UIContainer _container = null;
 
-        /// <summary>
-        /// Retrieves a percentage scale factor for calculating the width and height of a UI element's render bounds.
-        /// </summary>
-        public float GUIScale
-        {
-            get
-            {
-                return (float)_plexgate.GameRenderTarget.Height / ScreenHeight;
-            }
-        }
-
-        /// <summary>
-        /// Maps coordinates within the UI's virtual screen space to Peace Engine's native screen space.
-        /// </summary>
-        /// <param name="virtualCoords">A <see cref="Vector2"/> containing coordinates in the virtual space.</param>
-        /// <returns>The mapped real-space coordinates.</returns>
-        public Vector2 VirtualToScreen(Vector2 virtualCoords)
-        {
-            return new Vector2(virtualCoords.X * ((float)_plexgate.GameRenderTarget.Width / ScreenWidth), virtualCoords.Y * ((float)_plexgate.GameRenderTarget.Height / ScreenHeight));
-        }
-
-
-        public TextRenderer TextRenderer
-        {
-            get
-            {
-                return _container.TextRenderer;
-            }
-        }
-
-        /// <summary>
-        /// Maps Peace Engine screen coordinates to the UI's virtual coordinate space.
-        /// </summary>
-        /// <param name="screenCoords">The screen coordinates to map.</param>
-        /// <returns>The mapped virtual-space coordinates.</returns>
-        public Vector2 ScreenToVirtual(Vector2 screenCoords)
-        {
-            if(_plexgate.GameRenderTarget == null)
-                return new Vector2((screenCoords.X / 3840) * ScreenWidth, (screenCoords.Y / 2160) * ScreenHeight);
-            return new Vector2((screenCoords.X / _plexgate.GameRenderTarget.Width) * ScreenWidth, (screenCoords.Y / _plexgate.GameRenderTarget.Height) * ScreenHeight);
-        }
-
         [Dependency]
         private Plexgate _plexgate = null;
 
@@ -417,13 +365,13 @@ namespace Plex.Engine.GraphicsSubsystem
         /// <summary>
         /// Gets the screen width available to user interface elements.
         /// </summary>
-        public float ScreenWidth
+        public int ScreenWidth
         {
             get
             {
                 if (_plexgate.GameRenderTarget == null)
-                    return (1920 / 1080) * ScreenHeight;
-                return ((float)_plexgate.GameRenderTarget.Width / (float)_plexgate.GameRenderTarget.Height) * ScreenHeight;
+                    return 1;
+                return _plexgate.GameRenderTarget.Width;
             }
         }
 
@@ -441,11 +389,13 @@ namespace Plex.Engine.GraphicsSubsystem
         /// <summary>
         /// Gets the screen height available to user interface elements.
         /// </summary>
-        public float ScreenHeight
+        public int ScreenHeight
         {
             get
             {
-                return 2160;
+                if (_plexgate.GameRenderTarget == null)
+                    return 1;
+                return _plexgate.GameRenderTarget.Height;
             }
         }
 

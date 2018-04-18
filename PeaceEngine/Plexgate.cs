@@ -532,18 +532,6 @@ namespace Plex.Engine
             return obj;
         }
 
-        public float TextScale
-        {
-            get
-            {
-                return _ctx.TextScale;
-            }
-            set
-            {
-                _ctx.TextScale = value;
-            }
-        }
-
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
@@ -565,7 +553,7 @@ namespace Plex.Engine
                             _ctx.Height = GameRenderTarget.Height;
                         _ctx.X = 0;
                         _ctx.Y = 0;
-                        
+
                         entity.Draw(gameTime, this._ctx);
 
                     }

@@ -103,8 +103,13 @@ namespace Plex.Engine.GUI
                 TextChanged?.Invoke(this, EventArgs.Empty);
             }
 
+<<<<<<< HEAD
             var hashMeasure = TextRenderer.MeasureText("#", _drawFont, int.MaxValue, WrapMode.None);
             Height = Math.Max((int)hashMeasure.Y + 8, Height);
+=======
+            var hashMeasure = TextRenderer.MeasureText("#", _drawFont, int.MaxValue, TextRenderers.WrapMode.None);
+            Height = Math.Max((int)hashMeasure.Y + 4, Height);
+>>>>>>> parent of 5b649c3... UI uses virtual 4k coordinate space now. It mostly works, but, there are a lot of fucking bugs.
 
             if (string.IsNullOrEmpty(displayText))
             {
@@ -115,7 +120,7 @@ namespace Plex.Engine.GUI
                 }
             }
             string toCaret = displayText.Substring(0, _index);
-            var measure = TextRenderer.MeasureText(toCaret, _drawFont, int.MaxValue, WrapMode.None);
+            var measure = TextRenderer.MeasureText(toCaret, _drawFont, int.MaxValue, TextRenderers.WrapMode.None);
             if (_caretX != (int)measure.X)
             {
                 _caretX = (int)measure.X;
@@ -126,11 +131,11 @@ namespace Plex.Engine.GUI
             int realCaretX = _caretX - _drawOffset;
             if(realCaretX > Width-4)
             {
-                _drawOffset = _caretX - (RenderBounds.Width-4);
+                _drawOffset = _caretX - (Width-4);
             }
             else if(realCaretX < 0)
             {
-                _drawOffset = _caretX + (RenderBounds.Width - 4);
+                _drawOffset = _caretX + (Width - 4);
             }
             base.OnUpdate(time);
         }
@@ -193,7 +198,7 @@ namespace Plex.Engine.GUI
         /// <inheritdoc/>
         protected override void OnPaint(GameTime time, GraphicsContext gfx)
         {
-            Theme.DrawControlDarkBG(gfx, 0, 0, gfx.Width, gfx.Height);
+            Theme.DrawControlDarkBG(gfx, 0, 0, Width, Height);
             var colorBar = Color.Gray;
             if (ContainsMouse)
             {
@@ -203,22 +208,22 @@ namespace Plex.Engine.GUI
             {
                 colorBar = Theme.GetAccentColor();
             }
-            gfx.DrawRectangle(0, gfx.Height - 2, gfx.Width, 2, colorBar);
+            gfx.DrawRectangle(0, Height - 2, Width, 2, colorBar);
             if (string.IsNullOrWhiteSpace(_text))
             {
                 if (!IsFocused)
                 {
-                    gfx.DrawString(_label, 2, 2, Color.Gray, _drawFont, TextAlignment.Left, int.MaxValue, WrapMode.None);
+                    gfx.DrawString(_label, 2, 2, Color.Gray, _drawFont, TextAlignment.Left, int.MaxValue, TextRenderers.WrapMode.None);
                 }
             }
             else
             {
-                gfx.DrawString(_lastText, 2 - _drawOffset, 2, Color.White, _drawFont, TextAlignment.Left, int.MaxValue, WrapMode.None);
+                gfx.DrawString(_lastText, 2 - _drawOffset, 2, Color.White, _drawFont, TextAlignment.Left, int.MaxValue, TextRenderers.WrapMode.None);
                 
             }
             if (IsFocused)
             {
-                gfx.DrawRectangle(2 + (_caretX - _drawOffset), 4, 2, gfx.Height - 8, Color.White);
+                gfx.DrawRectangle(2 + (_caretX - _drawOffset), 4, 2, Height - 8, Color.White);
             }
         }
 

@@ -159,8 +159,8 @@ namespace Plex.Engine.GUI
 
         protected override void OnUpdate(GameTime time)
         {
-            float height = 0;
-            float width = 0;
+            int height = 0;
+            int width = 0;
 
             var font = Theme.GetFont(Themes.TextFontStyle.System);
 
@@ -171,10 +171,10 @@ namespace Plex.Engine.GUI
                     foreach(var item in VisibleItems)
                     {
                         var image = GetImage(item.ImageKey);
-                        float maxwidth = Width - (_margin * 2);
+                        int maxwidth = Width - (_margin * 2);
                         if (image != null)
                             maxwidth -= (_listIconSize + _horizontalIconPad);
-                        var textMeasure = TextRenderer.MeasureText(item.Value, font, MaxWidth, WrapMode.None);
+                        var textMeasure = TextRenderer.MeasureText(item.Value, font, MaxWidth, TextRenderers.WrapMode.None);
                         height += Math.Max((int)textMeasure.Y, _listIconSize);
                     }
                     break;
@@ -187,7 +187,7 @@ namespace Plex.Engine.GUI
                             int line1 = 0;
                             foreach(var item in VisibleItems)
                             {
-                                var textMeasure = TextRenderer.MeasureText(item.Value, font, _largeIconTextWidth, WrapMode.Words);
+                                var textMeasure = TextRenderer.MeasureText(item.Value, font, _largeIconTextWidth, TextRenderers.WrapMode.Words);
                                 x1 += (_horizontalIconPad * 2) + _largeIconTextWidth;
                                 line1 = Math.Max(line1, _verticalIconPad + (int)textMeasure.Y + 5 + _largeIconSize);
                                 if(x1 > Width - (_margin*2))
@@ -209,7 +209,7 @@ namespace Plex.Engine.GUI
                             int col1 = 0;
                             foreach (var item in VisibleItems)
                             {
-                                var textMeasure = TextRenderer.MeasureText(item.Value, font, _largeIconTextWidth, WrapMode.Words);
+                                var textMeasure = TextRenderer.MeasureText(item.Value, font, _largeIconTextWidth, TextRenderers.WrapMode.Words);
                                 y1 += (_verticalIconPad) + _largeIconSize + 5 + (int)textMeasure.Y;
                                 col1 = Math.Max(col1, _largeIconTextWidth + (_horizontalIconPad * 2));
                                 if (y1 > height)
@@ -234,10 +234,10 @@ namespace Plex.Engine.GUI
             base.OnUpdate(time);
         }
 
-        private ListViewItem GetItemAtPoint(float x, float y)
+        private ListViewItem GetItemAtPoint(int x, int y)
         {
-            float h = _margin;
-            float v = _margin;
+            int h = _margin;
+            int v = _margin;
 
             var font = Theme.GetFont(Themes.TextFontStyle.System);
 
@@ -251,11 +251,16 @@ namespace Plex.Engine.GUI
                     foreach (var item in VisibleItems)
                     {
                         var image = GetImage(item.ImageKey);
-                        float maxwidth = Width - (_margin * 2);
+                        int maxwidth = Width - (_margin * 2);
                         if (image != null)
                             maxwidth -= (_listIconSize + _horizontalIconPad);
+<<<<<<< HEAD
                         var textMeasure = TextRenderer.MeasureText(item.Value, font, maxwidth, WrapMode.None);
                         int height = (image == null) ? (int)textMeasure.Y : Math.Max((int)textMeasure.Y, _listIconSize);
+=======
+                        var textMeasure = TextRenderer.MeasureText(item.Value, font, MaxWidth, TextRenderers.WrapMode.None);
+                        int height = Math.Max((int)textMeasure.Y, _listIconSize);
+>>>>>>> parent of 5b649c3... UI uses virtual 4k coordinate space now. It mostly works, but, there are a lot of fucking bugs.
                         if (y >= v && y <= v + height)
                             return item;
                         v += height;
@@ -268,7 +273,7 @@ namespace Plex.Engine.GUI
                             int line1 = 0;
                             foreach (var item in VisibleItems)
                             {
-                                var textMeasure = TextRenderer.MeasureText(item.Value, font, _largeIconTextWidth, WrapMode.Words);
+                                var textMeasure = TextRenderer.MeasureText(item.Value, font, _largeIconTextWidth, TextRenderers.WrapMode.Words);
 
                                 if (h + (_horizontalIconPad * 2) + _largeIconTextWidth > Width - (_margin * 2))
                                 {
@@ -291,7 +296,7 @@ namespace Plex.Engine.GUI
                             int col1 = 0;
                             foreach (var item in VisibleItems)
                             {
-                                var textMeasure = TextRenderer.MeasureText(item.Value, font, _largeIconTextWidth, WrapMode.Words);
+                                var textMeasure = TextRenderer.MeasureText(item.Value, font, _largeIconTextWidth, TextRenderers.WrapMode.Words);
 
                                 if (v + (_verticalIconPad) + _largeIconSize + 5 + (int)textMeasure.Y > Height - (_margin * 2))
                                 {
@@ -330,29 +335,43 @@ namespace Plex.Engine.GUI
                     foreach (var item in VisibleItems)
                     {
                         var image = GetImage(item.ImageKey);
-                        int maxwidth = gfx.Width - (_margin * 2);
+                        int maxwidth = Width - (_margin * 2);
                         if (image != null)
+<<<<<<< HEAD
                             maxwidth -= (int)((_listIconSize + _horizontalIconPad) * Manager.GUIScale);
                         var textMeasure = TextRenderer.MeasureText(item.Value, font, MaxWidth, WrapMode.None);
+=======
+                            maxwidth -= (_listIconSize + _horizontalIconPad);
+                        var textMeasure = TextRenderer.MeasureText(item.Value, font, MaxWidth, TextRenderers.WrapMode.None);
+>>>>>>> parent of 5b649c3... UI uses virtual 4k coordinate space now. It mostly works, but, there are a lot of fucking bugs.
 
                         int height = (image == null) ? (int)textMeasure.Y : Math.Max((int)textMeasure.Y, (int)(_listIconSize * Manager.GUIScale));
 
                         if (item == SelectedItem)
                         {
+<<<<<<< HEAD
                             gfx.DrawRectangle(x, y, gfx.Width - (int)((_margin*2)*Manager.GUIScale), height, Theme.GetAccentColor());
                         }
                         else if(_items.IndexOf(item) == _hottrackItem)
                         {
                             gfx.DrawRectangle(x, y, gfx.Width - (int)((_margin * 2) * Manager.GUIScale), height, Theme.GetAccentColor() * 0.5F);
+=======
+                            gfx.DrawRectangle(x, y, Width - (_margin*2), height, Theme.GetAccentColor());
+>>>>>>> parent of 5b649c3... UI uses virtual 4k coordinate space now. It mostly works, but, there are a lot of fucking bugs.
                         }
                         if (image == null)
                         {
-                            gfx.DrawString(item.Value, x, y + ((height - (int)textMeasure.Y)/2), Theme.GetFontColor(Themes.TextFontStyle.System), font, TextAlignment.Left, gfx.Width - (_margin * 2), WrapMode.None);
+                            gfx.DrawString(item.Value, x, y + ((height - (int)textMeasure.Y)/2), Theme.GetFontColor(Themes.TextFontStyle.System), font, TextAlignment.Left, Width - (_margin * 2), TextRenderers.WrapMode.None);
                         }
                         else
                         {
+<<<<<<< HEAD
                             gfx.DrawRectangle(x, y + ((height - (int)(_listIconSize*Manager.GUIScale)) / 2), (int)(_listIconSize * Manager.GUIScale), (int)(_listIconSize * Manager.GUIScale), image);
                             gfx.DrawString(item.Value, x + (int)((_listIconSize + _horizontalIconPad)*Manager.GUIScale), y + ((height - (int)textMeasure.Y) / 2), Theme.GetFontColor(Themes.TextFontStyle.System), font, TextAlignment.Left, maxwidth, WrapMode.None);
+=======
+                            gfx.DrawRectangle(x, y + ((height - _listIconSize) / 2), _listIconSize, _listIconSize, image);
+                            gfx.DrawString(item.Value, x + _listIconSize + _horizontalIconPad, y + ((height - (int)textMeasure.Y) / 2), Theme.GetFontColor(Themes.TextFontStyle.System), font, TextAlignment.Left, maxwidth, TextRenderers.WrapMode.None);
+>>>>>>> parent of 5b649c3... UI uses virtual 4k coordinate space now. It mostly works, but, there are a lot of fucking bugs.
                         }
                         y += height;
                     }
@@ -364,7 +383,11 @@ namespace Plex.Engine.GUI
                             int ln = 0;
                             foreach (var item in VisibleItems)
                             {
+<<<<<<< HEAD
                                 var textMeasure = TextRenderer.MeasureText(item.Value, font, _largeIconTextWidth, WrapMode.Words)*Manager.GUIScale;
+=======
+                                var textMeasure = TextRenderer.MeasureText(item.Value, font, _largeIconTextWidth, TextRenderers.WrapMode.Words);
+>>>>>>> parent of 5b649c3... UI uses virtual 4k coordinate space now. It mostly works, but, there are a lot of fucking bugs.
                                 var image = GetImage(item.ImageKey);
                                 int width = Math.Max((int)textMeasure.X, (int)(_largeIconSize*Manager.GUIScale));
 
@@ -389,7 +412,11 @@ namespace Plex.Engine.GUI
                                     gfx.DrawRectangle(x + (int)((_horizontalIconPad / 2) * Manager.GUIScale), y + (int)((_verticalIconPad + _largeIconSize + 5) * Manager.GUIScale), (int)((_largeIconTextWidth + _horizontalIconPad) * Manager.GUIScale), (int)textMeasure.Y, Theme.GetAccentColor() * 0.5F);
                                 }
 
+<<<<<<< HEAD
                                 gfx.DrawString(item.Value, x + (int)(_horizontalIconPad * Manager.GUIScale), y + (int)((_verticalIconPad + _largeIconSize + 5)*Manager.GUIScale), Theme.GetFontColor(Themes.TextFontStyle.System), font, TextAlignment.Center, _largeIconTextWidth, WrapMode.Words);
+=======
+                                gfx.DrawString(item.Value, x + _horizontalIconPad, y + _verticalIconPad + _largeIconSize + 5, Theme.GetFontColor(Themes.TextFontStyle.System), font, TextAlignment.Center, _largeIconTextWidth, TextRenderers.WrapMode.Words);
+>>>>>>> parent of 5b649c3... UI uses virtual 4k coordinate space now. It mostly works, but, there are a lot of fucking bugs.
 
                                 x += (int)(((_horizontalIconPad * 2) + _largeIconTextWidth)*Manager.GUIScale);
                                 ln = Math.Max(ln, (int)((_verticalIconPad + (int)textMeasure.Y + 5 + _largeIconSize)*Manager.GUIScale));
@@ -399,7 +426,7 @@ namespace Plex.Engine.GUI
                             int col = 0;
                             foreach(var item in VisibleItems)
                             {
-                                var textMeasure = TextRenderer.MeasureText(item.Value, font, _largeIconTextWidth, WrapMode.Words);
+                                var textMeasure = TextRenderer.MeasureText(item.Value, font, _largeIconTextWidth, TextRenderers.WrapMode.Words);
                                 var image = GetImage(item.ImageKey);
 
                                 if (y + _verticalIconPad + (int)textMeasure.Y + 5 + _largeIconSize > Height - (_margin * 2))
@@ -419,7 +446,7 @@ namespace Plex.Engine.GUI
                                     gfx.DrawRectangle(x + (_horizontalIconPad / 2), y + (_verticalIconPad + _largeIconSize + 5), _largeIconTextWidth + _horizontalIconPad, (int)textMeasure.Y, Theme.GetAccentColor());
                                 }
 
-                                gfx.DrawString(item.Value, x + _horizontalIconPad, y + _verticalIconPad + _largeIconSize + 5, Theme.GetFontColor(Themes.TextFontStyle.System), font, TextAlignment.Center, _largeIconTextWidth, WrapMode.Words);
+                                gfx.DrawString(item.Value, x + _horizontalIconPad, y + _verticalIconPad + _largeIconSize + 5, Theme.GetFontColor(Themes.TextFontStyle.System), font, TextAlignment.Center, _largeIconTextWidth, TextRenderers.WrapMode.Words);
 
                                 y += _verticalIconPad + (int)textMeasure.Y + 5 + _largeIconSize;
                                 col = Math.Max(col, (_horizontalIconPad * 2) + _largeIconTextWidth);

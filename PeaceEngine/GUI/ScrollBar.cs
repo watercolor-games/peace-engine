@@ -13,9 +13,9 @@ namespace Plex.Engine.GUI
         private double _visibleRide = 0;
         private int _animState = 0;
 
-        private float _scrollHeight = -1;
-        private float _scrollOffset = 0;
-        private float _preferredScrollHeight = 1;
+        private int _scrollHeight = -1;
+        private int _scrollOffset = 0;
+        private int _preferredScrollHeight = 1;
 
         private Hitbox _scrollNub = new Hitbox();
         private Hitbox _upArrow = new Hitbox();
@@ -28,7 +28,7 @@ namespace Plex.Engine.GUI
             AddChild(_downArrow);
         }
 
-        public float PreferredScrollHeight
+        public int PreferredScrollHeight
         {
             get
             {
@@ -45,7 +45,7 @@ namespace Plex.Engine.GUI
             }
         }
 
-        public float ScrollOffset
+        public int ScrollOffset
         {
             get
             {
@@ -114,9 +114,9 @@ namespace Plex.Engine.GUI
             float offsetPercentage = (float)_scrollOffset / (float)_scrollHeight;
 
             //This is where the scroll display area starts (Y axis)
-            float startY = _upArrow.Height;
+            int startY = _upArrow.Height;
             //And this is the available height.
-            float availableHeight = Height - (_upArrow.Height + _downArrow.Height);
+            int availableHeight = Height - (_upArrow.Height + _downArrow.Height);
 
             //Get the real height of the viewport area for rendering the display.
             int realHeight = (int)MathHelper.Lerp(0, availableHeight, viewportSpace);

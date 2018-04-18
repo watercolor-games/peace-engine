@@ -158,7 +158,7 @@ namespace Plex.Engine.Themes
         /// <param name="windowWidth">The window's width</param>
         /// <param name="windowHeight">The window's height</param>
         /// <returns>The coordinates and size of the title button, represented by a <see cref="Rectangle"/>.</returns>
-        public abstract Rectangle GetTitleButtonRectangle(TitleButton button, float windowWidth, float windowHeight);
+        public abstract Rectangle GetTitleButtonRectangle(TitleButton button, int windowWidth, int windowHeight);
         /// <summary>
         /// Render a themed check box.
         /// </summary>

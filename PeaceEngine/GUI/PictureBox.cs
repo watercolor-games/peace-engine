@@ -133,7 +133,7 @@ namespace Plex.Engine.GUI
         /// <inheritdoc/>
         protected override void OnPaint(GameTime time, GraphicsContext gfx)
         {
-            gfx.DrawRectangle(0, 0, gfx.Width, gfx.Height, _texture, _tint, _layout, false, _premultiplied);
+            gfx.DrawRectangle(0, 0, Width, Height, _texture, _tint, _layout, false, _premultiplied);
         }
 
         /// <inheritdoc/>

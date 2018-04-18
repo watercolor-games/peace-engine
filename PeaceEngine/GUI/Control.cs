@@ -18,17 +18,17 @@ namespace Plex.Engine.GUI
     /// </summary>
     public class Control : IDisposable
     {
-        private float _x = 0;
-        private float _y = 0;
-        private float _width = 1;
-        private float _height = 1;
+        private int _x = 0;
+        private int _y = 0;
+        private int _width = 1;
+        private int _height = 1;
         private List<Control> _children = null;
         private bool _invalidated = true;
         internal RenderTarget2D _userfacingtarget = null;
         private bool _resized = false;
         private Control _parent = null;
-        private float _mousex = -1;
-        private float _mousey = -1;
+        private int _mousex = -1;
+        private int _mousey = -1;
         private ButtonState _left;
         private ButtonState _middle;
         private ButtonState _right;
@@ -66,10 +66,10 @@ namespace Plex.Engine.GUI
         private bool _doDoubleClick = false;
         private double _doubleClickCooldown = 0;
 
-        private float _minWidth = 1;
-        private float _minHeight = 1;
-        private float _maxWidth = 0;
-        private float _maxHeight = 0;
+        private int _minWidth = 1;
+        private int _minHeight = 1;
+        private int _maxWidth = 0;
+        private int _maxHeight = 0;
 
         /// <summary>
         /// Retrieves whether this control is focused.
@@ -215,7 +215,7 @@ namespace Plex.Engine.GUI
         /// <summary>
         /// Gets or sets the minimum width of the control.
         /// </summary>
-        public float MinWidth
+        public int MinWidth
         {
             get
             {
@@ -234,7 +234,7 @@ namespace Plex.Engine.GUI
         /// <summary>
         /// Gets or sets the minimum height of the control.
         /// </summary>
-        public float MinHeight
+        public int MinHeight
         {
             get
             {
@@ -253,7 +253,7 @@ namespace Plex.Engine.GUI
         /// <summary>
         /// Gets or sets the maximum width of the control.
         /// </summary>
-        public float MaxWidth
+        public int MaxWidth
         {
             get
             {
@@ -272,7 +272,7 @@ namespace Plex.Engine.GUI
         /// <summary>
         /// Gets or sets the maximum height of the control.
         /// </summary>
-        public float MaxHeight
+        public int MaxHeight
         {
             get
             {
@@ -437,7 +437,7 @@ namespace Plex.Engine.GUI
         /// <summary>
         /// Retrieves the mouse X coordinate relative to the control's X coordinate.
         /// </summary>
-        public float MouseX
+        public int MouseX
         {
             get
             {
@@ -448,7 +448,7 @@ namespace Plex.Engine.GUI
         /// <summary>
         /// Retrieves the mouse's Y coordinate relative to the control's Y coordinate.
         /// </summary>
-        public float MouseY
+        public int MouseY
         {
             get
             {
@@ -470,7 +470,7 @@ namespace Plex.Engine.GUI
         /// <summary>
         /// Gets or sets the width of the control.
         /// </summary>
-        public float Width
+        public int Width
         {
             get
             {
@@ -492,7 +492,7 @@ namespace Plex.Engine.GUI
         /// <summary>
         /// Gets or sets the height of the control.
         /// </summary>
-        public float Height
+        public int Height
         {
             get
             {
@@ -514,7 +514,7 @@ namespace Plex.Engine.GUI
         /// <summary>
         /// Gets or sets the X coordinate of the control.
         /// </summary>
-        public float X
+        public int X
         {
             get
             {
@@ -534,7 +534,7 @@ namespace Plex.Engine.GUI
         /// <summary>
         /// Gets or sets the Y coordinate of the control.
         /// </summary>
-        public float Y
+        public int Y
         {
             get
             {
@@ -641,7 +641,7 @@ namespace Plex.Engine.GUI
             }
 
             //Grab the X and Y coordinates of the mouse, relative to this control.
-            float x, y = 0;
+            int x, y = 0;
             if(_parent == null)
             {
                 x = state.X - X;
@@ -937,7 +937,7 @@ namespace Plex.Engine.GUI
         /// <param name="gfx">The graphics context used to render to the back buffer.</param>
         protected virtual void OnPaint(GameTime time, GraphicsContext gfx)
         {
-            Theme.DrawControlBG(gfx, 0, 0, gfx.Width, gfx.Height);
+            Theme.DrawControlBG(gfx, 0, 0, Width, Height);
         }
 
         private bool _needsRerender = true;
@@ -956,7 +956,7 @@ namespace Plex.Engine.GUI
             Parent?.Invalidate();
         }
 
-        public Vector2 ToScreen(float x, float y)
+        public Vector2 ToScreen(int x, int y)
         {
             var parent = this;
             while (parent != null && parent._userfacingtarget == null)
@@ -973,36 +973,23 @@ namespace Plex.Engine.GUI
             get
             {
                 var screenPos = ToScreen(0, 0);
-                return new Rectangle((int)screenPos.X, (int)screenPos.Y, (int)Width, (int)Height);
+                return new Rectangle((int)screenPos.X, (int)screenPos.Y, Width, Height);
             }
         }
 
         private Rectangle GetScissorRectangle()
         {
-            Rectangle bounds = RenderBounds;
+            Rectangle bounds = Bounds;
             var parent = this;
             while(parent != null)
             {
-                bounds = Rectangle.Intersect(bounds, parent.RenderBounds);
+                bounds = Rectangle.Intersect(bounds, parent.Bounds);
                 if (parent._userfacingtarget != null)
                     break;
                 parent = parent.Parent;
             }
             return bounds;
         }
-
-        public Rectangle RenderBounds
-        {
-            get
-            {
-                var mappedLoc = Manager.VirtualToScreen(ToScreen(0, 0));
-                var mappedSize = new Vector2(Width, Height) * Manager.GUIScale;
-
-                return new Rectangle((int)mappedLoc.X, (int)mappedLoc.Y, (int)mappedSize.X, (int)mappedSize.Y);
-            }
-        }
-
-        public TextRenderer TextRenderer => Manager.TextRenderer;
 
         /// <summary>
         /// Fire a render event.
@@ -1015,22 +1002,19 @@ namespace Plex.Engine.GUI
                 return;
             if (Opacity <= 0)
                 return;
-            if (RenderBounds.Width < 1 || RenderBounds.Height < 1)
-                return;
             //If we're disabled, set the Grayout property.
             gfx.Grayout = !Enabled;
 
             if (Opacity < 1 && !Manager.IgnoreControlOpacity && _userfacingtarget == null)
-                _userfacingtarget = new RenderTarget2D(gfx.Device, RenderBounds.Width, RenderBounds.Height);
+                _userfacingtarget = new RenderTarget2D(gfx.Device, Width, Height);
 
             var scissor = GetScissorRectangle();
-            
             gfx.X = scissor.X;
             gfx.Y = scissor.Y;
             gfx.Width = scissor.Width;
             gfx.Height = scissor.Height;
 
-            var screenPos = Manager.VirtualToScreen(ToScreen(0, 0));
+            var screenPos = ToScreen(0, 0);
             gfx.RenderOffsetX = -(gfx.X - (int)screenPos.X);
             gfx.RenderOffsetY = -(gfx.Y - (int)screenPos.Y);
 
@@ -1049,7 +1033,7 @@ namespace Plex.Engine.GUI
                 if (child._userfacingtarget != null)
                 {
                     gfx.BeginDraw();
-                    gfx.Batch.Draw(child._userfacingtarget, Manager.VirtualToScreen(ToScreen(child.X, child.Y)), Color.White * child.Opacity);
+                    gfx.Batch.Draw(child._userfacingtarget, ToScreen(child.X, child.Y), Color.White * child.Opacity);
                     gfx.EndDraw();
                 }
             }

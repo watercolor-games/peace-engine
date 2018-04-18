@@ -13,9 +13,9 @@ namespace Plex.Engine.GUI
     /// </summary>
     public class ScrollView : Control
     {
-        private float _scrollOffset = 0;
+        private int _scrollOffset = 0;
         private Control _host = null;
-        private float _scrollHeight = 0;
+        private int _scrollHeight = 0;
 
         private ScrollBar _scrollBar = null;
 
@@ -53,7 +53,7 @@ namespace Plex.Engine.GUI
         /// <inheritdoc/>
         protected override void OnMouseScroll(int delta)
         {
-            float offset = MathHelper.Clamp(_scrollOffset - delta, 0, _scrollHeight - Height);
+            int offset = MathHelper.Clamp(_scrollOffset - delta, 0, _scrollHeight - Height);
             if(offset != _scrollOffset)
             {
                 _scrollOffset = offset;
@@ -112,7 +112,7 @@ namespace Plex.Engine.GUI
         /// <inheritdoc/>
         protected override void OnPaint(GameTime time, GraphicsContext gfx)
         {
-            Theme.DrawControlDarkBG(gfx, 0, 0, gfx.Width, gfx.Height);
+            Theme.DrawControlDarkBG(gfx, 0, 0, Width, Height);
         }
     }
 }

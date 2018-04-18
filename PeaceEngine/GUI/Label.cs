@@ -148,8 +148,8 @@ namespace Plex.Engine.GUI
             return Theme.GetFontColor(_style);
         }
 
-        private float _lastmaxwidth = 0;
-        private float _lastmaxheight = 0;
+        private int _lastmaxwidth = 0;
+        private int _lastmaxheight = 0;
 
         /// <inheritdoc/>
         protected override void OnUpdate(GameTime time)
@@ -165,9 +165,9 @@ namespace Plex.Engine.GUI
                 if (_remeasure)
                 {
                     var font = getFont();
-                    var measure = TextRenderer.MeasureText(_text, font, (MaxWidth == 0) ? int.MaxValue : MaxWidth, WrapMode.Words);
-                    Width = measure.X;
-                    Height = measure.Y;
+                    var measure = TextRenderer.MeasureText(_text, font, (MaxWidth == 0) ? int.MaxValue : MaxWidth, TextRenderers.WrapMode.Words);
+                    Width = (int)measure.X;
+                    Height = (int)measure.Y;
                     _remeasure = false;
                 }
             }
@@ -180,7 +180,7 @@ namespace Plex.Engine.GUI
         {
             var font = getFont();
             var color = getColor();
-            gfx.DrawString(_text, 0, 0, color, font, _alignment, Width, WrapMode.Words);
+            gfx.DrawString(_text, 0, 0, color, font, _alignment, Width, TextRenderers.WrapMode.Words);
         }
     }
 }

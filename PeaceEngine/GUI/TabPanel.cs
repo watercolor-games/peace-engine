@@ -110,9 +110,9 @@ namespace Plex.Engine.GUI
                     base.AddChild(_scroller);
                 }
                 _scroller.Clear();
-                float buttonBarHeight = 6;
-                float buttonBarY = 3;
-                float buttonBarX = 3;
+                int buttonBarHeight = 6;
+                int buttonBarY = 3;
+                int buttonBarX = 3;
                 foreach(var page in Pages)
                 {
                     if(page.Button.X + page.Button.Width > (Width - 6))

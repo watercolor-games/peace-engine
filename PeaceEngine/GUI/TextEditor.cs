@@ -24,7 +24,7 @@ namespace Plex.Engine.GUI
         private int _currentLine = 0;
         private int _currentChar = 0;
         private SpriteFont _font = null;
-        private float _lastWidth = -1;
+        private int _lastWidth = -1;
         private bool _caretVisible = true;
         private double _caretTime = 0;
         private bool _autoheight = false;
@@ -243,7 +243,7 @@ namespace Plex.Engine.GUI
             int x = 0;
             int y = 0;
             int i = 0;
-            string wrapped = TextRenderer.WrapText(_font, _textRaw, Width-4, WrapMode.Letters);
+            string wrapped = TextRenderer.WrapText(_font, _textRaw, Width-4, TextRenderers.WrapMode.Letters);
             if (_currentIndex > 0)
             {
                 foreach (char c in wrapped)
@@ -308,8 +308,8 @@ namespace Plex.Engine.GUI
         /// </inheritdoc/>
         protected override void OnPaint(GameTime time, GraphicsContext gfx)
         {
-            Theme.DrawControlLightBG(gfx, 0, 0, gfx.Width, gfx.Height);
-            Theme.DrawControlDarkBG(gfx, 1, 1, gfx.Width-2, gfx.Height-2);
+            Theme.DrawControlLightBG(gfx, 0, 0, Width, Height);
+            Theme.DrawControlDarkBG(gfx, 1, 1, Width-2, Height-2);
             int lineHeight = (int)_font.MeasureString("#").Y;
             if(string.IsNullOrEmpty(_textRaw))
             {
@@ -323,7 +323,7 @@ namespace Plex.Engine.GUI
                     string line = _lines[i];
                     if(i == _currentLine && HasFocused)
                     {
-                        gfx.DrawString(line, 2, 2+(lineHeight * i), Theme.GetFontColor(Themes.TextFontStyle.System), _font, TextAlignment.Left, 0, WrapMode.None);
+                        gfx.DrawString(line, 2, 2+(lineHeight * i), Theme.GetFontColor(Themes.TextFontStyle.System), _font, TextAlignment.Left, 0, TextRenderers.WrapMode.None);
                         if (_caretVisible)
                         {
                             string toCaret = (_currentChar == 0) ? "" : line.Substring(0, _currentChar);
@@ -333,7 +333,7 @@ namespace Plex.Engine.GUI
                     }
                     else
                     {
-                        gfx.DrawString(line, 2, 2+(lineHeight * i), Theme.GetFontColor(Themes.TextFontStyle.System)*0.5f, _font, TextAlignment.Left, 0, WrapMode.None);
+                        gfx.DrawString(line, 2, 2+(lineHeight * i), Theme.GetFontColor(Themes.TextFontStyle.System)*0.5f, _font, TextAlignment.Left, 0, TextRenderers.WrapMode.None);
                     }
                 }
             }

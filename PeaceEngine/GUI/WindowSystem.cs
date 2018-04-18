@@ -58,7 +58,7 @@ namespace Plex.Engine.GUI
         /// <summary>
         /// See <see cref="UIManager.ScreenWidth"/>. 
         /// </summary>
-        public float Width
+        public int Width
         {
             get
             {
@@ -69,7 +69,7 @@ namespace Plex.Engine.GUI
         /// <summary>
         /// See <see cref="UIManager.ScreenHeight"/>. 
         /// </summary>
-        public float Height
+        public int Height
         {
             get
             {
@@ -343,7 +343,7 @@ namespace Plex.Engine.GUI
         /// <remarks>
         ///     <para>By default, the <paramref name="x"/> and <paramref name="y"/> values are both set to -1. This causes the window manager to determine the location of the new window on its own, causing the window to be placed in the center of the screen.</para>
         /// </remarks>
-        public virtual void Show(float x = -1, float y = -1)
+        public virtual void Show(int x = -1, int y = -1)
         {
             if (_wid == null)
                 _wid = _winsystem.CreateWindowInfo(this, _preferredStyle, _preferredCanClose);

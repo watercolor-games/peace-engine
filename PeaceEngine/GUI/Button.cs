@@ -18,15 +18,15 @@ namespace Plex.Engine.GUI
         private Texture2D _texture = null;
         private bool _showImage = false;
 
-        private float _textureX = 0;
-        private float _textureY = 0;
-        private float _textureW = 0;
-        private float _textureH = 0;
+        private int _textureX = 0;
+        private int _textureY = 0;
+        private int _textureW = 0;
+        private int _textureH = 0;
 
-        private float _lX = 0;
-        private float _lY = 0;
-        private float _lW = 0;
-        private float _lH = 0;
+        private int _lX = 0;
+        private int _lY = 0;
+        private int _lW = 0;
+        private int _lH = 0;
 
         private bool _requireLayout = true;
 
@@ -37,8 +37,7 @@ namespace Plex.Engine.GUI
         {
             get
             {
-                var tLoc = Manager.VirtualToScreen(new Vector2(_textureX, _textureY));
-                return new Rectangle((int)tLoc.X, (int)tLoc.Y, (int)(_textureW * Manager.GUIScale), (int)(_textureH * Manager.GUIScale));
+                return new Rectangle(_textureX, _textureY, _textureW, _textureH);
             }
         }
 
@@ -49,8 +48,7 @@ namespace Plex.Engine.GUI
         {
             get
             {
-                var lLoc = Manager.VirtualToScreen(new Vector2(_lX, _lY));
-                return new Rectangle((int)lLoc.X, (int)lLoc.Y, (int)(_lW), (int)(_lH));
+                return new Rectangle(_lX, _lY, _lW, _lH);
             }
         }
 
@@ -126,7 +124,7 @@ namespace Plex.Engine.GUI
                     _textureW = 0;
                     _textureH = 0;
                 }
-                float _minimumHorizontal = 0;
+                int _minimumHorizontal = 0;
                 TextAlignment _alignment = TextAlignment.Center;
                 if (_showImage)
                 {
@@ -135,17 +133,17 @@ namespace Plex.Engine.GUI
                         _minimumHorizontal += 3;
                     _alignment = TextAlignment.Left;
                 }
-                float realMax = MaxWidth == 0 ? int.MaxValue : MaxWidth;
+                int realMax = MaxWidth == 0 ? int.MaxValue : MaxWidth;
 
                 var font = Theme.GetFont(Themes.TextFontStyle.Highlight);
-                var measure = TextRenderer.MeasureText(_text, font, realMax - _minimumHorizontal, WrapMode.Words);
+                var measure = TextRenderer.MeasureText(_text, font, realMax - _minimumHorizontal, TextRenderers.WrapMode.Words);
 
                 _lW = (int)measure.X;
                 _lH = (int)measure.Y;
 
-                float realHeight = 6 + (Math.Max(_textureH, _lH));
+                int realHeight = 6 + (Math.Max(_textureH, _lH));
                 Height = realHeight;
-                float realWidth = 0;
+                int realWidth = 0;
                 if (!string.IsNullOrEmpty(_text))
                     realWidth = (int)measure.X;
                 if (_showImage)
@@ -184,7 +182,7 @@ namespace Plex.Engine.GUI
                 state = Themes.UIButtonState.Hover;
             if (LeftMouseState == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
                 state = Themes.UIButtonState.Pressed;
-            Theme.DrawButton(gfx, _text, _texture, state, _showImage, ImageRect, TextRect);
+            Theme.DrawButton(gfx, _text, _texture, state, _showImage, new Rectangle(_textureX, _textureY, _textureW, _textureH), new Rectangle(_lX, _lY, _lW, _lH));
 
         }
     }
