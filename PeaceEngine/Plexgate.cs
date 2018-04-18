@@ -450,7 +450,7 @@ namespace Plex.Engine
 
         private bool _do4kEmulation = false;
 
-        private const int _rWidth = 3840;
+        private int _rWidth => (int)(((float)GraphicsDevice.PresentationParameters.BackBufferWidth / GraphicsDevice.PresentationParameters.BackBufferHeight) * _rHeight);
         private const int _rHeight = 2160;
 
         private IEngineComponent[] _drawables = null;

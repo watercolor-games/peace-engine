@@ -103,13 +103,8 @@ namespace Plex.Engine.GUI
                 TextChanged?.Invoke(this, EventArgs.Empty);
             }
 
-<<<<<<< HEAD
-            var hashMeasure = TextRenderer.MeasureText("#", _drawFont, int.MaxValue, WrapMode.None);
-            Height = Math.Max((int)hashMeasure.Y + 8, Height);
-=======
             var hashMeasure = TextRenderer.MeasureText("#", _drawFont, int.MaxValue, TextRenderers.WrapMode.None);
             Height = Math.Max((int)hashMeasure.Y + 4, Height);
->>>>>>> parent of 5b649c3... UI uses virtual 4k coordinate space now. It mostly works, but, there are a lot of fucking bugs.
 
             if (string.IsNullOrEmpty(displayText))
             {
