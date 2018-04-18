@@ -118,8 +118,8 @@ namespace Plex.Engine.GUI
             {
                 if (_showImage)
                 {
-                    _textureW = 16;
-                    _textureH = 16;
+                    _textureW = 32;
+                    _textureH = 32;
                 }
                 else
                 {

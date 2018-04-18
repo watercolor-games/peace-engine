@@ -18,14 +18,14 @@ namespace Plex.Engine.GUI
         private int _selectedIndex = -1;
         private string _filter = null;
 
-        private int _margin = 10;
-        private int _horizontalIconPad = 5;
-        private int _verticalIconPad = 7;
-        private int _smallIconSize = 24;
-        private int _largeIconSize = 48;
-        private int _listIconSize = 20;
-        private int _largeIconTextWidth = 150;
-
+        private int _margin = 20;
+        private int _horizontalIconPad = 10;
+        private int _verticalIconPad = 14;
+        private int _smallIconSize = 48;
+        private int _largeIconSize = 96;
+        private int _listIconSize = 40;
+        private int _largeIconTextWidth = 300;
+        private int _hottrackItem = -1;
 
         public event EventHandler SelectedIndexChanged;
         public event Action<ListViewItem> ItemClicked;
@@ -66,6 +66,14 @@ namespace Plex.Engine.GUI
                         SelectedIndex = -1;
                     }
                 }
+            };
+            MouseMove += (s, pos) =>
+            {
+                var hotItem = GetItemAtPoint(pos.X, pos.Y);
+                if (hotItem == null)
+                    _hottrackItem = -1;
+                else
+                    _hottrackItem = _items.IndexOf(hotItem);
             };
         }
 
@@ -246,8 +254,8 @@ namespace Plex.Engine.GUI
                         float maxwidth = Width - (_margin * 2);
                         if (image != null)
                             maxwidth -= (_listIconSize + _horizontalIconPad);
-                        var textMeasure = TextRenderer.MeasureText(item.Value, font, MaxWidth, WrapMode.None);
-                        int height = Math.Max((int)textMeasure.Y, _listIconSize);
+                        var textMeasure = TextRenderer.MeasureText(item.Value, font, maxwidth, WrapMode.None);
+                        int height = (image == null) ? (int)textMeasure.Y : Math.Max((int)textMeasure.Y, _listIconSize);
                         if (y >= v && y <= v + height)
                             return item;
                         v += height;
@@ -311,8 +319,8 @@ namespace Plex.Engine.GUI
 
         protected override void OnPaint(GameTime time, GraphicsContext gfx)
         {
-            int x = _margin;
-            int y = _margin;
+            int x = (int)(_margin * Manager.GUIScale);
+            int y = (int)(_margin*Manager.GUIScale);
 
             var font = Theme.GetFont(Themes.TextFontStyle.System);
 
@@ -324,14 +332,18 @@ namespace Plex.Engine.GUI
                         var image = GetImage(item.ImageKey);
                         int maxwidth = gfx.Width - (_margin * 2);
                         if (image != null)
-                            maxwidth -= (_listIconSize + _horizontalIconPad);
+                            maxwidth -= (int)((_listIconSize + _horizontalIconPad) * Manager.GUIScale);
                         var textMeasure = TextRenderer.MeasureText(item.Value, font, MaxWidth, WrapMode.None);
 
-                        int height = (image == null) ? (int)textMeasure.Y : Math.Max((int)textMeasure.Y, _listIconSize);
+                        int height = (image == null) ? (int)textMeasure.Y : Math.Max((int)textMeasure.Y, (int)(_listIconSize * Manager.GUIScale));
 
                         if (item == SelectedItem)
                         {
-                            gfx.DrawRectangle(x, y, gfx.Width - (_margin*2), height, Theme.GetAccentColor());
+                            gfx.DrawRectangle(x, y, gfx.Width - (int)((_margin*2)*Manager.GUIScale), height, Theme.GetAccentColor());
+                        }
+                        else if(_items.IndexOf(item) == _hottrackItem)
+                        {
+                            gfx.DrawRectangle(x, y, gfx.Width - (int)((_margin * 2) * Manager.GUIScale), height, Theme.GetAccentColor() * 0.5F);
                         }
                         if (image == null)
                         {
@@ -339,8 +351,8 @@ namespace Plex.Engine.GUI
                         }
                         else
                         {
-                            gfx.DrawRectangle(x, y + ((height - _listIconSize) / 2), _listIconSize, _listIconSize, image);
-                            gfx.DrawString(item.Value, x + _listIconSize + _horizontalIconPad, y + ((height - (int)textMeasure.Y) / 2), Theme.GetFontColor(Themes.TextFontStyle.System), font, TextAlignment.Left, maxwidth, WrapMode.None);
+                            gfx.DrawRectangle(x, y + ((height - (int)(_listIconSize*Manager.GUIScale)) / 2), (int)(_listIconSize * Manager.GUIScale), (int)(_listIconSize * Manager.GUIScale), image);
+                            gfx.DrawString(item.Value, x + (int)((_listIconSize + _horizontalIconPad)*Manager.GUIScale), y + ((height - (int)textMeasure.Y) / 2), Theme.GetFontColor(Themes.TextFontStyle.System), font, TextAlignment.Left, maxwidth, WrapMode.None);
                         }
                         y += height;
                     }
@@ -352,31 +364,35 @@ namespace Plex.Engine.GUI
                             int ln = 0;
                             foreach (var item in VisibleItems)
                             {
-                                var textMeasure = TextRenderer.MeasureText(item.Value, font, _largeIconTextWidth, WrapMode.Words);
+                                var textMeasure = TextRenderer.MeasureText(item.Value, font, _largeIconTextWidth, WrapMode.Words)*Manager.GUIScale;
                                 var image = GetImage(item.ImageKey);
-                                int width = Math.Max((int)textMeasure.X, _largeIconSize);
+                                int width = Math.Max((int)textMeasure.X, (int)(_largeIconSize*Manager.GUIScale));
 
-                                if (x + (_horizontalIconPad * 2) + _largeIconTextWidth > Width - (_margin * 2))
+                                if (x + ((_horizontalIconPad * 2) + _largeIconTextWidth) * Manager.GUIScale > gfx.Width - (_margin * 2)*Manager.GUIScale)
                                 {
-                                    x = _margin;
+                                    x = (int)(_margin * Manager.GUIScale);
                                     y += ln;
                                     ln = 0;
                                 }
 
                                 if (image != null)
                                 {
-                                    gfx.DrawRectangle(x + _horizontalIconPad + ((_largeIconTextWidth - _largeIconSize) / 2), y + _verticalIconPad, _largeIconSize, _largeIconSize, image, (item == SelectedItem) ? Theme.GetAccentColor() : Color.White);
+                                    gfx.DrawRectangle(x + (int)(_horizontalIconPad + ((_largeIconTextWidth - _largeIconSize) / 2)*Manager.GUIScale), y + (int)(_verticalIconPad * Manager.GUIScale), (int)(_largeIconSize*Manager.GUIScale), (int)(_largeIconSize * Manager.GUIScale), image, (item == SelectedItem) ? Theme.GetAccentColor() : Color.White);
                                 }
 
                                 if (item == SelectedItem)
                                 {
-                                    gfx.DrawRectangle(x + (_horizontalIconPad / 2), y + (_verticalIconPad + _largeIconSize + 5), _largeIconTextWidth + _horizontalIconPad, (int)textMeasure.Y, Theme.GetAccentColor());
+                                    gfx.DrawRectangle(x + (int)((_horizontalIconPad / 2)*Manager.GUIScale), y + (int)((_verticalIconPad + _largeIconSize + 5)*Manager.GUIScale), (int)((_largeIconTextWidth + _horizontalIconPad)*Manager.GUIScale), (int)textMeasure.Y, Theme.GetAccentColor());
+                                }
+                                else if (_items.IndexOf(item) == _hottrackItem)
+                                {
+                                    gfx.DrawRectangle(x + (int)((_horizontalIconPad / 2) * Manager.GUIScale), y + (int)((_verticalIconPad + _largeIconSize + 5) * Manager.GUIScale), (int)((_largeIconTextWidth + _horizontalIconPad) * Manager.GUIScale), (int)textMeasure.Y, Theme.GetAccentColor() * 0.5F);
                                 }
 
-                                gfx.DrawString(item.Value, x + _horizontalIconPad, y + _verticalIconPad + _largeIconSize + 5, Theme.GetFontColor(Themes.TextFontStyle.System), font, TextAlignment.Center, _largeIconTextWidth, WrapMode.Words);
+                                gfx.DrawString(item.Value, x + (int)(_horizontalIconPad * Manager.GUIScale), y + (int)((_verticalIconPad + _largeIconSize + 5)*Manager.GUIScale), Theme.GetFontColor(Themes.TextFontStyle.System), font, TextAlignment.Center, _largeIconTextWidth, WrapMode.Words);
 
-                                x += (_horizontalIconPad * 2) + _largeIconTextWidth;
-                                ln = Math.Max(ln, _verticalIconPad + (int)textMeasure.Y + 5 + _largeIconSize);
+                                x += (int)(((_horizontalIconPad * 2) + _largeIconTextWidth)*Manager.GUIScale);
+                                ln = Math.Max(ln, (int)((_verticalIconPad + (int)textMeasure.Y + 5 + _largeIconSize)*Manager.GUIScale));
                             }
                             break;
                         case IconFlowDirection.TopDown:

@@ -391,7 +391,7 @@ namespace Plex.Engine.GraphicsSubsystem
             _spritebatch.End();
         }
 
-        public void DrawCircle(Vector2 center, int radius, Color color)
+        public void DrawCircle(Vector2 center, float radius, Color color)
         {
             DrawCircle((int)center.X, (int)center.Y, radius, color);
         }
@@ -403,7 +403,7 @@ namespace Plex.Engine.GraphicsSubsystem
         /// <param name="y">The Y coordinate of the circle</param>
         /// <param name="radius">The radius of the circle</param>
         /// <param name="color">The color of the circle</param>
-        public void DrawCircle(int x, int y, int radius, Color color)
+        public void DrawCircle(int x, int y, float radius, Color color)
         {
             x += _offsetX;
             y += _offsetY;
@@ -413,7 +413,7 @@ namespace Plex.Engine.GraphicsSubsystem
             if (color.A == 0)
                 return; //no sense rendering if you CAN'T SEE IT
             float step = (float) Math.PI / (radius * 4);
-            var rect = new Rectangle(x+X, y+Y, radius, 1);
+            var rect = new Rectangle(x+X, y+Y, (int)radius, 1);
             for (float theta = 0; theta < 2 * Math.PI; theta += step)
                 _spritebatch.Draw(white, rect, null, color, theta, Vector2.Zero, SpriteEffects.None, 0);
         }

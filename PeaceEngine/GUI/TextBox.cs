@@ -104,7 +104,7 @@ namespace Plex.Engine.GUI
             }
 
             var hashMeasure = TextRenderer.MeasureText("#", _drawFont, int.MaxValue, WrapMode.None);
-            Height = Math.Max((int)hashMeasure.Y + 4, Height);
+            Height = Math.Max((int)hashMeasure.Y + 8, Height);
 
             if (string.IsNullOrEmpty(displayText))
             {

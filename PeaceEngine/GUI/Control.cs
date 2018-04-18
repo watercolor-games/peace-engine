@@ -363,6 +363,7 @@ namespace Plex.Engine.GUI
             }
         }
 
+        [Dependency]
         private UIManager _manager = null;
 
         /// <summary>
@@ -555,6 +556,7 @@ namespace Plex.Engine.GUI
         /// </summary>
         public Control()
         {
+            Plexgate.GetInstance().Inject(this);
             _children = new List<Control>();
         }
 

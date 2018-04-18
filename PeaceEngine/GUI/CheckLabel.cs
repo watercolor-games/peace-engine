@@ -61,15 +61,15 @@ namespace Plex.Engine.GUI
         protected override void OnUpdate(GameTime time)
         {
             _check.X = 2;
-            _check.Width = 16;
-            _check.Height = 16;
+            _check.Width = 32;
+            _check.Height = 32;
             _label.AutoSize = true;
             _label.Alignment = TextAlignment.Left;
-            _label.X = _check.X + _check.Width + 3;
+            _label.X = _check.X + _check.Width + 6;
             _label.MaxWidth = (MaxWidth - (_label.X));
-            Width = _label.X + _label.Width + 2;
-            Height = Math.Max(_label.Height, _check.Height) + 2;
-            _check.Y = 2;
+            Width = _label.X + _label.Width + 4;
+            Height = Math.Max(_label.Height, _check.Height) + 4;
+            _check.Y = 4;
             _label.Y = (Height - _label.Height) / 2;
         }
 
