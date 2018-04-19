@@ -152,7 +152,7 @@ namespace Plex.Engine.GraphicsSubsystem
                 {
                     alreadyFocused.Invalidate();
                 }
-                ctrl.Invalidate();
+                ctrl?.Invalidate();
 
             }
 
@@ -334,6 +334,7 @@ namespace Plex.Engine.GraphicsSubsystem
         [Dependency]
         private Plexgate _plexgate = null;
 
+        public event Action FocusGained;
 
         /// <summary>
         /// Make the user interface visible.
@@ -407,7 +408,11 @@ namespace Plex.Engine.GraphicsSubsystem
         {
             _crossthreadInvoke(() =>
             {
+                if (IsFocused(ctrl))
+                    return;
                 _container.SetFocus(ctrl);
+                if (ctrl != null)
+                    FocusGained?.Invoke();
             });
         }
 

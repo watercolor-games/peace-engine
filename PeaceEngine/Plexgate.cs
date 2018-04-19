@@ -453,6 +453,22 @@ namespace Plex.Engine
         private int _rWidth => (int)(((float)GraphicsDevice.PresentationParameters.BackBufferWidth / GraphicsDevice.PresentationParameters.BackBufferHeight) * _rHeight);
         private const int _rHeight = 2160;
 
+        public bool EnableScaler
+        {
+            get
+            {
+                return _do4kEmulation;
+            }
+            set
+            {
+                if (_do4kEmulation == value)
+                    return;
+                _do4kEmulation = value;
+                GameRenderTarget?.Dispose();
+                GameRenderTarget = null;
+            }
+        }
+
         private IEngineComponent[] _drawables = null;
         private MouseState LastMouseState;
         /// <summary>
