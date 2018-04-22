@@ -188,7 +188,10 @@ namespace Plex.Engine.GraphicsSubsystem
                 _debugUpdTimer += time.ElapsedGameTime.TotalSeconds;
                 if (_debugUpdTimer >= 1)
                 {
+                    if(_debugCpu != null)
                     _debug = $"{Math.Round(1 / time.ElapsedGameTime.TotalSeconds)} FPS | {GC.GetTotalMemory(false) / 1048576} MiB RAM | {Math.Round(_debugCpu.NextValue())}% CPU | Mouse scroll value: {_lastScrollValue}";
+else
+                        _debug = $"{Math.Round(1 / time.ElapsedGameTime.TotalSeconds)} FPS | {GC.GetTotalMemory(false) / 1048576} MiB RAM | {int.MinValue}% CPU | Mouse scroll value: {_lastScrollValue}";
                     _debugUpdTimer %= 1;
                 }
                 ctx.Batch.DrawString(_thememgr.Theme.GetFont(TextFontStyle.Muted), _debug, Vector2.Zero, Color.White);
@@ -283,8 +286,14 @@ namespace Plex.Engine.GraphicsSubsystem
                     Directory.CreateDirectory(_screenshots);
                 _debugUpdTimer = 0;
                 _debug = "";
-                _debugCpu = new PerformanceCounter("Processor", "% Processor Time", "_Total");
-
+                try
+                {
+                    _debugCpu = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+                }
+                catch
+                {
+                    Logger.Log("Cannot poll CPU usage stats because Windows is a garbage operating system and this specific install has a corrupt registry.");
+                }
             }
 
             public void InvalidateAll()
