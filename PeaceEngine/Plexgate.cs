@@ -155,14 +155,12 @@ namespace Plex.Engine
 
         private void KeyboardListener_KeyPressed(object sender, KeyboardEventArgs e)
         {
-#if DEBUG
             if(e.Key == Keys.F12 && e.Modifiers.HasFlag(KeyboardModifiers.Control))
             {
                 _do4kEmulation = !_do4kEmulation;
                 GameRenderTarget?.Dispose();
                 GameRenderTarget = null;
             }
-#endif
 
             foreach(var layer in _layers.ToArray())
             {
