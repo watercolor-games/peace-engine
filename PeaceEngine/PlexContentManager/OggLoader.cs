@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework.Audio;
 using System.IO;
 using Plex.Objects;
+using System.Diagnostics;
 
 namespace Plex.Engine.PlexContentManager
 {
@@ -16,6 +17,9 @@ namespace Plex.Engine.PlexContentManager
         {
             using (var stream = new NVorbis.VorbisReader(fobj, false))
             {
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                Logger.Log($"Reading Vorbis file...");
                 AudioChannels channels;
                 switch (stream.Channels)
                 {
@@ -28,15 +32,21 @@ namespace Plex.Engine.PlexContentManager
                     default:
                         throw new InvalidDataException($"Unsupported channel count {stream.Channels} (must be mono or stereo).");
                 }
-                var samps = new float[stream.TotalSamples * stream.Channels];
+                var samps = new float[stream.Channels * stream.SampleRate / 5];
                 Logger.Log($"TotalSamples = {stream.TotalSamples}");
-                var data = new byte[samps.Length * 2];
-                stream.ReadSamples(samps, 0, samps.Length);
-                using (var ms = new MemoryStream(data))
-                using (var write = new BinaryWriter(ms))
-                    foreach (var samp in samps)
-                        write.Write((short)(samp * sc16)); // convert to S16 int PCM
-                return new SoundEffect(data, stream.SampleRate, channels);
+                using (var ms = new MemoryStream())
+                {
+                    using (var write = new BinaryWriter(ms))
+                    {
+                        int cnt = 0;
+                        while((cnt = stream.ReadSamples(samps, 0, samps.Length)) != 0)
+                            foreach(var samp in samps)
+                                write.Write((short)(samp * sc16)); // convert to S16 int PCM
+                    }
+                    sw.Stop();
+                    Logger.Log($"Done: {sw.Elapsed}");
+                    return new SoundEffect(ms.ToArray(), stream.SampleRate, channels);
+                }
             }
         }
     }
