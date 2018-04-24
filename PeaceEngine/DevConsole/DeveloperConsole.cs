@@ -346,7 +346,7 @@ namespace Plex.Engine.Debug
     {
         private ExpandoObject _obj = null;
         private StreamWriter _out = null;
-
+        private ExpandoObject _varBag = new ExpandoObject();
 
         public GlobalsType(StreamWriter output, params object[] objects)
         {
@@ -362,6 +362,17 @@ namespace Plex.Engine.Debug
             get
             {
                 return _obj;
+            }
+        }
+
+        /// <summary>
+        /// A place to store variables.
+        /// </summary>
+        public dynamic VarBag
+        {
+            get
+            {
+                return _varBag;
             }
         }
 
