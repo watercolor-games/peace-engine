@@ -546,6 +546,8 @@ namespace Plex.Engine
             return obj;
         }
 
+        public event EventHandler FrameDrawn;
+
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
@@ -593,6 +595,7 @@ namespace Plex.Engine
                             rstate);
             spriteBatch.Draw(GameRenderTarget, new Rectangle(0, 0, _ctx.Width, _ctx.Height), Color.White);
             spriteBatch.End();
+            FrameDrawn?.Invoke(this, EventArgs.Empty);
         }
     }
 

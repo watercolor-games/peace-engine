@@ -301,6 +301,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Compile Include="AdvancedAudioPlayer.cs" />
+    <Compile Include="FrameWatch.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
