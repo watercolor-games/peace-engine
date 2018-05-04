@@ -168,7 +168,13 @@ namespace Plex.Engine
                 }
                 double lastend = labels[cur].End;
                 cur = Next;
-                aread.DecodedTime = TimeSpan.FromSeconds(labels[cur].Start + aread.DecodedTime.TotalSeconds - lastend);
+                var nextTime = TimeSpan.FromSeconds(labels[cur].Start + aread.DecodedTime.TotalSeconds - lastend);
+                if(nextTime < TimeSpan.Zero || nextTime > aread.DecodedTime)
+                {
+                    Stop();
+                    return;
+                }
+                aread.DecodedTime = nextTime;
                 Next = cur + (labels[cur].OneShot ? 0 : 1);
             }
             data = null;

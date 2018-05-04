@@ -17,16 +17,10 @@ namespace Plex.Engine
 
         volatile int waiting = 0;
         bool subscribed = false;
-
+        
         void gameUpdated(object sender, EventArgs e)
         {
-            new Thread(() =>
-            {
-                updated?.Set();
-                while (waiting > 0)
-                    waite?.WaitOne();
-                updated?.Reset();
-            }).Start();
+            updated?.Set();
         }
 
         /// <inheritdoc/>
@@ -38,6 +32,15 @@ namespace Plex.Engine
             if (!subscribed)
                 plexgate.FrameDrawn += gameUpdated;
             subscribed = true;
+            Task.Run(() =>
+            {
+                while (subscribed)
+                {
+                    while (waiting > 0)
+                        waite?.WaitOne();
+                    updated?.Reset();
+                }
+            });
         }
 
         /// <inheritdoc/>

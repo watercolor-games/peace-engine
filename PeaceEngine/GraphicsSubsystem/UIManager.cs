@@ -184,13 +184,19 @@ namespace Plex.Engine.GraphicsSubsystem
 
                 if (ShowPerfCounters == false)
                     return;
+#if !DEBUG
+                ctx.BeginDraw();
+                ctx.Batch.DrawString(_thememgr.Theme.GetFont(TextFontStyle.Muted), $"{Math.Round(1 / time.ElapsedGameTime.TotalSeconds)} FPS", Vector2.Zero, Color.White);
+                ctx.EndDraw();
+                return;
+#else
                 ctx.BeginDraw();
                 _debugUpdTimer += time.ElapsedGameTime.TotalSeconds;
                 if (_debugUpdTimer >= 1)
                 {
-                    if(_debugCpu != null)
-                    _debug = $"{Math.Round(1 / time.ElapsedGameTime.TotalSeconds)} FPS | {GC.GetTotalMemory(false) / 1048576} MiB RAM | {Math.Round(_debugCpu.NextValue())}% CPU | Mouse scroll value: {_lastScrollValue}";
-else
+                    if (_debugCpu != null)
+                        _debug = $"{Math.Round(1 / time.ElapsedGameTime.TotalSeconds)} FPS | {GC.GetTotalMemory(false) / 1048576} MiB RAM | {Math.Round(_debugCpu.NextValue())}% CPU | Mouse scroll value: {_lastScrollValue}";
+                    else
                         _debug = $"{Math.Round(1 / time.ElapsedGameTime.TotalSeconds)} FPS | {GC.GetTotalMemory(false) / 1048576} MiB RAM | {int.MinValue}% CPU | Mouse scroll value: {_lastScrollValue}";
                     _debugUpdTimer %= 1;
                 }
@@ -199,6 +205,7 @@ else
 
 
                 ctx.EndDraw();
+#endif
 
             }
 
