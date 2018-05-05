@@ -28,6 +28,62 @@ namespace Plex.Engine
     public class Plexgate : Game
     {
         private static Plexgate _instance = null;
+        private float _renderScale = 1.0f;
+        private const int _renderScreenHeight = 1080;
+
+        public int BaseRenderHeight
+        {
+            get
+            {
+                return _renderScreenHeight;
+            }
+        }
+
+        public float RenderScale
+        {
+            get
+            {
+                return _renderScale;
+            }
+            set
+            {
+                if (_renderScale == value)
+                    return;
+                _renderScale = value;
+                GameRenderTarget = null;
+            }
+        }
+
+        public float AspectRatio
+        {
+            get
+            {
+                return (float)GraphicsDevice.PresentationParameters.BackBufferWidth / GraphicsDevice.PresentationParameters.BackBufferHeight;
+            }
+        }
+
+        public int BackBufferWidth
+        {
+            get
+            {
+                return GraphicsDevice.PresentationParameters.BackBufferWidth;
+            }
+        }
+
+        public int BackBufferHeight
+        {
+            get
+            {
+                return GraphicsDevice.PresentationParameters.BackBufferHeight;
+            }
+        }
+
+        public Vector2 GetRenderScreenSize()
+        {
+            var scaleHeight = _renderScreenHeight / _renderScale;
+
+            return new Vector2(AspectRatio * scaleHeight, scaleHeight);
+        }
 
         /// <summary>
         /// Determines whether object A depends on object B.
@@ -141,6 +197,7 @@ namespace Plex.Engine
 
             Args = args;
             QuietMode = args.Contains("-q");
+
         }
 
         /// <summary>
@@ -155,13 +212,6 @@ namespace Plex.Engine
 
         private void KeyboardListener_KeyPressed(object sender, KeyboardEventArgs e)
         {
-            if(e.Key == Keys.F12 && e.Modifiers.HasFlag(KeyboardModifiers.Control))
-            {
-                _do4kEmulation = !_do4kEmulation;
-                GameRenderTarget?.Dispose();
-                GameRenderTarget = null;
-            }
-
             foreach(var layer in _layers.ToArray())
             {
                 foreach(var entity in layer.Entities)
@@ -181,7 +231,7 @@ namespace Plex.Engine
             List<string> _resolutions = new List<string>();
             foreach (var mode in modes.OrderByDescending(x => x.Width * x.Height))
             {
-                if (mode.Height < 600 || mode.Height > 1080)
+                if (mode.Height < 600)
                     continue;
                 string resString = $"{mode.Width}x{mode.Height}";
                 if (_resolutions.Contains(resString))
@@ -446,27 +496,6 @@ namespace Plex.Engine
             _actions.Enqueue(act);
         }
 
-        private bool _do4kEmulation = false;
-
-        private int _rWidth => (int)(((float)GraphicsDevice.PresentationParameters.BackBufferWidth / GraphicsDevice.PresentationParameters.BackBufferHeight) * _rHeight);
-        private const int _rHeight = 2160;
-
-        public bool EnableScaler
-        {
-            get
-            {
-                return _do4kEmulation;
-            }
-            set
-            {
-                if (_do4kEmulation == value)
-                    return;
-                _do4kEmulation = value;
-                GameRenderTarget?.Dispose();
-                GameRenderTarget = null;
-            }
-        }
-
         private IEngineComponent[] _drawables = null;
         private MouseState LastMouseState;
         /// <summary>
@@ -478,9 +507,10 @@ namespace Plex.Engine
         {
             if (IsActive)
             {
+                var renderSize = GetRenderScreenSize();
                 if (GameRenderTarget == null)
                     //Setup the game's rendertarget so it matches the desired resolution.
-                    GameRenderTarget = new RenderTarget2D(GraphicsDevice, (_do4kEmulation) ? _rWidth : _width, (_do4kEmulation) ? _rHeight : _height, false, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Format, DepthFormat.Depth24, 8, RenderTargetUsage.PreserveContents);
+                    GameRenderTarget = new RenderTarget2D(GraphicsDevice, (int)renderSize.X, (int)renderSize.Y, false, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Format, DepthFormat.Depth24, 8, RenderTargetUsage.PreserveContents);
                 if (_ctx == null)
                     _ctx = new GraphicsContext(GraphicsDevice, spriteBatch, 0, 0, GameRenderTarget.Width, GameRenderTarget.Height);
 
@@ -495,11 +525,8 @@ namespace Plex.Engine
             //Let's get the mouse state
             var mouseState = Mouse.GetState(this.Window);
             bool doMouse = LastMouseState != mouseState;
-            if (_do4kEmulation)
-                LastMouseState = new MouseState((int)MathHelper.Lerp(0, _rWidth, (float)mouseState.X / _width), (int)MathHelper.Lerp(0, _rHeight, (float)mouseState.Y / _height), mouseState.ScrollWheelValue, mouseState.LeftButton, mouseState.MiddleButton, mouseState.RightButton, mouseState.XButton1, mouseState.XButton2);
-            else
-                LastMouseState = mouseState;
-
+            LastMouseState = new MouseState((int)MathHelper.Lerp(0, GameRenderTarget.Width, (float)mouseState.X / BackBufferWidth), (int)MathHelper.Lerp(0, GameRenderTarget.Height, (float)mouseState.Y / BackBufferHeight), mouseState.ScrollWheelValue, mouseState.LeftButton, mouseState.MiddleButton, mouseState.RightButton, mouseState.XButton1, mouseState.XButton2);
+            
             while (_actions.Count != 0)
             {
                 _actions.Dequeue().Invoke();
@@ -586,8 +613,8 @@ namespace Plex.Engine
             {
                 MultiSampleAntiAlias = true
             };
-            _ctx.Width = _width;
-            _ctx.Height = _height;
+            _ctx.Width = BackBufferWidth;
+            _ctx.Height = BackBufferHeight;
             _ctx.X = 0;
             _ctx.Y = 0;
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied,
