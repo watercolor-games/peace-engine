@@ -12,6 +12,7 @@ using System.Linq;
 using NVorbis;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.Numerics;
 
 namespace Plex.Engine
 {
@@ -167,19 +168,187 @@ namespace Plex.Engine
                     return;
                 }
                 double lastend = labels[cur].End;
-                cur = Next;
-                var nextTime = TimeSpan.FromSeconds(labels[cur].Start + aread.DecodedTime.TotalSeconds - lastend);
-                if(nextTime < TimeSpan.Zero || nextTime > aread.DecodedTime)
+                var nextTime = TimeSpan.FromSeconds(labels[Next].Start + aread.DecodedTime.TotalSeconds - lastend);
+                if(nextTime < TimeSpan.Zero || nextTime > aread.
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    TotalTime)
                 {
                     Stop();
                     return;
                 }
+                cur = Next;
                 aread.DecodedTime = nextTime;
-                Next = cur + (labels[cur].OneShot ? 0 : 1);
+                Next = cur + (labels[cur].OneShot ? 1 : 0);
             }
             data = null;
         }
-
+        
         void readthreadfun()
         {
             while (!disposed)
