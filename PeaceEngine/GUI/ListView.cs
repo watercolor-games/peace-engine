@@ -18,13 +18,13 @@ namespace Plex.Engine.GUI
         private int _selectedIndex = -1;
         private string _filter = null;
 
-        private int _margin = 20;
-        private int _horizontalIconPad = 10;
-        private int _verticalIconPad = 14;
-        private int _smallIconSize = 48;
-        private int _largeIconSize = 96;
-        private int _listIconSize = 40;
-        private int _largeIconTextWidth = 300;
+        private int _margin = 10;
+        private int _horizontalIconPad = 5;
+        private int _verticalIconPad = 7;
+        private int _smallIconSize = 24;
+        private int _largeIconSize = 48;
+        private int _listIconSize = 20;
+        private int _largeIconTextWidth = 150;
         private int _hottrackItem = -1;
 
         public event EventHandler SelectedIndexChanged;
