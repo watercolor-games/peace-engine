@@ -159,194 +159,36 @@ namespace Plex.Engine
                 }
             }
             buf.Enqueue(data);
-            if (skipearly || aread.DecodedTime.TotalSeconds >= labels[cur].End)
+            try
             {
-                fade = null;
-                if (Next >= labels.Length)
+                if (skipearly || aread.DecodedTime.TotalSeconds >= labels[cur].End)
                 {
-                    Stop();
-                    return;
+                    fade = null;
+                    if (Next >= labels.Length)
+                    {
+                        Stop();
+                        return;
+                    }
+                    double lastend = labels[cur].End;
+                    var nextTime = TimeSpan.FromSeconds(labels[Next].Start + aread.DecodedTime.TotalSeconds - lastend);
+                    if (nextTime < TimeSpan.Zero || nextTime > aread.TotalTime)
+                    {
+                        Stop();
+                        return;
+                    }
+                    cur = Next;
+                    aread.DecodedTime = nextTime;
+                    Next = cur + (labels[cur].OneShot ? 1 : 0);
                 }
-                double lastend = labels[cur].End;
-                var nextTime = TimeSpan.FromSeconds(labels[Next].Start + aread.DecodedTime.TotalSeconds - lastend);
-                if(nextTime < TimeSpan.Zero || nextTime > aread.
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    TotalTime)
-                {
-                    Stop();
-                    return;
-                }
-                cur = Next;
-                aread.DecodedTime = nextTime;
-                Next = cur + (labels[cur].OneShot ? 1 : 0);
             }
-            data = null;
+            catch (NullReferenceException)
+            {
+                Stop();
+            }
+            finally
+            {
+                data = null;
+            }
         }
         
         void readthreadfun()
