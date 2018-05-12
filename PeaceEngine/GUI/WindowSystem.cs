@@ -36,6 +36,20 @@ namespace Plex.Engine.GUI
         [Dependency]
         private Config.ConfigManager _config = null;
 
+        private Rectangle _workspaceRectangle = Rectangle.Empty;
+
+        public Rectangle Workspace
+        {
+            get
+            {
+                return _workspaceRectangle;
+            }
+            set
+            {
+                _workspaceRectangle = value;
+            }
+        }
+
         /// <summary>
         /// Occurs when the window list is updated.
         /// </summary>
@@ -424,6 +438,10 @@ namespace Plex.Engine.GUI
     /// </summary>
     public class WindowBorder : Control
     {
+        private Rectangle _normalSize = Rectangle.Empty;
+
+        private bool _maximized = false;
+
         private WindowStyle _windowStyle = WindowStyle.Default;
         private Window _child = null;
 
@@ -590,6 +608,71 @@ namespace Plex.Engine.GUI
             {
                 _needsLayout = true;
             };
+            _maximizeHitbox.Click += (o, a) =>
+            {
+                if(_maximized)
+                {
+                    X = _normalSize.X;
+                    Y = _normalSize.Y;
+                    Width = _normalSize.Width;
+                    Height = _normalSize.Height;
+                    switch(_windowStyle)
+                    {
+                        case WindowStyle.NoBorder:
+                            _child.X = 0;
+                            _child.Y = 0;
+                            _child.Width = Width;
+                            _child.Height = Height;
+                            _closeHitbox.Visible = false;
+                            _minimizeHitbox.Visible = false;
+                            _maximizeHitbox.Visible = false;
+                            _titleHitbox.Visible = false;
+                            _leftHitbox.Visible = false;
+                            _rightHitbox.Visible = false;
+                            _bottomHitbox.Visible = false;
+                            _bRightHitbox.Visible = false;
+                            _bLeftHitbox.Visible = false;
+
+                            break;
+                        case WindowStyle.Default:
+                            _child.X = _borderWidth;
+                            _child.Y = _titleHeight;
+                            _child.Width = Width - (_borderWidth * 2);
+                            _child.Height = Height - (_titleHeight + _borderWidth);
+                            _closeHitbox.Visible = true;
+                            _minimizeHitbox.Visible = true;
+                            _maximizeHitbox.Visible = true;
+                            _titleHitbox.Visible = true;
+                            _leftHitbox.Visible = true;
+                            _rightHitbox.Visible = true;
+                            _bottomHitbox.Visible = true;
+                            _bRightHitbox.Visible = true;
+                            _bLeftHitbox.Visible = true;
+                            break;
+                        case WindowStyle.DialogNoDrag:
+                        case WindowStyle.Dialog:
+                            _child.X = _borderWidth;
+                            _child.Y = _titleHeight;
+                            _child.Width = Width - (_borderWidth * 2);
+                            _child.Height = Height - (_titleHeight + _borderWidth);
+                            _closeHitbox.Visible = true;
+                            _minimizeHitbox.Visible = false;
+                            _maximizeHitbox.Visible = false;
+                            _titleHitbox.Visible = true;
+                            _leftHitbox.Visible = true;
+                            _rightHitbox.Visible = true;
+                            _bottomHitbox.Visible = true;
+                            _bRightHitbox.Visible = true;
+                            _bLeftHitbox.Visible = true;
+                            break;
+                    }
+                }
+                else
+                {
+                    _normalSize = new Rectangle(X, Y, Width, Height);
+                }
+                _maximized = !_maximized;
+            };
         }
 
         private bool _closeHasMouse = false;
@@ -639,61 +722,129 @@ namespace Plex.Engine.GUI
             {
                 this._child.Opacity = 1;
             }
-            if (_needsLayout == false)
-                return;
-            _needsLayout = false;
-
-            switch (_windowStyle)
+ 
+            if (_maximized)
             {
-                case WindowStyle.NoBorder:
-                    _child.X = 0;
-                    _child.Y = 0;
-                    Width = _child.Width;
-                    Height = _child.Height;
-                    _closeHitbox.Visible = false;
-                    _minimizeHitbox.Visible = false;
-                    _maximizeHitbox.Visible = false;
-                    _titleHitbox.Visible = false;
-                    _leftHitbox.Visible = false;
-                    _rightHitbox.Visible = false;
-                    _bottomHitbox.Visible = false;
-                    _bRightHitbox.Visible = false;
-                    _bLeftHitbox.Visible = false;
+                var rect = _windowManager.Workspace;
+                if(rect == Rectangle.Empty)
+                {
+                    rect = new Rectangle(0, 0, _windowManager.Width, _windowManager.Height);
+                }
+                X = rect.X;
+                Y = rect.Y;
+                Width = rect.Width;
+                Height = rect.Height;
+                switch (_windowStyle)
+                {
+                    case WindowStyle.NoBorder:
+                        _child.X = 0;
+                        _child.Y = 0;
+                        _child.Width = Width;
+                        _child.Height = Height;
+                        _closeHitbox.Visible = false;
+                        _minimizeHitbox.Visible = false;
+                        _maximizeHitbox.Visible = false;
+                        _titleHitbox.Visible = false;
+                        _leftHitbox.Visible = false;
+                        _rightHitbox.Visible = false;
+                        _bottomHitbox.Visible = false;
+                        _bRightHitbox.Visible = false;
+                        _bLeftHitbox.Visible = false;
 
-                    break;
-                case WindowStyle.Default:
-                    _child.X = _borderWidth;
-                    _child.Y = _titleHeight;
-                    Width = _child.X + _child.Width + _borderWidth;
-                    Height = _child.Y + _child.Height + _borderWidth;
-                    _closeHitbox.Visible = true;
-                    _minimizeHitbox.Visible = true;
-                    _maximizeHitbox.Visible = true;
-                    _titleHitbox.Visible = true;
-                    _leftHitbox.Visible = true;
-                    _rightHitbox.Visible = true;
-                    _bottomHitbox.Visible = true;
-                    _bRightHitbox.Visible = true;
-                    _bLeftHitbox.Visible = true;
-                    break;
-                case WindowStyle.DialogNoDrag:
-                case WindowStyle.Dialog:
-                    _child.X = _borderWidth;
-                    _child.Y = _titleHeight;
-                    Width = _child.Width + (_borderWidth * 2);
-                    Height = _child.Y + _child.Height + _borderWidth;
-                    _closeHitbox.Visible = true;
-                    _minimizeHitbox.Visible = false;
-                    _maximizeHitbox.Visible = false;
-                    _titleHitbox.Visible = true;
-                    _leftHitbox.Visible = true;
-                    _rightHitbox.Visible = true;
-                    _bottomHitbox.Visible = true;
-                    _bRightHitbox.Visible = true;
-                    _bLeftHitbox.Visible = true;
-                    break;
+                        break;
+                    case WindowStyle.Default:
+                        _child.X = _borderWidth;
+                        _child.Y = _titleHeight;
+                        _child.Width = Width - (_borderWidth * 2);
+                        _child.Height = Height - (_titleHeight + _borderWidth);
+                        _closeHitbox.Visible = true;
+                        _minimizeHitbox.Visible = true;
+                        _maximizeHitbox.Visible = true;
+                        _titleHitbox.Visible = true;
+                        _leftHitbox.Visible = true;
+                        _rightHitbox.Visible = true;
+                        _bottomHitbox.Visible = true;
+                        _bRightHitbox.Visible = true;
+                        _bLeftHitbox.Visible = true;
+                        break;
+                    case WindowStyle.DialogNoDrag:
+                    case WindowStyle.Dialog:
+                        _child.X = _borderWidth;
+                        _child.Y = _titleHeight;
+                        _child.Width = Width - (_borderWidth * 2);
+                        _child.Height = Height - (_titleHeight + _borderWidth);
+                        _closeHitbox.Visible = true;
+                        _minimizeHitbox.Visible = false;
+                        _maximizeHitbox.Visible = false;
+                        _titleHitbox.Visible = true;
+                        _leftHitbox.Visible = true;
+                        _rightHitbox.Visible = true;
+                        _bottomHitbox.Visible = true;
+                        _bRightHitbox.Visible = true;
+                        _bLeftHitbox.Visible = true;
+                        break;
+                }
+                if (_needsLayout == false)
+                    return;
+                _needsLayout = false;
+
             }
+            else
+            {
+                if (_needsLayout == false)
+                    return;
+                _needsLayout = false;
+                switch (_windowStyle)
+                {
+                    case WindowStyle.NoBorder:
+                        _child.X = 0;
+                        _child.Y = 0;
+                        Width = _child.Width;
+                        Height = _child.Height;
+                        _closeHitbox.Visible = false;
+                        _minimizeHitbox.Visible = false;
+                        _maximizeHitbox.Visible = false;
+                        _titleHitbox.Visible = false;
+                        _leftHitbox.Visible = false;
+                        _rightHitbox.Visible = false;
+                        _bottomHitbox.Visible = false;
+                        _bRightHitbox.Visible = false;
+                        _bLeftHitbox.Visible = false;
 
+                        break;
+                    case WindowStyle.Default:
+                        _child.X = _borderWidth;
+                        _child.Y = _titleHeight;
+                        Width = _child.X + _child.Width + _borderWidth;
+                        Height = _child.Y + _child.Height + _borderWidth;
+                        _closeHitbox.Visible = true;
+                        _minimizeHitbox.Visible = true;
+                        _maximizeHitbox.Visible = true;
+                        _titleHitbox.Visible = true;
+                        _leftHitbox.Visible = true;
+                        _rightHitbox.Visible = true;
+                        _bottomHitbox.Visible = true;
+                        _bRightHitbox.Visible = true;
+                        _bLeftHitbox.Visible = true;
+                        break;
+                    case WindowStyle.DialogNoDrag:
+                    case WindowStyle.Dialog:
+                        _child.X = _borderWidth;
+                        _child.Y = _titleHeight;
+                        Width = _child.Width + (_borderWidth * 2);
+                        Height = _child.Y + _child.Height + _borderWidth;
+                        _closeHitbox.Visible = true;
+                        _minimizeHitbox.Visible = false;
+                        _maximizeHitbox.Visible = false;
+                        _titleHitbox.Visible = true;
+                        _leftHitbox.Visible = true;
+                        _rightHitbox.Visible = true;
+                        _bottomHitbox.Visible = true;
+                        _bRightHitbox.Visible = true;
+                        _bLeftHitbox.Visible = true;
+                        break;
+                }
+            }
             _titleHitbox.X = 0;
             _titleHitbox.Y = 0;
             _titleHitbox.Width = Width;
