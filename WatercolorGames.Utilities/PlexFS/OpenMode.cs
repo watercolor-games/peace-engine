@@ -14,5 +14,11 @@ namespace Plex.Objects.PlexFS
         /// </summary>
         OpenOrCreate
     }
+
+    public enum FileOpenMode
+    {
+        Read,
+        Write
+    }
 }
 
