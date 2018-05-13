@@ -55,10 +55,15 @@ namespace Plex.Engine.Saves
         /// <exception cref="ArgumentNullException"><paramref name="backend"/> was null.</exception> 
         public void SetBackend(ISaveBackend backend)
         {
-            if (backend == null)
-                throw new ArgumentNullException(nameof(backend));
             _backend = backend;
-            _plexgate.Inject(_backend);
+            if(_backend == null)
+            {
+                _backend = _plexgate.New<DefaultSaveBackend>();
+            }
+            else
+            {
+                _plexgate.Inject(_backend);
+            }
         }
 
         /// <summary>
