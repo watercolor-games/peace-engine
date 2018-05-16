@@ -15,7 +15,12 @@ namespace Plex.Engine.GUI
     {
         private bool _autosize = false;
         private bool _needsLayout = true;
+        public Panel() : base()
+        {
+            DrawBackground = false;
+        }
 
+        public bool DrawBackground { get; set; }
 
         /// <summary>
         /// Gets or sets whether the panel should auto-size based on its contents.
@@ -87,6 +92,8 @@ namespace Plex.Engine.GUI
         /// <inheritdoc/>
         protected override void OnPaint(GameTime time, GraphicsContext gfx)
         {
+            if (DrawBackground)
+                Theme.DrawControlBG(gfx, 0, 0, Width, Height);
         }
     }
 }
