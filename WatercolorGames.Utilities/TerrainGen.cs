@@ -10,10 +10,10 @@ namespace WatercolorGames.Utilities
         const int MinFeatures = 200;
         const int MaxFeatures = 300;
         const double MinHeight = 0.5;
-		const double MaxHeight = 1.0;
-		const int MinRadius = 60;
-		const int MaxRadius = 140;
-		const double WaterLevel = 2.75;
+        const double MaxHeight = 1.0;
+        const int MinRadius = 60;
+        const int MaxRadius = 140;
+        const double WaterLevel = 2.75;
         public static double[] GenMap(int seed)
         {
             var map = new double[Width * Height];
