@@ -4,12 +4,12 @@ namespace WatercolorGames.Utilities
 {
     public static class TerrainGen
     {
-		// TODO get these constants out of the code serialised onto disk
-		const int Width = 1000;
-		const int Height = 1000;
-		const int MinFeatures = 200;
-		const int MaxFeatures = 300;
-		const double MinHeight = 0.5;
+        // TODO get these constants out of the code serialised onto disk
+        const int Width = 1000;
+        const int Height = 1000;
+        const int MinFeatures = 200;
+        const int MaxFeatures = 300;
+        const double MinHeight = 0.5;
 		const double MaxHeight = 1.0;
 		const int MinRadius = 60;
 		const int MaxRadius = 140;
