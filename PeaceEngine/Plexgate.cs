@@ -30,6 +30,17 @@ namespace Plex.Engine
         private static Plexgate _instance = null;
         private float _renderScale = 1.0f;
         private const int _renderScreenHeight = 1080;
+        private SpriteFont _font = null;
+        private Texture2D _logo = null;
+
+        private volatile string _status = "";
+        private volatile float _percentage = 0f;
+
+        private volatile bool _loaded = false;
+
+        private Task _loadTask = null;
+
+        private ManualResetEvent _componentLoaded = new ManualResetEvent(true);
 
         public int BaseRenderHeight
         {
@@ -122,11 +133,6 @@ namespace Plex.Engine
         private List<ComponentInfo> _components = new List<ComponentInfo>();
         private GraphicsContext _ctx = null;
 
-        private SplashScreen _splash = null;
-        private EventWaitHandle _splashEv = new AutoResetEvent(true);
-        private volatile bool _splashReady = false;
-        private Task _splashJob = null;
-
         private Layer[] _layers = null;
 
         /// <summary>
@@ -156,13 +162,6 @@ namespace Plex.Engine
         /// </summary>
         public Plexgate(string[] args)
         {
-            _splashJob = Task.Run(() =>
-            {
-                _splash = new SplashScreen();
-                _splashReady = true;
-                _splashEv.Set();
-                System.Windows.Forms.Application.Run(_splash);
-            });
             if (_instance != null)
                 throw new InvalidOperationException("Plexgate is already running! You cannot create multiple instances of Plexgate at the same time in one process. Instead, please let the already-running instance shut down fully.");
             graphicsDevice = new GraphicsDeviceManager(this);
@@ -256,26 +255,10 @@ namespace Plex.Engine
             GraphicsDevice.PresentationParameters.MultiSampleCount = 8; //8x MSAA, should be a configurable thing
             graphicsDevice.ApplyChanges();
 
-#if RELEASE
-            AppDomain.CurrentDomain.UnhandledException += (o, a) =>
-            {
-                
-                System.Windows.Forms.MessageBox.Show(caption: "Uncaught .NET exception", text: $@"An uncaught exception has occurred in the Peace engine.
-
-{a.ExceptionObject}", icon: System.Windows.Forms.MessageBoxIcon.Error, buttons: System.Windows.Forms.MessageBoxButtons.OK);
-                Logger.Log("FATAL EXCEPTION: " + a.ExceptionObject.ToString(), System.ConsoleColor.Red);
-                this.UnloadContent();
-                Environment.Exit(0);
-        };
-#endif
             _instance = this;
-            Logger.Log("Beginning engine initialization.");
-            while (!_splashReady)
-                _splashEv.WaitOne();
-            _splash.SetProgress(0, 100, "Looking for modules...");
-            _splash.SetProgressType(System.Windows.Forms.ProgressBarStyle.Marquee);
+            Logger.Log("Peace Engine is now initializing core engine components...");
             List<Type> typesToInit = new List<Type>();
-            foreach (var type in ReflectMan.Types.Where(x => x.GetInterfaces().Contains(typeof(IEngineComponent))))
+            foreach (var type in ReflectMan.Types.Where(x => x.Assembly == this.GetType().Assembly && x.GetInterfaces().Contains(typeof(IEngineComponent))))
             {
                 if (type.GetConstructor(Type.EmptyTypes) == null)
                 {
@@ -283,12 +266,10 @@ namespace Plex.Engine
                     continue;
                 }
                 Logger.Log($"Found {type.Name}", System.ConsoleColor.Yellow);
-                _splash.SetProgress(0, 100, $"Found module: {type.FullName} [{typesToInit.Count + 1}]");
                 typesToInit.Add(type);
             }
             foreach (var type in typesToInit)
             {
-                _splash.SetProgress(typesToInit.IndexOf(type), typesToInit.Count, $"Loading module: {type.FullName} [{_components.Count + 1}]");
                 var componentInfo = new ComponentInfo
                 {
                     IsInitiated = false,
@@ -307,10 +288,6 @@ namespace Plex.Engine
                 RecursiveInit(component.Component);
             }
             Logger.Log("Done initiating engine.");
-            _splash.Invoke(new Action(() =>
-            {
-                _splash.Close();
-            }));
             base.Initialize();
         }
 
@@ -423,7 +400,8 @@ namespace Plex.Engine
         /// </summary>
         protected override void LoadContent()
         {
-
+            _logo = Content.Load<Texture2D>("EngineLogo");
+            _font = Content.Load<SpriteFont>("EngineFont");
 
             // Create a new SpriteBatch, which can be used to draw textures.
             this.spriteBatch = new SpriteBatch(base.GraphicsDevice);
@@ -534,16 +512,122 @@ namespace Plex.Engine
             if (!IsActive)
                 doMouse = false;
 
-            foreach (var layer in _layers.ToArray())
+            if(_loaded == false)
             {
-                foreach (var entity in layer.Entities)
+                if(_loadTask == null)
                 {
-                    if (doMouse)
-                        entity.OnMouseUpdate(LastMouseState);
-                    entity.Update(gameTime);
+                    _loadTask = Task.Run(() => LoadGame());
+                }
+                else
+                {
+                    if(_loadTask.Exception != null && _loadTask.Exception.InnerExceptions.Count > 0)
+                    {
+                        Exit();
+                        throw _loadTask.Exception;
+                    }
+                    if (_loadTask.IsCompleted)
+                    {
+                        
+                        _loaded = true;
+                        _loadTask = null;
+                    }
+                }
+            }
+
+
+            if (_loadTask == null || _loadTask.IsCompleted)
+            {
+                foreach (var layer in _layers.ToArray())
+                {
+                    foreach (var entity in layer.Entities)
+                    {
+                        if (doMouse)
+                            entity.OnMouseUpdate(LastMouseState);
+                        entity.Update(gameTime);
+                    }
                 }
             }
             base.Update(gameTime);
+        }
+
+        private void LoadGame()
+        {
+            _status = "Retrieving types to load...";
+            this._percentage = 0f;
+            Logger.Log("Peace Engine is now initializing your game.");
+            List<Type> typesToInit = new List<Type>();
+            foreach (var type in ReflectMan.Types.Where(x => x.Assembly != this.GetType().Assembly && x.GetInterfaces().Contains(typeof(IEngineComponent))))
+            {
+                if (type.GetConstructor(Type.EmptyTypes) == null)
+                {
+                    Logger.Log($"Found {type.Name}, but it doesn't have a parameterless constructor, so it's ignored.  Probably a mistake.", System.ConsoleColor.Yellow);
+                    continue;
+                }
+                Logger.Log($"Found {type.Name}", System.ConsoleColor.Yellow);
+                typesToInit.Add(type);
+                _status = "Retrieving types to load... [" + typesToInit.Count + "]";
+            }
+            _status = "Constructing components...";
+            foreach (var type in typesToInit)
+            {
+                _componentLoaded.WaitOne();
+                _componentLoaded.Reset();
+                Invoke(() =>
+                {
+                    var componentInfo = new ComponentInfo
+                    {
+                        IsInitiated = false,
+                        Component = (IEngineComponent)Activator.CreateInstance(type, null)
+                    };
+                    _components.Add(componentInfo);
+                    _percentage = (float)typesToInit.IndexOf(type) / typesToInit.Count;
+                    _componentLoaded.Set();
+                });
+            }
+            _componentLoaded.WaitOne();
+            _status = "Injecting dependencies...";
+            var componentsToInject = _components.Where(x => x.IsInitiated==false).ToList();
+            foreach (var component in componentsToInject)
+            {
+                _componentLoaded.Reset();
+                Invoke(() =>
+                {
+                    Logger.Log($"{component.Component.GetType().Name}: Injecting dependencies...");
+                    Inject(component.Component);
+                    _percentage = (float)componentsToInject.IndexOf(component) / componentsToInject.Count;
+                    _componentLoaded.Set();
+                });
+                _componentLoaded.WaitOne();
+            }
+            _status = "Initializing components...";
+            //I know. This is redundant. I'm only doing this as a safety precaution, to prevent crashes with modules that try to access uninitiated modules as they're initiating.
+            foreach (var component in componentsToInject)
+            {
+                _componentLoaded.WaitOne();
+                _componentLoaded.Reset();
+                Invoke(() =>
+                {
+                    RecursiveInit(component.Component);
+                    _percentage = (float)componentsToInject.IndexOf(component) / componentsToInject.Count;
+                    _componentLoaded.Set();
+                });
+            }
+            _status = "Loading assets...";
+            foreach (var component in componentsToInject)
+            {
+                _componentLoaded.WaitOne();
+                _componentLoaded.Reset();
+                Invoke(() =>
+                {
+                    if (component.Component is ILoadable)
+                        (component.Component as ILoadable).Load(Content);
+                    _percentage = (float)componentsToInject.IndexOf(component) / componentsToInject.Count;
+                    _componentLoaded.Set();
+                });
+            }
+
+            Logger.Log("Done initiating engine.");
+
         }
 
         /// <summary>
@@ -587,26 +671,52 @@ namespace Plex.Engine
             {
                 GraphicsDevice.SetRenderTarget(GameRenderTarget);
                 GraphicsDevice.Clear(Color.Black);
-                foreach (var layer in _layers.ToArray())
-                    foreach (var entity in layer.Entities)
-                    {
-                        if (_ctx.Width != GameRenderTarget.Width)
-                            _ctx.Width = GameRenderTarget.Width;
-                        if (_ctx.Height != GameRenderTarget.Height)
-                            _ctx.Height = GameRenderTarget.Height;
-                        _ctx.X = 0;
-                        _ctx.Y = 0;
+                if (_loadTask != null && _loadTask.IsCompleted == false)
+                {
+                    _ctx.BeginDraw();
+                    int halfWidth = _ctx.Width / 2;
+                    int halfHeight = _ctx.Height / 2;
+                    _ctx.DrawRectangle(new Vector2((_ctx.Width - halfWidth) / 2, (_ctx.Height - halfHeight) / 2), new Vector2(halfWidth, halfHeight), _logo, System.Windows.Forms.ImageLayout.Zoom);
 
-                        entity.Draw(gameTime, this._ctx);
+                    string status = _status;
 
-                    }
+                    string percentage = $"{Math.Round(_percentage * 100, 2)}%";
 
-                spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied,
-                                SamplerState.LinearWrap, DepthStencilState.Default,
-                                RasterizerState.CullNone);
-                spriteBatch.Draw(MouseTexture, new Rectangle(LastMouseState.X, LastMouseState.Y, MouseTexture.Width, MouseTexture.Height), Color.White);
+                    int textY = _ctx.Height - (_ctx.Height / 3);
+                    var measure = TextRenderer.MeasureText(status, _font, halfWidth, TextRenderers.WrapMode.Words);
 
-                spriteBatch.End();
+                    _ctx.DrawString(status, new Vector2((_ctx.Width - halfWidth) / 2, textY), Color.White, _font, TextAlignment.Center, halfWidth, TextRenderers.WrapMode.Words);
+
+                    var pMeasure = _font.MeasureString(percentage);
+
+                    _ctx.Batch.DrawString(_font, percentage, new Vector2((_ctx.Width - pMeasure.X) / 2, textY + measure.Y + 30), Color.White);
+
+                    _ctx.EndDraw();
+                }
+                else
+                {
+                    foreach (var layer in _layers.ToArray())
+                        foreach (var entity in layer.Entities)
+                        {
+                            if (_ctx.Width != GameRenderTarget.Width)
+                                _ctx.Width = GameRenderTarget.Width;
+                            if (_ctx.Height != GameRenderTarget.Height)
+                                _ctx.Height = GameRenderTarget.Height;
+                            _ctx.X = 0;
+                            _ctx.Y = 0;
+
+                            entity.Draw(gameTime, this._ctx);
+
+                        }
+
+
+                    spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied,
+                                    SamplerState.LinearWrap, DepthStencilState.Default,
+                                    RasterizerState.CullNone);
+                    spriteBatch.Draw(MouseTexture, new Rectangle(LastMouseState.X, LastMouseState.Y, MouseTexture.Width, MouseTexture.Height), Color.White);
+
+                    spriteBatch.End();
+                }
                 GraphicsDevice.SetRenderTarget(null);
             }
             var rstate = new RasterizerState

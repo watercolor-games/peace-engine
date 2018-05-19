@@ -27,7 +27,7 @@ namespace Plex.Engine.Themes
         /// <inheritdoc/>
         public void Initiate()
         {
-
+            _theme = _plexgate.New<EngineTheme>();
         }
 
         /// <summary>
