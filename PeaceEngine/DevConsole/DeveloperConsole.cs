@@ -1,5 +1,4 @@
-﻿#define DEBUG
-#if DEBUG
+﻿#if DEBUG
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CSharp.RuntimeBinder;
