@@ -620,6 +620,11 @@ namespace Plex.Engine.GUI
                 child.InvalidateAll();
         }
 
+        private int _lastmousex = 0;
+        private int _lastmousey = 0;
+
+        private bool _hadMouseWhenStatesChanged = false;
+
         /// <summary>
         /// Handle a mouse state update.
         /// </summary>
@@ -627,6 +632,104 @@ namespace Plex.Engine.GUI
         /// <returns>Whether the mouse was inside the control and button events were fired.</returns>
         public virtual bool PropagateMouseState(MouseState state)
         {
+
+#if !DERPYMOUSE
+            //Do we have the mouse right now?
+            bool hasMouseBeforeUpdate = ContainsMouse;
+            
+            //Update our mouse coordinates from the mouse state if we don't have a parent.
+            if(Parent == null)
+            {
+                _mousex = state.X - X;
+                _mousey = state.Y - Y;
+            }
+
+            //Update our children's mouse coordinates based off ours.
+            foreach(var child in Children)
+            {
+                child._mousex = _mousex - child.X;
+                child._mousey = _mousey - child.Y;
+            }
+
+            //If we're disabled or invisible, return.
+            if (_enabled == false || _isVisible == false)
+                return false;
+
+            //If we don't have the mouse, return.
+            if (!ContainsMouse)
+            {
+                return false;
+            }
+
+            //Iterate through the children again, in reverse, and propagate our mouse state.
+            foreach (var child in Children.OrderByDescending(z => Array.IndexOf(Children, z)))
+            {
+                if (child.PropagateMouseState(state))
+                    return true;
+            }
+
+            //Get the state of the three mouse buttons we care about.
+            var leftState = state.LeftButton;
+            var rightState = state.RightButton;
+            var middleState = state.MiddleButton;
+
+            //Let's handle left clicking!
+            if (_left == ButtonState.Pressed && leftState == ButtonState.Released && hasMouseBeforeUpdate && _hadMouseWhenStatesChanged)
+            {
+                if (!Manager.IsFocused(this))
+                {
+                    Manager.SetFocus(this);
+                }
+                if (_doubleClickCooldown <= 0)
+                {
+                    //We've clicked.
+                    Click?.Invoke(this, EventArgs.Empty);
+                    //Give 250 milliseconds of double-clickiness.
+                    _doubleClickCooldown = 250;
+                }
+                else
+                {
+                    DoubleClick?.Invoke(this, EventArgs.Empty);
+                    _doubleClickCooldown = 0;
+                }
+                //And the mouse has also been released.
+                MouseLeftUp?.Invoke(this, EventArgs.Empty);
+                //Also, we gain focus.
+
+                Invalidate(true);
+            }
+            //Now for left mouse-down...
+            else if (_left == ButtonState.Released && leftState == ButtonState.Pressed && hasMouseBeforeUpdate && _hadMouseWhenStatesChanged)
+            {
+                //The mouse button has been pressed down.
+                MouseLeftDown?.Invoke(this, EventArgs.Empty);
+                Invalidate(true);
+            }
+
+
+            //right-clicking
+            if (_right == ButtonState.Pressed && rightState == ButtonState.Released && hasMouseBeforeUpdate && _hadMouseWhenStatesChanged)
+            {
+                RightClick?.Invoke(this, EventArgs.Empty);
+            }
+
+            if (_middle == ButtonState.Pressed && middleState == ButtonState.Released && hasMouseBeforeUpdate && _hadMouseWhenStatesChanged)
+                MiddleClick?.Invoke(this, EventArgs.Empty);
+
+            if (_left != leftState || _middle != middleState || _right != rightState)
+            {
+                _hadMouseWhenStatesChanged = hasMouseBeforeUpdate;
+            }
+            _left = leftState;
+            _right = rightState;
+            _middle = middleState;
+
+
+            return true;
+
+
+#endif
+#if DERPYMOUSE
             //Let's see if this beats Matt Trobbiani's mouse handler...
 
             //Skip mouse events if the control is disabled.
@@ -756,116 +859,11 @@ namespace Plex.Engine.GUI
                 _left = ButtonState.Released;
                 _right = ButtonState.Released;
                 _middle = ButtonState.Released;
+
                 return false;
             }
             return true;
-
-            /* Old code.
-            if (_enabled == false || _isVisible == false)
-                return false;
-            int x = 0;
-            int y = 0;
-
-            if (Parent == null)
-            {
-                x = state.X - X;
-                y = state.Y - Y;
-            }
-            //For controls with parents, poll mouse information from the parent.
-            else
-            {
-                x = Parent._mousex - X;
-                y = Parent._mousey - Y;
-            }
-            if(_mousex != x || _mousey != y)
-            {
-                bool hasMouse = ContainsMouse;
-                _mousex = x;
-                _mousey = y;
-                MouseMove?.Invoke(this, new Vector2(x, y));
-                if(ContainsMouse != hasMouse)
-                {
-                    Invalidate(true);
-                }
-            }
-
-            bool doEvents = !skipEvents;
-            foreach(var child in Children.OrderByDescending(z=>Array.IndexOf(Children, z)))
-            {
-                bool res = child.PropagateMouseState(state, skipEvents);
-                if (doEvents == true && res == true)
-                    return true;
-            }
-            if (doEvents)
-            {
-                if (ContainsMouse)
-                {
-                    if(state.ScrollWheelValue != _lastScrollValue)
-                    {
-                        _lastScrollValue = state.ScrollWheelValue;
-                        OnMouseScroll(state.ScrollWheelValue);
-                        MouseScroll?.Invoke(state.ScrollWheelValue);
-                    }
-                    bool left = LeftMouseState == ButtonState.Pressed;
-                    bool right = RightMouseState == ButtonState.Pressed;
-                    bool middle = MiddleMouseState == ButtonState.Pressed;
-
-                    if(LeftMouseState != state.LeftButton)
-                    {
-                        if(left)
-                        {
-                            if (_doubleClickCooldown == 0)
-                            {
-                                Click?.Invoke(this, EventArgs.Empty);
-                                _doubleClickCooldown = 250;
-                                if(!Manager.IsFocused(this))
-                                {
-                                    Manager.SetFocus(this);
-                                    Invalidate(true);
-                                }
-                            }
-                            else
-                            {
-                                DoubleClick?.Invoke(this, EventArgs.Empty);
-                            }
-                            MouseLeftUp?.Invoke(this, EventArgs.Empty);
-                        }
-                        else
-                        {
-                            MouseLeftDown?.Invoke(this, EventArgs.Empty);
-                        }
-                        _lastLeft = state.LeftButton;
-                        Invalidate(true);
-                    }
-                    if (RightMouseState != state.RightButton)
-                    {
-                        if (right)
-                        {
-                            MouseRightUp?.Invoke(this, EventArgs.Empty);
-                        }
-                        else
-                        {
-                            MouseRightDown?.Invoke(this, EventArgs.Empty);
-                        }
-                        _lastRight = state.RightButton;
-                        Invalidate(true);
-                    }
-
-                    return true;
-                }
-                else
-                {
-                    if (_lastLeft != ButtonState.Released || _lastRight != ButtonState.Released || _lastMiddle != ButtonState.Released)
-                    {
-                        _lastLeft = ButtonState.Released;
-                        _lastRight = ButtonState.Released;
-                        _lastMiddle = ButtonState.Released;
-                        Invalidate(true);
-                    }
-
-                }
-            }
-            return false;*/
+#endif
         }
 
         private bool? _lastFocus = null;
@@ -896,6 +894,10 @@ namespace Plex.Engine.GUI
         /// <param name="time">The time since the last frame. Used for animation.</param>
         public void Update(GameTime time)
         {
+            if (_doubleClickCooldown >= 0)
+            {
+                _doubleClickCooldown = MathHelper.Clamp((int)(_doubleClickCooldown - time.ElapsedGameTime.TotalMilliseconds), 0, 250);
+            }
             if (_lastFocus != HasFocused)
             {
                 _lastFocus = HasFocused;
@@ -909,22 +911,36 @@ namespace Plex.Engine.GUI
 
             if (_isVisible == false)
                 return;
+            if (_disposed)
+                return;
+
+            if(!ContainsMouse)
+            {
+                //Reset mouse button states
+                _left = ButtonState.Released;
+                _right = ButtonState.Released;
+                _middle = ButtonState.Released;
+                _hadMouseWhenStatesChanged = false;
+            }
+
+            //Fire mouse move events
+            if (_lastmousex != _mousex || _lastmousey != _mousey)
+            {
+                bool childHasButton = _children.FirstOrDefault(x => x.LeftMouseState == ButtonState.Pressed || x.RightMouseState == ButtonState.Pressed || x.MiddleMouseState == ButtonState.Pressed) != null;
+                _lastmousex = _mousex;
+                _lastmousey = _mousey;
+                if (!childHasButton)
+                {
+                    MouseMove?.Invoke(this, new Vector2(_mousex, _mousey));
+                }
+            }
+
             OnUpdate(time);
             if (_children == null)
                 return;
-            if (_disposed)
-                return;
-            try
+            foreach (var child in Children)
             {
-                foreach (var child in _children)
-                {
-                    child.Update(time);
-                }
-            }
-            catch { }
-            if (_doubleClickCooldown >= 0)
-            {
-                _doubleClickCooldown = MathHelper.Clamp((int)(_doubleClickCooldown - time.ElapsedGameTime.TotalMilliseconds), 0, 250);
+                child.Update(time);
             }
         }
 
