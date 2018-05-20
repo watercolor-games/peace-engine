@@ -29,6 +29,24 @@ namespace Plex.Engine.PlexContentManager
             var path = Path.Combine(new[] { real.RootDirectory }.Concat(split.Take(split.Length - 1)).ToArray());
             var fnameb = split[split.Length - 1].ToUpper();
             var options = Directory.EnumerateFiles(path).Where(n => Path.GetFileNameWithoutExtension(n).ToUpper() == fnameb);
+
+            if (options.Any(n => Path.GetExtension(n).ToUpper() == ".JSON"))
+            {
+                WeakReference<object> wr;
+                object val;
+                if (cache.TryGetValue(assetName, out wr) && wr.TryGetTarget(out val) && val != null)
+                    return (T)val;
+                var loader = plex.New<JsonLoader<T>>();
+                var fname = options.FirstOrDefault(n => loader.Extensions.Contains(Path.GetExtension(n).ToUpper()));
+                T ret;
+                using (var fobj = File.OpenRead(fname))
+                    ret = loader.Load(fobj);
+                cache[assetName] = new WeakReference<object>(ret);
+                typeof(T).GetProperty("Name")?.SetValue(ret, assetName);
+                return ret;
+
+            }
+
             if (!options.Any(n => Path.GetExtension(n).ToUpper() == ".XNB"))
             {
                 WeakReference<object> wr;
