@@ -27,7 +27,7 @@ namespace Plex.Objects
             foreach(char c in text)
             {
                 _stdout.Write(c.ToString());
-                System.Threading.Thread.Sleep(25);
+                System.Threading.Thread.Sleep(10);
 
             }
             _stdout.Write("\n");
