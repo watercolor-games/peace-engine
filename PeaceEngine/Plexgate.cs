@@ -461,6 +461,36 @@ namespace Plex.Engine
             base.UnloadContent();
         }
 
+
+        /// <summary>
+        /// Retrieves all types on which the specified type depends.
+        /// </summary>
+        /// <typeparam name="T">A type to scan. The scanner will only check public and non-public instance fields.</typeparam>
+        /// <returns>A list of all dependency types.</returns>
+        public IEnumerable<Type> GetDependencyTypes<T>()
+        {
+            var type = typeof(T);
+            foreach(var field in type.GetFields(BindingFlags.Instance))
+            {
+                if (field.GetCustomAttributes(true).Any(x => x is DependencyAttribute))
+                    yield return field.FieldType;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves all types on which the specified type depends.
+        /// </summary>
+        /// <param name="type">A <see cref="Type"/> describing an object to scan.</param>
+        /// <returns>A list of all dependency types.</returns>
+        public IEnumerable<Type> GetDependencyTypes(Type type)
+        {
+            foreach (var field in type.GetFields(BindingFlags.Instance))
+            {
+                if (field.GetCustomAttributes(true).Any(x => x is DependencyAttribute))
+                    yield return field.FieldType;
+            }
+        }
+
         private Queue<Action> _actions = new Queue<Action>();
 
         /// <summary>
