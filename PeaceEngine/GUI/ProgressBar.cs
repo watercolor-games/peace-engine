@@ -36,6 +36,13 @@ namespace Plex.Engine.GUI
             }
         }
 
+        private string gettext()
+        {
+            if (!string.IsNullOrWhiteSpace(_text))
+                return _text;
+            return $"{Math.Round(_value, 2) * 100}%";
+        }
+
         public string Text
         {
             get
@@ -50,9 +57,9 @@ namespace Plex.Engine.GUI
 
         protected override void OnUpdate(GameTime time)
         {
-            if(!string.IsNullOrWhiteSpace(_text))
+            if(!string.IsNullOrWhiteSpace(gettext()))
             {
-                Height = (int)TextRenderer.MeasureText(_text, Theme.GetFont(Themes.TextFontStyle.System), Width, WrapMode.Words).Y + 6;
+                Height = (int)TextRenderer.MeasureText(gettext(), Theme.GetFont(Themes.TextFontStyle.System), Width, WrapMode.Words).Y + 6;
             }
             base.OnUpdate(time);
         }
@@ -62,11 +69,11 @@ namespace Plex.Engine.GUI
         {
             gfx.Clear(Color.Black);
             gfx.DrawRectangle(0, 0, (int)MathHelper.Lerp(0, Width, _value), Height, Theme.GetAccentColor());
-            if(!string.IsNullOrWhiteSpace(_text))
+            if(!string.IsNullOrWhiteSpace(gettext()))
             {
                 var f = Theme.GetFont(Themes.TextFontStyle.System);
                 var c = Theme.GetFontColor(Themes.TextFontStyle.System);
-                gfx.DrawString(_text, new Vector2(0, 3), c, f, TextAlignment.Center, Width, WrapMode.Words);
+                gfx.DrawString(gettext(), new Vector2(0, 3), c, f, TextAlignment.Center, Width, WrapMode.Words);
             }
         }
     }
