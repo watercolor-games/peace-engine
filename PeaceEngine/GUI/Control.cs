@@ -1036,7 +1036,10 @@ namespace Plex.Engine.GUI
 
 
             if (_userfacingtarget != null)
+            {
                 gfx.Device.SetRenderTarget(BackBuffer);
+                gfx.Device.Clear(Color.Transparent);
+            }
             gfx.BeginDraw();
 
             OnPaint(time, gfx);
