@@ -314,7 +314,7 @@ namespace Plex.Engine.GUI
             if(string.IsNullOrEmpty(_textRaw))
             {
                 if(HasFocused && _caretVisible)
-                    gfx.DrawRectangle(2, 2, 1, lineHeight, Theme.GetFontColor(Themes.TextFontStyle.System));
+                    gfx.FillRectangle(2, 2, 1, lineHeight, Theme.GetFontColor(Themes.TextFontStyle.System));
             }
             else
             {
@@ -328,7 +328,7 @@ namespace Plex.Engine.GUI
                         {
                             string toCaret = (_currentChar == 0) ? "" : line.Substring(0, _currentChar);
                             int caretX = (int)_font.MeasureString(toCaret).X;
-                            gfx.DrawRectangle(2+caretX, 2+(lineHeight * i), 1, lineHeight, Theme.GetFontColor(Themes.TextFontStyle.System));
+                            gfx.FillRectangle(2+caretX, 2+(lineHeight * i), 1, lineHeight, Theme.GetFontColor(Themes.TextFontStyle.System));
                         }
                     }
                     else

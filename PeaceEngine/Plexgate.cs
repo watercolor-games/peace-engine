@@ -520,14 +520,9 @@ namespace Plex.Engine
                     //Setup the game's rendertarget so it matches the desired resolution.
                     GameRenderTarget = new RenderTarget2D(GraphicsDevice, (int)renderSize.X, (int)renderSize.Y, false, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Format, DepthFormat.Depth24, 8, RenderTargetUsage.PreserveContents);
                 if (_ctx == null)
-                    _ctx = new GraphicsContext(GraphicsDevice, spriteBatch, 0, 0, GameRenderTarget.Width, GameRenderTarget.Height);
+                    _ctx = new GraphicsContext(GraphicsDevice, spriteBatch);
 
-                if (_ctx.Width != GameRenderTarget.Width)
-                    _ctx.Width = GameRenderTarget.Width;
-                if (_ctx.Height != GameRenderTarget.Height)
-                    _ctx.Height = GameRenderTarget.Height;
-                _ctx.X = 0;
-                _ctx.Y = 0;
+                _ctx.ScissorRectangle = Rectangle.Empty;
                 keyboardListener.Update(gameTime);
             }
             //Let's get the mouse state
@@ -703,10 +698,9 @@ namespace Plex.Engine
                 GraphicsDevice.Clear(Color.Black);
                 if (_loadTask != null && _loadTask.IsCompleted == false)
                 {
-                    _ctx.BeginDraw();
                     int halfWidth = _ctx.Width / 2;
                     int halfHeight = _ctx.Height / 2;
-                    _ctx.DrawRectangle(new Vector2((_ctx.Width - halfWidth) / 2, (_ctx.Height - halfHeight) / 2), new Vector2(halfWidth, halfHeight), _logo, System.Windows.Forms.ImageLayout.Zoom);
+                    _ctx.FillRectangle(new Vector2((_ctx.Width - halfWidth) / 2, (_ctx.Height - halfHeight) / 2), new Vector2(halfWidth, halfHeight), _logo);
 
                     string status = _status;
 
@@ -719,27 +713,21 @@ namespace Plex.Engine
 
                     var pMeasure = _font.MeasureString(percentage);
 
-                    _ctx.Batch.DrawString(_font, percentage, new Vector2((_ctx.Width - pMeasure.X) / 2, textY + measure.Y + 30), Color.White);
-
-                    _ctx.EndDraw();
+                    _ctx.DrawString(_font, percentage, new Vector2((_ctx.Width - pMeasure.X) / 2, textY + measure.Y + 30), Color.White);
                 }
                 else
                 {
+                    _ctx.StartFrame(BlendState.AlphaBlend, SamplerState.PointClamp);
                     foreach (var layer in _layers.ToArray())
                         foreach (var entity in layer.Entities)
                         {
-                            if (_ctx.Width != GameRenderTarget.Width)
-                                _ctx.Width = GameRenderTarget.Width;
-                            if (_ctx.Height != GameRenderTarget.Height)
-                                _ctx.Height = GameRenderTarget.Height;
-                            _ctx.X = 0;
-                            _ctx.Y = 0;
+                            _ctx.ScissorRectangle = Rectangle.Empty;
 
                             entity.Draw(gameTime, this._ctx);
 
                         }
 
-
+                    _ctx.EndFrame();
                     spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied,
                                     SamplerState.LinearWrap, DepthStencilState.Default,
                                     RasterizerState.CullNone);
@@ -753,10 +741,6 @@ namespace Plex.Engine
             {
                 MultiSampleAntiAlias = true
             };
-            _ctx.Width = BackBufferWidth;
-            _ctx.Height = BackBufferHeight;
-            _ctx.X = 0;
-            _ctx.Y = 0;
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied,
                             SamplerState.LinearWrap, DepthStencilState.Default,
                             rstate);

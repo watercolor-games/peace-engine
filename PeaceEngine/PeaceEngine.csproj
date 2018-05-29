@@ -39,7 +39,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>6</LangVersion>
+    <LangVersion>7.2</LangVersion>
     <PlatformTarget>x86</PlatformTarget>
     <DocumentationFile>bin\Debug\Plex.Engine.XML</DocumentationFile>
   </PropertyGroup>
@@ -51,7 +51,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>6</LangVersion>
+    <LangVersion>7.2</LangVersion>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
   </PropertyGroup>
   <PropertyGroup>
     <SignManifests>false</SignManifests>
@@ -213,7 +214,16 @@
     <Compile Include="Cutscene\CutsceneManager.cs" />
     <Compile Include="DevConsole\DeveloperConsole.cs" />
     <Compile Include="DependencyAttribute.cs" />
+    <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="GraphicsSubsystem\GraphicsContext.cs" />
+    <Compile Include="GraphicsSubsystem\GraphicsState.cs" />
+    <Compile Include="GraphicsSubsystem\IRenderer.cs" />
+    <Compile Include="GraphicsSubsystem\MathHelpers.cs" />
+    <Compile Include="GraphicsSubsystem\NullRenderer.cs" />
+    <Compile Include="GraphicsSubsystem\PrimitiveBatcher.cs" />
+    <Compile Include="GraphicsSubsystem\RectangleF.cs" />
+    <Compile Include="GraphicsSubsystem\SerenityRenderer.cs" />
+    <Compile Include="GraphicsSubsystem\Sprite.cs" />
     <Compile Include="GraphicsSubsystem\UIManager.cs" />
     <Compile Include="GUI\Button.cs" />
     <Compile Include="GUI\CheckBox.cs" />

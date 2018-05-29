@@ -43,7 +43,7 @@ namespace Plex.Engine.Cutscenes
         public VideoFrame NextFrame(GraphicsContext gfx)
         {
             if (_frameTexture == null)
-                _frameTexture = new Texture2D(gfx.Device, w, h);
+                _frameTexture = gfx.CreateTexture(w, h);
             VideoFrame ret;
             int p = 0;
             while (p < frame.Length)

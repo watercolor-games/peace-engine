@@ -168,13 +168,13 @@ namespace Plex.Engine
                 switch (alignment)
                 {
                     case TextAlignment.Left:
-                        gfx.Batch.DrawString(font, line, new Vector2(x, y + (measure.Y * i)), color);
+                        gfx.DrawString(font, line, new Vector2(x, y + (measure.Y * i)), color);
                         break;
                     case TextAlignment.Center:
-                        gfx.Batch.DrawString(font, line, new Vector2(x + ((maxwidth-measure.X)/2), y + (measure.Y * i)), color);
+                        gfx.DrawString(font, line, new Vector2(x + ((maxwidth-measure.X)/2), y + (measure.Y * i)), color);
                         break;
                     case TextAlignment.Right:
-                        gfx.Batch.DrawString(font, line, new Vector2(x + (maxwidth - measure.X), y + (measure.Y * i)), color);
+                        gfx.DrawString(font, line, new Vector2(x + (maxwidth - measure.X), y + (measure.Y * i)), color);
                         break;
                 }
             }

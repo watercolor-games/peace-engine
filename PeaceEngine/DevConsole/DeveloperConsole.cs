@@ -74,8 +74,7 @@ namespace Plex.Engine.Debug
                 _consoleTextAvailableWidth = gfx.Width - 30;
 
                 int consoleHeight = (int)MathHelper.Lerp(0, gfx.Height, _slideAnim);
-                gfx.BeginDraw();
-                gfx.DrawRectangle(0, 0, gfx.Width, consoleHeight, Color.Black * 0.5F);
+                gfx.FillRectangle(0, 0, gfx.Width, consoleHeight, Color.Black * 0.5F);
 
                 var headFont = _theme.Theme.GetFont(Themes.TextFontStyle.Header3); //The font used by the heading text.
                 var headColor = new Color(64, 128, 255); //The color used by the heading text - don't use the theme because I want this to be theme-independent.
@@ -133,10 +132,8 @@ namespace Plex.Engine.Debug
                     }
                     int cursorY = consoleTextHeight + (charY * _charSizeY);
                     int cursorX = 15 + (charX * _charSizeX);
-                    gfx.DrawRectangle(cursorX, cursorY, _charSizeX, _charSizeY, headColor);
+                    gfx.FillRectangle(cursorX, cursorY, _charSizeX, _charSizeY, headColor);
                 }
-
-                gfx.EndDraw();
             }
 
             public void Load(ContentManager content)

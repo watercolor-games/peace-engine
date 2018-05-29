@@ -80,14 +80,10 @@ namespace Plex.Engine.Cutscene
 
             float centerY = (gfx.Height - (pMeasure.Y + 10 + dMeasure.Y)) / 2;
 
-            gfx.BeginDraw();
-
             _theme.Theme.DrawControlBG(gfx, 0, 0, gfx.Width, gfx.Height);
 
             gfx.DrawString(placeholder, new Vector2((gfx.Width - pMeasure.X) / 2, centerY), headColor, header, TextAlignment.Left, int.MaxValue, WrapMode.None);
             gfx.DrawString(desc, new Vector2((gfx.Width - dMeasure.X) / 2, centerY + pMeasure.Y + 10), highlightColor, highlight, TextAlignment.Left, int.MaxValue, WrapMode.None);
-
-            gfx.EndDraw();
         }
     }
 }

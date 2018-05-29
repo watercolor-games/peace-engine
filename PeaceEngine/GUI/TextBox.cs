@@ -203,7 +203,7 @@ namespace Plex.Engine.GUI
             {
                 colorBar = Theme.GetAccentColor();
             }
-            gfx.DrawRectangle(0, Height - 2, Width, 2, colorBar);
+            gfx.FillRectangle(0, Height - 2, Width, 2, colorBar);
             if (string.IsNullOrWhiteSpace(_text))
             {
                 if (!IsFocused)
@@ -218,7 +218,7 @@ namespace Plex.Engine.GUI
             }
             if (IsFocused)
             {
-                gfx.DrawRectangle(2 + (_caretX - _drawOffset), 4, 2, Height - 8, Color.White);
+                gfx.FillRectangle(2 + (_caretX - _drawOffset), 4, 2, Height - 8, Color.White);
             }
         }
 

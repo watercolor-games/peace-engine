@@ -339,11 +339,11 @@ namespace Plex.Engine.GUI
 
                         if (item == SelectedItem)
                         {
-                            gfx.DrawRectangle(x, y, gfx.Width - (int)((_margin * 2)), height, Theme.GetAccentColor());
+                            gfx.FillRectangle(x, y, gfx.Width - (int)((_margin * 2)), height, Theme.GetAccentColor());
                         }
                         else if (_items.IndexOf(item) == _hottrackItem)
                         {
-                            gfx.DrawRectangle(x, y, gfx.Width - (int)((_margin * 2)), height, Theme.GetAccentColor() * 0.5F);
+                            gfx.FillRectangle(x, y, gfx.Width - (int)((_margin * 2)), height, Theme.GetAccentColor() * 0.5F);
                         }
                         if (image == null)
                         {
@@ -351,7 +351,7 @@ namespace Plex.Engine.GUI
                         }
                         else
                         {
-                            gfx.DrawRectangle(x, y + ((height - _listIconSize) / 2), _listIconSize, _listIconSize, image);
+                            gfx.FillRectangle(x, y + ((height - _listIconSize) / 2), _listIconSize, _listIconSize, image);
                             gfx.DrawString(item.Value, x + _listIconSize + _horizontalIconPad, y + ((height - (int)textMeasure.Y) / 2), Theme.GetFontColor(Themes.TextFontStyle.System), font, TextAlignment.Left, maxwidth, TextRenderers.WrapMode.None);
                         }
                         y += height;
@@ -377,16 +377,16 @@ namespace Plex.Engine.GUI
 
                                 if (image != null)
                                 {
-                                    gfx.DrawRectangle(x + (int)(_horizontalIconPad + ((_largeIconTextWidth - _largeIconSize) / 2)), y + (int)(_verticalIconPad), (int)(_largeIconSize), (int)(_largeIconSize), image, (item == SelectedItem) ? Theme.GetAccentColor() : Color.White);
+                                    gfx.FillRectangle(x + (int)(_horizontalIconPad + ((_largeIconTextWidth - _largeIconSize) / 2)), y + (int)(_verticalIconPad), (int)(_largeIconSize), (int)(_largeIconSize), (item == SelectedItem) ? Theme.GetAccentColor() : Color.White, image);
                                 }
 
                                 if (item == SelectedItem)
                                 {
-                                    gfx.DrawRectangle(x + (int)((_horizontalIconPad / 2)), y + (int)((_verticalIconPad + _largeIconSize + 5)), (int)((_largeIconTextWidth + _horizontalIconPad)), (int)textMeasure.Y, Theme.GetAccentColor());
+                                    gfx.FillRectangle(x + (int)((_horizontalIconPad / 2)), y + (int)((_verticalIconPad + _largeIconSize + 5)), (int)((_largeIconTextWidth + _horizontalIconPad)), (int)textMeasure.Y, Theme.GetAccentColor());
                                 }
                                 else if (_items.IndexOf(item) == _hottrackItem)
                                 {
-                                    gfx.DrawRectangle(x + (int)((_horizontalIconPad / 2)), y + (int)((_verticalIconPad + _largeIconSize + 5)), (int)((_largeIconTextWidth + _horizontalIconPad)), (int)textMeasure.Y, Theme.GetAccentColor() * 0.5F);
+                                    gfx.FillRectangle(x + (int)((_horizontalIconPad / 2)), y + (int)((_verticalIconPad + _largeIconSize + 5)), (int)((_largeIconTextWidth + _horizontalIconPad)), (int)textMeasure.Y, Theme.GetAccentColor() * 0.5F);
                                 }
 
                                 gfx.DrawString(item.Value, x + _horizontalIconPad, y + _verticalIconPad + _largeIconSize + 5, Theme.GetFontColor(Themes.TextFontStyle.System), font, TextAlignment.Center, _largeIconTextWidth, TextRenderers.WrapMode.Words);
@@ -411,12 +411,12 @@ namespace Plex.Engine.GUI
 
                                 if (image != null)
                                 {
-                                    gfx.DrawRectangle(x + _horizontalIconPad + ((_largeIconTextWidth - _largeIconSize) / 2), y + _verticalIconPad, _largeIconSize, _largeIconSize, image, (item == SelectedItem) ? Theme.GetAccentColor() : Color.White);
+                                    gfx.FillRectangle(x + _horizontalIconPad + ((_largeIconTextWidth - _largeIconSize) / 2), y + _verticalIconPad, _largeIconSize, _largeIconSize, (item == SelectedItem) ? Theme.GetAccentColor() : Color.White, image);
                                 }
 
                                 if (item == SelectedItem)
                                 {
-                                    gfx.DrawRectangle(x + (_horizontalIconPad / 2), y + (_verticalIconPad + _largeIconSize + 5), _largeIconTextWidth + _horizontalIconPad, (int)textMeasure.Y, Theme.GetAccentColor());
+                                    gfx.FillRectangle(x + (_horizontalIconPad / 2), y + (_verticalIconPad + _largeIconSize + 5), _largeIconTextWidth + _horizontalIconPad, (int)textMeasure.Y, Theme.GetAccentColor());
                                 }
 
                                 gfx.DrawString(item.Value, x + _horizontalIconPad, y + _verticalIconPad + _largeIconSize + 5, Theme.GetFontColor(Themes.TextFontStyle.System), font, TextAlignment.Center, _largeIconTextWidth, TextRenderers.WrapMode.Words);

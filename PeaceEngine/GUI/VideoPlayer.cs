@@ -49,9 +49,7 @@ namespace Plex.Engine
                     i++;
                     frames--;
                 }
-            gfx.BeginDraw();
-            gfx.DrawRectangle(0, 0, gfx.Width, gfx.Height, ((VideoFrame)frame).picture, System.Windows.Forms.ImageLayout.Zoom);
-            gfx.EndDraw();
+            gfx.FillRectangle(0, 0, gfx.Width, gfx.Height, ((VideoFrame)frame).picture, ImageLayout.Zoom);
         }
 
         public void OnKeyEvent(KeyboardEventArgs e)

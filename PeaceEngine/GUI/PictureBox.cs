@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using Plex.Engine.GraphicsSubsystem;
 
 namespace Plex.Engine.GUI
@@ -77,24 +76,6 @@ namespace Plex.Engine.GUI
         }
 
         /// <summary>
-        /// Gets or sets whether the picture's texture data is pre-multiplied.
-        /// </summary>
-        public bool Premultipied
-        {
-            get
-            {
-                return _premultiplied;
-            }
-            set
-            {
-                if (_premultiplied == value)
-                    return;
-                _premultiplied = value;
-                Invalidate(true);
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the picture's texture.
         /// </summary>
         public Texture2D Texture
@@ -133,7 +114,7 @@ namespace Plex.Engine.GUI
         /// <inheritdoc/>
         protected override void OnPaint(GameTime time, GraphicsContext gfx)
         {
-            gfx.DrawRectangle(0, 0, Width, Height, _texture, _tint, _layout, false, _premultiplied);
+            gfx.FillRectangle(0, 0, Width, Height, _tint, _texture, _layout);
         }
 
         /// <inheritdoc/>

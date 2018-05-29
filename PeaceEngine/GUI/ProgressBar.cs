@@ -68,7 +68,7 @@ namespace Plex.Engine.GUI
         protected override void OnPaint(GameTime time, GraphicsContext gfx)
         {
             gfx.Clear(Color.Black);
-            gfx.DrawRectangle(0, 0, (int)MathHelper.Lerp(0, Width, _value), Height, Theme.GetAccentColor());
+            gfx.FillRectangle(0, 0, (int)MathHelper.Lerp(0, Width, _value), Height, Theme.GetAccentColor());
             if(!string.IsNullOrWhiteSpace(gettext()))
             {
                 var f = Theme.GetFont(Themes.TextFontStyle.System);

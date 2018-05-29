@@ -158,8 +158,6 @@ namespace Plex.Engine.GraphicsSubsystem
 
             public void Draw(GameTime time, GraphicsContext ctx)
             {
-                ctx.Opacity = 1f;
-                ctx.Grayout = false;
                 foreach (var ctrl in Controls)
                 {
                     if (!ctrl.Visible)
@@ -168,29 +166,18 @@ namespace Plex.Engine.GraphicsSubsystem
                         ctrl.Draw(time, ctx);
                     if(ctrl._userfacingtarget != null)
                     {
-                        ctx.BeginDraw();
-                        ctx.Batch.Draw(ctrl._userfacingtarget, new Rectangle(ctrl.X, ctrl.Y, ctrl.Width, ctrl.Height), Color.White * ctrl.Opacity);
-                        ctx.EndDraw();
+                        ctx.FillRectangle(new RectangleF(ctrl.X, ctrl.Y, ctrl.Width, ctrl.Height), Color.White * ctrl.Opacity, ctrl._userfacingtarget);
                     }
                 }
 
-                ctx.Opacity = 1f;
-                ctx.Grayout = false;
-
-                ctx.X = 0;
-                ctx.Y = 0;
-                ctx.Width = _ui.ScreenWidth;
-                ctx.Height = _ui.ScreenHeight;
+                ctx.ScissorRectangle = Rectangle.Empty;
 
                 if (ShowPerfCounters == false)
                     return;
 #if !DEBUG
-                ctx.BeginDraw();
-                ctx.Batch.DrawString(_thememgr.Theme.GetFont(TextFontStyle.Muted), $"{Math.Round(1 / time.ElapsedGameTime.TotalSeconds)} FPS", Vector2.Zero, Color.White);
-                ctx.EndDraw();
+                ctx.DrawString(_thememgr.Theme.GetFont(TextFontStyle.Muted), $"{Math.Round(1 / time.ElapsedGameTime.TotalSeconds)} FPS", Vector2.Zero, Color.White);
                 return;
 #else
-                ctx.BeginDraw();
                 _debugUpdTimer += time.ElapsedGameTime.TotalSeconds;
                 if (_debugUpdTimer >= 1)
                 {
@@ -200,11 +187,7 @@ namespace Plex.Engine.GraphicsSubsystem
                         _debug = $"{Math.Round(1 / time.ElapsedGameTime.TotalSeconds)} FPS | {GC.GetTotalMemory(false) / 1048576} MiB RAM | {int.MinValue}% CPU | Mouse scroll value: {_lastScrollValue}";
                     _debugUpdTimer %= 1;
                 }
-                ctx.Batch.DrawString(_thememgr.Theme.GetFont(TextFontStyle.Muted), _debug, Vector2.Zero, Color.White);
-
-
-
-                ctx.EndDraw();
+                ctx.DrawString(_thememgr.Theme.GetFont(TextFontStyle.Muted), _debug, Vector2.Zero, Color.White);
 #endif
 
             }

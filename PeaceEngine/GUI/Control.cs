@@ -1019,17 +1019,12 @@ namespace Plex.Engine.GUI
             if (Opacity <= 0)
                 return;
             //If we're disabled, set the Grayout property.
-            gfx.Grayout = !Enabled;
-
+            
             if (Opacity < 1 && !Manager.IgnoreControlOpacity && _userfacingtarget == null)
-                _userfacingtarget = new RenderTarget2D(gfx.Device, Width, Height);
+                _userfacingtarget = gfx.CreateRenderTarget(Width, Height);
 
-            var scissor = GetScissorRectangle();
-            gfx.X = scissor.X;
-            gfx.Y = scissor.Y;
-            gfx.Width = scissor.Width;
-            gfx.Height = scissor.Height;
-
+            gfx.ScissorRectangle = GetScissorRectangle();
+            
             var screenPos = ToScreen(0, 0);
             gfx.RenderOffsetX = -(gfx.X - (int)screenPos.X);
             gfx.RenderOffsetY = -(gfx.Y - (int)screenPos.Y);
@@ -1037,27 +1032,23 @@ namespace Plex.Engine.GUI
 
             if (_userfacingtarget != null)
             {
-                gfx.Device.SetRenderTarget(BackBuffer);
-                gfx.Device.Clear(Color.Transparent);
+                gfx.SetRenderTarget(BackBuffer);
+                gfx.Clear(Color.Transparent);
             }
-            gfx.BeginDraw();
 
             OnPaint(time, gfx);
-
-            gfx.EndDraw();
 
             foreach(var child in Children)
             {
                 child.Draw(time, gfx);
                 if (child._userfacingtarget != null)
                 {
-                    gfx.BeginDraw();
-                    gfx.Batch.Draw(child._userfacingtarget, ToScreen(child.X, child.Y), Color.White * child.Opacity);
-                    gfx.EndDraw();
+                    var s = ToScreen(child.X, child.Y);
+                    gfx.FillRectangle(s.X, s.Y, child.Width, child.Height, Color.White * child.Opacity, child._userfacingtarget);
                 }
             }
             if (_userfacingtarget != null)
-                gfx.Device.SetRenderTarget(Parent?.BackBuffer ?? Plexgate.GetInstance().GameRenderTarget);
+                gfx.SetRenderTarget(Parent?.BackBuffer ?? Plexgate.GetInstance().GameRenderTarget);
             //gfx.RenderOffsetX = 0;
             //gfx.RenderOffsetY = 0;
         }

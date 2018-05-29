@@ -97,11 +97,11 @@ namespace Plex.Engine.GUI
                 {
                     if (ContainsMouse && MouseY >= textLoc && MouseY <= textLoc + fontHeight)
                     {
-                        gfx.DrawRectangle(0, textLoc, Width, fontHeight, Theme.GetAccentColor());
+                        gfx.FillRectangle(0, textLoc, Width, fontHeight, Theme.GetAccentColor());
                     }
                     if(item.Image!=null)
                     {
-                        gfx.DrawRectangle(_imageMargin, textLoc + ((fontHeight - _imageSize) / 2), _imageSize, _imageSize, item.Image);
+                        gfx.FillRectangle(_imageMargin, textLoc + ((fontHeight - _imageSize) / 2), _imageSize, _imageSize, item.Image);
                     }
                     gfx.DrawString(item.Text, (_imageMargin * 2) + _imageSize + 2, textLoc, Theme.GetFontColor(Themes.TextFontStyle.System), font, TextAlignment.Left);
                     textLoc += fontHeight + _itemGap;
