@@ -1,0 +1,6 @@
+[submodule "OpenWheels"]
+	path = OpenWheels
+	url = https://github.com/watercolor-games/OpenWheels
+[submodule "OpenWheels.MonoGame"]
+	path = OpenWheels.MonoGame
+	url = https://github.com/watercolor-games/OpenWheels.MonoGame
