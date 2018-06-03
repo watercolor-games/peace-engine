@@ -55,6 +55,8 @@ namespace Plex.Engine.GraphicsSubsystem
 
         private Dictionary<string, int> _textureIDMap = new Dictionary<string, int>();
 
+        private float _circleDefaultStepSize = 0;
+
         public GraphicsContext(GraphicsDevice device)
         {
             _spriteBatch = new SpriteBatch(device);
@@ -65,6 +67,7 @@ namespace Plex.Engine.GraphicsSubsystem
             _white.Name = $"white_{Guid.NewGuid().ToString()}";
             _whiteUid = _white.Name;
             _batcher.RegisterTexture(_white);
+            _circleDefaultStepSize = _batcher.GetCircleStepSize(OpenWheels.Rendering.Batcher.RightStartAngle, OpenWheels.Rendering.Batcher.RightEndAngle, 180);
         }
 
         private string getID(Texture2D tex)
@@ -129,7 +132,16 @@ namespace Plex.Engine.GraphicsSubsystem
         public void DrawCircle(Vector2 center, float radius, Color color, Texture2D texture = null)
         {
             _batcher.SetTexture(getID(texture));
-            _batcher.FillCircle(center.ToNum() - new Vector2(RenderOffsetX, RenderOffsetY).ToNum(), radius, color.ToOw(), 180);
+            float circumference = (float)(Math.PI * (Math.Pow(radius, 2)));
+            int triangles = (int)Math.Round(circumference * _circleDefaultStepSize);
+            if (triangles < 1)
+            {
+                _batcher.FillRect(new RectangleF(new Vector2(center.X - radius, center.Y - radius) - new Vector2(RenderOffsetX, RenderOffsetY), new Vector2(radius * 2, radius * 2)).ToOw(), color.ToOw());
+            }
+            else
+            {
+                _batcher.FillCircle(center.ToNum() - new Vector2(RenderOffsetX, RenderOffsetY).ToNum(), radius, color.ToOw(), 180);
+            }
         }
 
         public void FillRectangle(RectangleF rect, Texture2D texture)
