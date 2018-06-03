@@ -20,6 +20,10 @@ namespace Plex.Engine.GraphicsSubsystem
 
         private readonly Effect _effect;
 
+        private GraphicsState _prevState = GraphicsState.Default;
+
+        
+
         public readonly RasterizerState NoScissor = RasterizerState.CullNone;
         public readonly RasterizerState Scissor = new RasterizerState
         {
@@ -91,6 +95,7 @@ namespace Plex.Engine.GraphicsSubsystem
 
         public void BeginRender()
         {
+            GraphicsDevice.DepthStencilState = DepthStencilState.None;
         }
 
         public void DrawBatch(GraphicsState state, Vertex[] vertexBuffer, int[] indexBuffer, int startIndex,
@@ -112,50 +117,59 @@ namespace Plex.Engine.GraphicsSubsystem
 
         private void SetGraphicsState(GraphicsState state)
         {
-            switch (state.SamplerState)
+            if (state.SamplerState != _prevState.SamplerState)
             {
-                case SamplerState.PointWrap:
-                    GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.PointWrap;
-                    break;
-                case SamplerState.PointClamp:
-                    GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.PointClamp;
-                    break;
-                case SamplerState.LinearWrap:
-                    GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.LinearWrap;
-                    break;
-                case SamplerState.LinearClamp:
-                    GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.LinearClamp;
-                    break;
-                case SamplerState.AnisotropicWrap:
-                    GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.AnisotropicWrap;
-                    break;
-                case SamplerState.AnisotropicClamp:
-                    GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.AnisotropicClamp;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                switch (state.SamplerState)
+                {
+                    case SamplerState.PointWrap:
+                        GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.PointWrap;
+                        break;
+                    case SamplerState.PointClamp:
+                        GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.PointClamp;
+                        break;
+                    case SamplerState.LinearWrap:
+                        GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.LinearWrap;
+                        break;
+                    case SamplerState.LinearClamp:
+                        GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.LinearClamp;
+                        break;
+                    case SamplerState.AnisotropicWrap:
+                        GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.AnisotropicWrap;
+                        break;
+                    case SamplerState.AnisotropicClamp:
+                        GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.AnisotropicClamp;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
 
-            switch (state.BlendState)
+            if (state.BlendState != _prevState.BlendState)
             {
-                case BlendState.AlphaBlend:
-                    GraphicsDevice.BlendState = Microsoft.Xna.Framework.Graphics.BlendState.AlphaBlend;
-                    break;
-                case BlendState.Opaque:
-                    GraphicsDevice.BlendState = Microsoft.Xna.Framework.Graphics.BlendState.Opaque;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                switch (state.BlendState)
+                {
+                    case BlendState.AlphaBlend:
+                        GraphicsDevice.BlendState = Microsoft.Xna.Framework.Graphics.BlendState.AlphaBlend;
+                        break;
+                    case BlendState.Opaque:
+                        GraphicsDevice.BlendState = Microsoft.Xna.Framework.Graphics.BlendState.Opaque;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
 
-            GraphicsDevice.DepthStencilState = DepthStencilState.None;
-            GraphicsDevice.RasterizerState = (state.UseScissorRect) ? NoScissor : Scissor;
+            if(state.UseScissorRect != _prevState.UseScissorRect)
+                GraphicsDevice.RasterizerState = (state.UseScissorRect) ? NoScissor : Scissor;
 
-            if (state.UseScissorRect)
-                GraphicsDevice.ScissorRectangle = state.ScissorRect.ToMg();
+            if(state.ScissorRect != _prevState.ScissorRect)
+                if (state.UseScissorRect)
+                    GraphicsDevice.ScissorRectangle = state.ScissorRect.ToMg();
 
             _effect.CurrentTechnique.Passes[0].Apply();
             GraphicsDevice.Textures[0] = _textures[state.Texture];
+
+            _prevState = state;
         }
 
         #endregion
