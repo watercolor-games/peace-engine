@@ -17,6 +17,7 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework.Content;
 using System.Threading;
 using Plex.Objects;
+using RectangleF = OpenWheels.RectangleF;
 
 namespace Plex.Engine.GraphicsSubsystem
 {

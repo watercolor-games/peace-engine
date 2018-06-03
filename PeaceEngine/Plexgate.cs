@@ -520,7 +520,7 @@ namespace Plex.Engine
                     //Setup the game's rendertarget so it matches the desired resolution.
                     GameRenderTarget = new RenderTarget2D(GraphicsDevice, (int)renderSize.X, (int)renderSize.Y, false, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Format, DepthFormat.Depth24, 8, RenderTargetUsage.PreserveContents);
                 if (_ctx == null)
-                    _ctx = new GraphicsContext(GraphicsDevice, spriteBatch);
+                    _ctx = new GraphicsContext(GraphicsDevice);
 
                 _ctx.ScissorRectangle = Rectangle.Empty;
                 keyboardListener.Update(gameTime);
@@ -698,9 +698,11 @@ namespace Plex.Engine
                 GraphicsDevice.Clear(Color.Black);
                 if (_loadTask != null && _loadTask.IsCompleted == false)
                 {
+                    _ctx.StartFrame(BlendState.AlphaBlend, SamplerState.PointClamp);
+
                     int halfWidth = _ctx.Width / 2;
                     int halfHeight = _ctx.Height / 2;
-                    _ctx.FillRectangle(new Vector2((_ctx.Width - halfWidth) / 2, (_ctx.Height - halfHeight) / 2), new Vector2(halfWidth, halfHeight), _logo);
+                    _ctx.FillRectangle(new Vector2((_ctx.Width - halfWidth) / 2, (_ctx.Height - halfHeight) / 2), new Vector2(halfWidth, halfHeight), _logo, ImageLayout.Zoom);
 
                     string status = _status;
 
@@ -714,6 +716,8 @@ namespace Plex.Engine
                     var pMeasure = _font.MeasureString(percentage);
 
                     _ctx.DrawString(_font, percentage, new Vector2((_ctx.Width - pMeasure.X) / 2, textY + measure.Y + 30), Color.White);
+
+                    _ctx.EndFrame();
                 }
                 else
                 {

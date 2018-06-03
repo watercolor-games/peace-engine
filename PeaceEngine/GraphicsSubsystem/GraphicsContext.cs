@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define DO_RENDEROFFSETS
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -7,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RectangleF = Plex.Engine.RectangleF;
 using Plex.Engine.TextRenderers;
 
 namespace Plex.Engine.GraphicsSubsystem
@@ -26,25 +29,52 @@ namespace Plex.Engine.GraphicsSubsystem
     public sealed class GraphicsContext
     {
         private GraphicsDevice _device = null;
-        private PrimitiveBatcher _batcher = null;
+        private MgBatcher _batcher = null;
         private SpriteBatch _spriteBatch = null;
         
-        public Rectangle ScissorRectangle { get => _batcher.ScissorRect; set => _batcher.ScissorRect = value; }
+        public Rectangle ScissorRectangle { get => _batcher.ScissorRect.ToMg(); set => _batcher.ScissorRect = value.ToOw(); }
 
         public int X => ScissorRectangle.X;
         public int Y => ScissorRectangle.Y;
         public int Width => (ScissorRectangle == Rectangle.Empty) ? _device.Viewport.Width : ScissorRectangle.Width;
         public int Height => (ScissorRectangle == Rectangle.Empty) ? _device.Viewport.Height : ScissorRectangle.Height;
 
+#if DO_RENDEROFFSETS
         public float RenderOffsetX { get; set; }
         public float RenderOffsetY { get; set; }
+#else
+        private float _killme, _killyou = 0;
 
-        public GraphicsContext(GraphicsDevice device, SpriteBatch batch)
+            public float RenderOffsetX { get => 0; set => _killme = value; }
+        public float RenderOffsetY { get => 0; set => _killyou = value; }
+
+#endif
+
+        private Texture2D _white = null;
+        private string _whiteUid = null;
+
+        private Dictionary<string, int> _textureIDMap = new Dictionary<string, int>();
+
+        public GraphicsContext(GraphicsDevice device)
         {
-            _spriteBatch = batch;
+            _spriteBatch = new SpriteBatch(device);
             _device = device;
-            _batcher = new PrimitiveBatcher(new SerenityRenderer(_device));
-            
+            _batcher = new MgBatcher(_device);
+            _white = CreateTexture(1, 1);
+            _white.SetData(new uint[] { 0xffffffff });
+            _white.Name = $"white_{Guid.NewGuid().ToString()}";
+            _whiteUid = _white.Name;
+            _batcher.RegisterTexture(_white);
+        }
+
+        private string getID(Texture2D tex)
+        {
+            if (tex == null)
+                return _whiteUid;
+            if (string.IsNullOrWhiteSpace(tex.Name))
+                tex.Name = Guid.NewGuid().ToString();
+            _batcher.RegisterTexture(tex);
+            return tex.Name;
         }
 
         public void SetRenderTarget(RenderTarget2D target)
@@ -52,7 +82,7 @@ namespace Plex.Engine.GraphicsSubsystem
             _batcher.Finish();
             _device.SetRenderTarget(target);
             if (target == null)
-                ScissorRectangle = _device.Viewport.Bounds;
+                ScissorRectangle = OpenWheels.Rectangle.Unit.ToMg();
             else
                 ScissorRectangle = new Rectangle(0, 0, target.Width, target.Height);
             _batcher.Start();
@@ -60,8 +90,8 @@ namespace Plex.Engine.GraphicsSubsystem
 
         internal void StartFrame(BlendState blendState, SamplerState samplerState)
         {
-            _batcher.SamplerState = samplerState;
-            _batcher.BlendState = blendState;
+            _batcher.SamplerState = samplerState.ToOw();
+            _batcher.BlendState = blendState.ToOw();
             _batcher.Start();
         }
 
@@ -77,8 +107,8 @@ namespace Plex.Engine.GraphicsSubsystem
 
         public void DrawLine(Vector2 a, Vector2 b, float width, Color color, Texture2D texture = null)
         {
-            _batcher.SetTexture(texture);
-            _batcher.DrawLine(a - new Vector2(RenderOffsetX,RenderOffsetY), b - new Vector2(RenderOffsetX,RenderOffsetY), color, width);
+            _batcher.SetTexture(getID(texture));
+            _batcher.DrawLine(a.ToNum() - new Vector2(RenderOffsetX,RenderOffsetY).ToNum(), b.ToNum() - new Vector2(RenderOffsetX,RenderOffsetY).ToNum(), color.ToOw(), width);
         }
 
         public Texture2D CreateTexture(int w, int h)
@@ -98,8 +128,8 @@ namespace Plex.Engine.GraphicsSubsystem
 
         public void DrawCircle(Vector2 center, float radius, Color color, Texture2D texture = null)
         {
-            _batcher.SetTexture(texture);
-            _batcher.FillCircle(center - new Vector2(RenderOffsetX,RenderOffsetY), radius, color, 360);
+            _batcher.SetTexture(getID(texture));
+            _batcher.FillCircle(center.ToNum() - new Vector2(RenderOffsetX, RenderOffsetY).ToNum(), radius, color.ToOw(), 180);
         }
 
         public void FillRectangle(RectangleF rect, Texture2D texture)
@@ -120,32 +150,32 @@ namespace Plex.Engine.GraphicsSubsystem
 
         public void FillRectangle(RectangleF rect, Color color, Texture2D texture = null, ImageLayout layout = ImageLayout.Stretch)
         {
-            _batcher.SetTexture(texture);
+            _batcher.SetTexture(getID(texture));
 
             rect = new RectangleF(rect.X - RenderOffsetX, rect.Y - RenderOffsetY, rect.Width, rect.Height);
 
             float tw = (texture == null) ? rect.Width : texture.Width;
-            float th = (texture == null) ? rect.Width : texture.Width;
+            float th = (texture == null) ? rect.Height : texture.Height;
 
             switch (layout)
             {
                 case ImageLayout.None:
-                    _batcher.FillRect(new RectangleF(rect.X+X, rect.Y+Y, (texture == null) ? rect.Width : texture.Width, (texture == null) ? rect.Height : texture.Height), color);
+                    _batcher.FillRect(new RectangleF(rect.X+X, rect.Y+Y, (texture == null) ? rect.Width : texture.Width, (texture == null) ? rect.Height : texture.Height).ToOw(), color.ToOw());
                     break;
                 case ImageLayout.Stretch:
-                    _batcher.FillRect(new RectangleF(rect.X+X,rect.Y+Y,rect.Width,rect.Height), color);
+                    _batcher.FillRect(new RectangleF(rect.X+X,rect.Y+Y,rect.Width,rect.Height).ToOw(), color.ToOw());
                     break;
                 case ImageLayout.Center:
-                    _batcher.FillRect(new RectangleF(X+rect.X + ((rect.Width - tw) / 2), Y+rect.Y + ((rect.Height - th) / 2), tw, th), color);
+                    _batcher.FillRect(new RectangleF(X+rect.X + ((rect.Width - tw) / 2), Y+rect.Y + ((rect.Height - th) / 2), tw, th).ToOw(), color.ToOw());
                     break;
                 case ImageLayout.Zoom:
 
-                    float scale = Math.Min(rect.Width / (float)tw, rect.Height / (float)th);
+                    float scale = Math.Min(rect.Width / tw, rect.Height / th);
 
                     var scaleWidth = (tw * scale);
                     var scaleHeight = (th * scale);
 
-                    _batcher.FillRect(new RectangleF(X+rect.X + ((rect.Width - scaleWidth) / 2), Y+rect.Y + ((rect.Height - scaleHeight) / 2), scaleWidth, scaleHeight), color);
+                    _batcher.FillRect(new RectangleF(X+rect.X + ((rect.Width - scaleWidth) / 2), Y+rect.Y + ((rect.Height - scaleHeight) / 2), scaleWidth, scaleHeight).ToOw(), color.ToOw());
                     break;
             }
         }
@@ -174,36 +204,39 @@ namespace Plex.Engine.GraphicsSubsystem
             {
                 string line = wrap[i];
                 var measure = font.MeasureString(line);
-                DrawString(font, line, new Vector2(pos.X + ((wrapWidth - measure.X) / 2), pos.Y + (font.LineSpacing * i)), color);
+                switch(alignment)
+                {
+                    case TextAlignment.Center:
+                        DrawString(font, line, new Vector2(pos.X + ((wrapWidth - measure.X) / 2), pos.Y + (font.LineSpacing * i)), color);
+                        break;
+                    case TextAlignment.Left:
+                        DrawString(font, line, new Vector2(pos.X, pos.Y + (font.LineSpacing * i)), color);
+                        break;
+                    case TextAlignment.Right:
+                        DrawString(font, line, new Vector2(pos.X + (wrapWidth - measure.X), pos.Y + (font.LineSpacing * i)), color);
+                        break;
+                }
             }
         }
 
         public void DrawString(SpriteFont font, string text, Vector2 position, Color color)
         {
-            return;
             if (string.IsNullOrWhiteSpace(text))
                 return;
             if (color.A == 0)
                 return;
-            float x = -RenderOffsetX;
-            float y = -RenderOffsetY;
-            var glyphs = font.GetGlyphs();
-            foreach (char c in text)
-            {
-                if (c == '\r')
-                    continue;
-                if (c == '\n')
-                {
-                    x = -RenderOffsetX;
-                    y += font.LineSpacing;
-                    continue;
-                }
 
-                var glyph = glyphs[c];
-                _batcher.Sprite = new Sprite(font.Texture, glyph.BoundsInTexture);
-                _batcher.FillRect(new RectangleF(X+position.X + x, (Y+position.Y + y) + glyph.Cropping.Height, glyph.BoundsInTexture.Width, glyph.BoundsInTexture.Height), Color.White);
-                x += glyph.WidthIncludingBearings;
-            }
+            _batcher.Finish();
+
+            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, (_batcher.Renderer as SerenityRenderer).NoScissor, null);
+
+            var pos = new Vector2((position.X + X) + RenderOffsetX, (position.Y + Y) + RenderOffsetY);
+
+            _spriteBatch.DrawString(font, text, pos, color);
+
+            _spriteBatch.End();
+
+            _batcher.Start();
         }
     }
 

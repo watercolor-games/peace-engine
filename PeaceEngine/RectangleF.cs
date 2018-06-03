@@ -1,12 +1,23 @@
 ﻿using Microsoft.Xna.Framework;
+using OpenWheels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Plex.Engine.GraphicsSubsystem
+namespace Plex.Engine
 {
+    /// <summary>
+    /// Value type representing a rectangle with float coordinates.
+    /// </summary>
+    /// <remarks>
+    ///     <para>This is a direct clone of <see cref="OpenWheels.RectangleF"/> for use in <see cref="Plex.Engine.GraphicsSubsystem.GraphicsContext"/> and is only here for convenience so your game doesn't have to reference the <see cref="OpenWheels"/> assembly just to use the graphics subsystem in Peace Engine.</para>
+    /// </remarks>
+#if NETSTANDARD2_0
+    [TypeConverter(typeof(RectangleFConverter))]
+    [DataContract]
+#endif
     public struct RectangleF
     {
         /// <summary>
@@ -22,21 +33,33 @@ namespace Plex.Engine.GraphicsSubsystem
         /// <summary>
         /// X coordinate of the top left of the rectangle.
         /// </summary>
+#if NETSTANDARD2_0
+        [DataMember]
+#endif
         public readonly float X;
 
         /// <summary>
         /// Y coordinate of the top left of the rectangle.
         /// </summary>
+#if NETSTANDARD2_0
+        [DataMember]
+#endif
         public readonly float Y;
 
         /// <summary>
         /// Width of the rectangle.
         /// </summary>
+#if NETSTANDARD2_0
+        [DataMember]
+#endif
         public readonly float Width;
 
         /// <summary>
         /// Height of the rectangle.
         /// </summary>
+#if NETSTANDARD2_0
+        [DataMember]
+#endif
         public readonly float Height;
 
         /// <summary>
@@ -135,6 +158,9 @@ namespace Plex.Engine.GraphicsSubsystem
         /// </summary>
         /// <param name="v">Amount to inflate the rectangle at the four sides.</param>
         /// <remarks>A negative value can be passed. This create a shrinked rectangle.</remarks>
+#if NETSTANDARD2_0
+        [Pure]
+#endif
         public RectangleF Inflate(float v)
         {
             return Inflate(v, v);
@@ -146,6 +172,9 @@ namespace Plex.Engine.GraphicsSubsystem
         /// </summary>
         /// <param name="h">Amount to inflate the rectangle at the left and right sides.</param>
         /// <param name="v">Amount to inflate the rectangle at the top and bottom sides.</param>
+#if NETSTANDARD2_0
+        [Pure]
+#endif
         public RectangleF Inflate(float h, float v)
         {
             var halfH = h / 2;
@@ -186,7 +215,17 @@ namespace Plex.Engine.GraphicsSubsystem
             return new RectangleF(center - halfExtents, halfExtents * 2);
         }
 
-        public static implicit operator RectangleF(Rectangle rect)
+        public static implicit operator RectangleF(OpenWheels.Rectangle rect)
+        {
+            return new RectangleF(rect.X, rect.Y, rect.Width, rect.Height);
+        }
+
+        public static implicit operator RectangleF(Microsoft.Xna.Framework.Rectangle rect)
+        {
+            return new RectangleF(rect.X, rect.Y, rect.Width, rect.Height);
+        }
+
+        public static implicit operator RectangleF(OpenWheels.RectangleF rect)
         {
             return new RectangleF(rect.X, rect.Y, rect.Width, rect.Height);
         }

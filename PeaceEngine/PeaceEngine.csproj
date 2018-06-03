@@ -216,14 +216,9 @@
     <Compile Include="DependencyAttribute.cs" />
     <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="GraphicsSubsystem\GraphicsContext.cs" />
-    <Compile Include="GraphicsSubsystem\GraphicsState.cs" />
-    <Compile Include="GraphicsSubsystem\IRenderer.cs" />
-    <Compile Include="GraphicsSubsystem\MathHelpers.cs" />
-    <Compile Include="GraphicsSubsystem\NullRenderer.cs" />
-    <Compile Include="GraphicsSubsystem\PrimitiveBatcher.cs" />
-    <Compile Include="GraphicsSubsystem\RectangleF.cs" />
-    <Compile Include="GraphicsSubsystem\SerenityRenderer.cs" />
-    <Compile Include="GraphicsSubsystem\Sprite.cs" />
+    <Compile Include="GraphicsSubsystem\MgBatcher.cs" />
+    <Compile Include="GraphicsSubsystem\MgRenderer.cs" />
+    <Compile Include="GraphicsSubsystem\OpenWheelsConversions.cs" />
     <Compile Include="GraphicsSubsystem\UIManager.cs" />
     <Compile Include="GUI\Button.cs" />
     <Compile Include="GUI\CheckBox.cs" />
@@ -255,6 +250,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="RectangleF.cs" />
     <Compile Include="Saves\SaveManager.cs" />
     <Compile Include="TextRenderers\WrapMode.cs" />
     <Compile Include="Themes\EngineTheme.cs" />
@@ -393,6 +389,10 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OpenWheels\src\OpenWheels.NetFramework\OpenWheels.NetFramework.csproj">
+      <Project>{b252b44f-9f5e-406b-b0cc-00eee3bca377}</Project>
+      <Name>OpenWheels.NetFramework</Name>
+    </ProjectReference>
     <ProjectReference Include="..\WatercolorGames.Utilities\WatercolorGames.Utilities.csproj">
       <Project>{a069089a-8962-4607-b2b2-4cf4a371066e}</Project>
       <Name>WatercolorGames.Utilities</Name>
