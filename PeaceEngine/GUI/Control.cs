@@ -1022,9 +1022,19 @@ namespace Plex.Engine.GUI
             
             if (Opacity < 1 && !Manager.IgnoreControlOpacity && _userfacingtarget == null)
                 _userfacingtarget = gfx.CreateRenderTarget(Width, Height);
-
+            else if(Opacity == 1)
+            {
+                if(_userfacingtarget!=null)
+                {
+                    _userfacingtarget.Dispose();
+                    _userfacingtarget = null;
+                }
+            }
             gfx.ScissorRectangle = GetScissorRectangle();
-            
+
+            if (gfx.ScissorRectangle == Rectangle.Empty)
+                return;
+
             var screenPos = ToScreen(0, 0);
             gfx.RenderOffsetX = -(gfx.X - (int)screenPos.X);
             gfx.RenderOffsetY = -(gfx.Y - (int)screenPos.Y);
@@ -1049,11 +1059,8 @@ namespace Plex.Engine.GUI
             }
             if (_userfacingtarget != null)
                 gfx.SetRenderTarget(Parent?.BackBuffer ?? Plexgate.GetInstance().GameRenderTarget);
-            //gfx.RenderOffsetX = 0;
-            //gfx.RenderOffsetY = 0;
-        }
 
-        private byte[] _backbufferData = null;
+        }
 
         /// <summary>
         /// Retrieve the left mouse state.

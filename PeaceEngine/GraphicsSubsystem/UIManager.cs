@@ -171,6 +171,9 @@ namespace Plex.Engine.GraphicsSubsystem
                     }
                 }
 
+                ctx.RenderOffsetX = 0;
+                ctx.RenderOffsetY = 0;
+
                 ctx.ScissorRectangle = Rectangle.Empty;
 
                 if (ShowPerfCounters == false)
@@ -239,14 +242,27 @@ namespace Plex.Engine.GraphicsSubsystem
                         break;
                 }
 
-                if(mouse.ScrollWheelValue != _lastScrollValue)
+                if(mouse.ScrollWheelValue != _scrollDestination)
                 {
-                    foreach (var ctrl in controls)
-                        if (ctrl.PropagateScrollDelta(mouse.ScrollWheelValue - _lastScrollValue))
-                            break;
-                    _lastScrollValue = mouse.ScrollWheelValue;
+                    _scrollDestination = mouse.ScrollWheelValue;
+                    if (!_config.GetValue("ui.smoothScrolling", true))
+                    {
+                        _scrollProgress = 1;
+                        _lastScrollValue = mouse.ScrollWheelValue;
+                    }
+                    else
+                    {
+                        _scrollProgress = 0;
+                        _lastScrollValue = _scrollValue;
+                    }
                 }
             }
+
+            private int _deltaValue = 0;
+            private int _scrollValue = 0;
+            private int _scrollDestination = 0;
+
+            private float _scrollProgress = 1;
 
             public void Update(GameTime time)
             {
@@ -257,11 +273,24 @@ namespace Plex.Engine.GraphicsSubsystem
                     ctrl.Update(time);
                 }
 
+                _scrollProgress = MathHelper.Clamp(_scrollProgress + ((float)time.ElapsedGameTime.TotalSeconds * 4), 0, 1);
+                _scrollValue = (int)MathHelper.Lerp(_lastScrollValue, _scrollDestination, _scrollProgress);
+                if (_scrollValue != _deltaValue)
+                {
+                    var controls = Controls.OrderByDescending(x => Array.IndexOf(Controls, x)).ToArray();
+                    foreach (var ctrl in controls)
+                        if (ctrl.PropagateScrollDelta(_scrollValue - _deltaValue))
+                            break;
+                    _deltaValue = _scrollValue;
+                }
+
 
             }
 
             public void Load(ContentManager content)
             {
+                _config.GetValue("ui.smoothScrolling", true); //turn smooth scrolling on by default.
+
                 _screenshots = Path.Combine(_appdata.GamePath, "screenshots");
                 if (!Directory.Exists(_screenshots))
                     Directory.CreateDirectory(_screenshots);

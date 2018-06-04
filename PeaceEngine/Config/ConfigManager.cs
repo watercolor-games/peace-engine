@@ -23,6 +23,16 @@ namespace Plex.Engine.Config
 
         private Dictionary<string, object> _config = null;
 
+        public string[] Keys => _config.Keys.ToArray();
+
+        public object GetValue(string key)
+        {
+            if (_config.ContainsKey(key))
+                return _config[key];
+            else
+                return null;
+        }
+
         [Dependency]
         private Plexgate _plexgate = null;
 

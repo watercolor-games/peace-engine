@@ -528,7 +528,7 @@ namespace Plex.Engine
             //Let's get the mouse state
             var mouseState = Mouse.GetState(this.Window);
             bool doMouse = LastMouseState != mouseState;
-            LastMouseState = new MouseState((int)MathHelper.Lerp(0, GameRenderTarget.Width, (float)mouseState.X / BackBufferWidth), (int)MathHelper.Lerp(0, GameRenderTarget.Height, (float)mouseState.Y / BackBufferHeight), mouseState.ScrollWheelValue, mouseState.LeftButton, mouseState.MiddleButton, mouseState.RightButton, mouseState.XButton1, mouseState.XButton2);
+            LastMouseState = new MouseState((int)MathHelper.Lerp(0, GameRenderTarget.Width, (float)mouseState.X / BackBufferWidth), (int)MathHelper.Lerp(0, GameRenderTarget.Height, (float)mouseState.Y / BackBufferHeight), mouseState.ScrollWheelValue/2, mouseState.LeftButton, mouseState.MiddleButton, mouseState.RightButton, mouseState.XButton1, mouseState.XButton2);
             
             while (_actions.Count != 0)
             {
@@ -694,11 +694,11 @@ namespace Plex.Engine
                 return;
             if (IsActive)
             {
-                GraphicsDevice.SetRenderTarget(GameRenderTarget);
+                _ctx.SetRenderTarget(GameRenderTarget);
                 GraphicsDevice.Clear(Color.Black);
                 if (_loadTask != null && _loadTask.IsCompleted == false)
                 {
-                    _ctx.StartFrame(BlendState.AlphaBlend, SamplerState.PointClamp);
+                    _ctx.StartFrame(BlendState.AlphaBlend);
 
                     int halfWidth = _ctx.Width / 2;
                     int halfHeight = _ctx.Height / 2;
@@ -721,7 +721,7 @@ namespace Plex.Engine
                 }
                 else
                 {
-                    _ctx.StartFrame(BlendState.AlphaBlend, SamplerState.PointClamp);
+                    _ctx.StartFrame(BlendState.AlphaBlend);
                     foreach (var layer in _layers.ToArray())
                         foreach (var entity in layer.Entities)
                         {

@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RectangleF = Plex.Engine.RectangleF;
 using Plex.Engine.TextRenderers;
+using Plex.Engine.Config;
 
 namespace Plex.Engine.GraphicsSubsystem
 {
@@ -28,6 +29,9 @@ namespace Plex.Engine.GraphicsSubsystem
     /// <threadsafety static="true" instance="false"/>
     public sealed class GraphicsContext
     {
+        [Dependency]
+        private ConfigManager _config = null;
+
         private GraphicsDevice _device = null;
         private MgBatcher _batcher = null;
         private SpriteBatch _spriteBatch = null;
@@ -36,8 +40,8 @@ namespace Plex.Engine.GraphicsSubsystem
 
         public int X => ScissorRectangle.X;
         public int Y => ScissorRectangle.Y;
-        public int Width => (ScissorRectangle == Rectangle.Empty) ? _device.Viewport.Width : ScissorRectangle.Width;
-        public int Height => (ScissorRectangle == Rectangle.Empty) ? _device.Viewport.Height : ScissorRectangle.Height;
+        public int Width => (_batcher.ScissorRect == OpenWheels.Rectangle.Empty) ? _device.Viewport.Width : ScissorRectangle.Width;
+        public int Height => (_batcher.ScissorRect == OpenWheels.Rectangle.Empty) ? _device.Viewport.Height : ScissorRectangle.Height;
 
 #if DO_RENDEROFFSETS
         public float RenderOffsetX { get; set; }
@@ -59,6 +63,8 @@ namespace Plex.Engine.GraphicsSubsystem
 
         public GraphicsContext(GraphicsDevice device)
         {
+            Plexgate.GetInstance().Inject(this);
+
             _spriteBatch = new SpriteBatch(device);
             _device = device;
             _batcher = new MgBatcher(_device);
@@ -84,16 +90,16 @@ namespace Plex.Engine.GraphicsSubsystem
         {
             _batcher.Finish();
             _device.SetRenderTarget(target);
-            if (target == null)
-                ScissorRectangle = OpenWheels.Rectangle.Unit.ToMg();
-            else
-                ScissorRectangle = new Rectangle(0, 0, target.Width, target.Height);
+            ScissorRectangle = Rectangle.Empty;
+            RenderOffsetX = 0;
+            RenderOffsetY = 0;
             _batcher.Start();
         }
 
-        internal void StartFrame(BlendState blendState, SamplerState samplerState)
+        internal void StartFrame(BlendState blendState)
         {
-            _batcher.SamplerState = samplerState.ToOw();
+            _sampler = _config.GetValue("anisotropicFiltering", true) ? SamplerState.AnisotropicClamp : SamplerState.LinearClamp;
+            _batcher.SamplerState = _sampler.ToOw();
             _batcher.BlendState = blendState.ToOw();
             _batcher.Start();
         }
@@ -164,7 +170,7 @@ namespace Plex.Engine.GraphicsSubsystem
         {
             _batcher.SetTexture(getID(texture));
 
-            rect = new RectangleF(rect.X - RenderOffsetX, rect.Y - RenderOffsetY, rect.Width, rect.Height);
+            rect = new RectangleF(rect.X + RenderOffsetX, rect.Y + RenderOffsetY, rect.Width, rect.Height);
 
             float tw = (texture == null) ? rect.Width : texture.Width;
             float th = (texture == null) ? rect.Height : texture.Height;
@@ -196,6 +202,8 @@ namespace Plex.Engine.GraphicsSubsystem
         {
             FillRectangle(new RectangleF(x, y, w, h), color, texture, layout);
         }
+
+        private SamplerState _sampler = null;
 
         public void DrawString(string text, float x, float y, Color color, SpriteFont font, TextAlignment alignment = TextAlignment.Left, int wrapWidth = 0, WrapMode mode = WrapMode.None)
         {
@@ -231,6 +239,18 @@ namespace Plex.Engine.GraphicsSubsystem
             }
         }
 
+        private RasterizerState GetRasterizerState()
+        {
+            if(_batcher.ScissorRect == OpenWheels.Rectangle.Empty)
+            {
+                return (_batcher.Renderer as SerenityRenderer).NoScissor;
+            }
+            else
+            {
+                return (_batcher.Renderer as SerenityRenderer).Scissor;
+            }
+        }
+
         public void DrawString(SpriteFont font, string text, Vector2 position, Color color)
         {
             if (string.IsNullOrWhiteSpace(text))
@@ -240,9 +260,11 @@ namespace Plex.Engine.GraphicsSubsystem
 
             _batcher.Finish();
 
-            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, (_batcher.Renderer as SerenityRenderer).NoScissor, null);
+            _device.ScissorRectangle = (_batcher.ScissorRect == OpenWheels.Rectangle.Empty) ? _device.Viewport.Bounds : ScissorRectangle;
 
-            var pos = new Vector2((position.X + X) + RenderOffsetX, (position.Y + Y) + RenderOffsetY);
+            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, _sampler, DepthStencilState.None, GetRasterizerState(), null);
+
+            var pos = new Vector2((position.X + _device.ScissorRectangle.X) + RenderOffsetX, (position.Y + _device.ScissorRectangle.Y) + RenderOffsetY);
 
             _spriteBatch.DrawString(font, text, pos, color);
 
