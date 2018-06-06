@@ -117,7 +117,7 @@ namespace Plex.Engine.GraphicsSubsystem
         public void DrawLine(Vector2 a, Vector2 b, float width, Color color, Texture2D texture = null)
         {
             _batcher.SetTexture(getID(texture));
-            _batcher.DrawLine(a.ToNum() - new Vector2(RenderOffsetX,RenderOffsetY).ToNum(), b.ToNum() - new Vector2(RenderOffsetX,RenderOffsetY).ToNum(), color.ToOw(), width);
+            _batcher.DrawLine(a.ToNum() + new Vector2(RenderOffsetX,RenderOffsetY).ToNum(), b.ToNum() - new Vector2(RenderOffsetX,RenderOffsetY).ToNum(), color.ToOw(), width);
         }
 
         public Texture2D CreateTexture(int w, int h)
@@ -142,11 +142,11 @@ namespace Plex.Engine.GraphicsSubsystem
             int triangles = (int)Math.Round(circumference * _circleDefaultStepSize);
             if (triangles < 1)
             {
-                _batcher.FillRect(new RectangleF(new Vector2(center.X - radius, center.Y - radius) - new Vector2(RenderOffsetX, RenderOffsetY), new Vector2(radius * 2, radius * 2)).ToOw(), color.ToOw());
+                _batcher.FillRect(new RectangleF(new Vector2(center.X + radius, center.Y - radius) - new Vector2(RenderOffsetX, RenderOffsetY), new Vector2(radius * 2, radius * 2)).ToOw(), color.ToOw());
             }
             else
             {
-                _batcher.FillCircle(center.ToNum() - new Vector2(RenderOffsetX, RenderOffsetY).ToNum(), radius, color.ToOw(), 180);
+                _batcher.FillCircle(center.ToNum() + new Vector2(RenderOffsetX, RenderOffsetY).ToNum(), radius, color.ToOw(), 180);
             }
         }
 
