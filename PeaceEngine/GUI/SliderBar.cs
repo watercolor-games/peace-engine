@@ -19,27 +19,32 @@ namespace Plex.Engine.GUI
         /// </summary>
         public SliderBar()
         {
-            MouseLeftDown += (o, a) =>
+            MouseDown += (o, a) =>
             {
-                _isMouseDown = true;
+                if(a.Button == MonoGame.Extended.Input.InputListeners.MouseButton.Left)
+                    _isMouseDown = true;
             };
-            MouseLeftUp += (o, a) =>
+            MouseMove += (o, a) =>
             {
-                _isMouseDown = false;
+                if (_isMouseDown)
+                {
+                    float mousex = a.Position.X;
+                    float width = Width;
+                    Value = (mousex / width);
+                }
+            };
+            MouseUp += (o, a) =>
+            {
+                if (a.Button == MonoGame.Extended.Input.InputListeners.MouseButton.Left)
+                    _isMouseDown = false;
             };
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate(GameTime time)
         {
-            if (!ContainsMouse)
+            if (!LeftButtonPressed)
                 _isMouseDown = false;
-            if (_isMouseDown)
-            {
-                float mousex = MouseX;
-                float width = Width;
-                Value = (mousex / width);
-            }
             base.OnUpdate(time);
         }
     }

@@ -23,27 +23,12 @@ namespace Plex.Engine.GUI
         private int _width = 1;
         private int _height = 1;
         private List<Control> _children = null;
-        private bool _invalidated = true;
         internal RenderTarget2D _userfacingtarget = null;
-        private bool _resized = false;
         private Control _parent = null;
-        private int _mousex = -1;
-        private int _mousey = -1;
-        private ButtonState _left;
-        private ButtonState _middle;
-        private ButtonState _right;
         private bool _isVisible = true;
         private bool _disposed = false;
         private float _opacity = 1;
         private bool _enabled = true;
-
-        protected virtual bool CanBeScrolled
-        {
-            get
-            {
-                return false;
-            }
-        }
 
         /// <summary>
         /// Gets or sets whether this control is enabled. If not, the control will not receive mouse or keyboard events, and will be visually grayed out.
@@ -59,12 +44,9 @@ namespace Plex.Engine.GUI
                 if (_enabled == value)
                     return;
                 _enabled = value;
-                Invalidate();
+                
             }
         }
-
-        private bool _doDoubleClick = false;
-        private double _doubleClickCooldown = 0;
 
         private int _minWidth = 1;
         private int _minHeight = 1;
@@ -121,76 +103,15 @@ namespace Plex.Engine.GUI
         {
             get
             {
-                return _userfacingtarget ?? Parent?.BackBuffer ?? Plexgate.GetInstance().GameRenderTarget;
+                return _userfacingtarget ?? Parent?.BackBuffer ?? GameLoop.GetInstance().GameRenderTarget;
             }
         }
 
-        internal bool PropagateScrollDelta(int delta)
-        {
-            foreach (var control in Children.OrderBy(x => Array.IndexOf(Children, x)))
-                if (control.PropagateScrollDelta(delta))
-                    return true;
-            if(CanBeScrolled)
-            {
-                if (ContainsMouse)
-                {
-                    OnMouseScroll(delta);
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Occurs when the player clicks on the control.
-        /// </summary>
-        public event EventHandler Click;
-        /// <summary>
-        /// Occurs when the player right-clicks the control.
-        /// </summary>
-        public event EventHandler RightClick;
-        /// <summary>
-        /// Occurs when the player middle-clicks the control.
-        /// </summary>
-        public event EventHandler MiddleClick;
-        /// <summary>
-        /// Occurs when the player's mouse moves. Coordinates are relative to the control's <see cref="X"/> and <see cref="Y"/> values.  
-        /// </summary>
-        public event Action<object, Vector2> MouseMove;
-        /// <summary>
-        /// Occurs when the left mouse button is pressed down.
-        /// </summary>
-        public event EventHandler MouseLeftDown;
-        /// <summary>
-        /// Occurs when the right mouse button is pressed down.
-        /// </summary>
-        public event EventHandler MouseRightDown;
-        /// <summary>
-        /// Occurs when the middle mouse button is pressed down.
-        /// </summary>
-        public event EventHandler MouseMiddleDown;
-        /// <summary>
-        /// Occurs when the left mouse button is released.
-        /// </summary>
-        public event EventHandler MouseLeftUp;
-        /// <summary>
-        /// Occurs when the right mouse button is released.
-        /// </summary>
-        public event EventHandler MouseRightUp;
-        /// <summary>
-        /// Occurs when the middle mouse button is released.
-        /// </summary>
-        public event EventHandler MouseMiddleUp;
         /// <summary>
         /// Occurs when a keyboard event is fired by the engine to this control.
         /// </summary>
         public event EventHandler<KeyboardEventArgs> KeyEvent;
-        /// <summary>
-        /// Occurs when the player double-clicks the control.
-        /// </summary>
-        public event EventHandler DoubleClick;
-
-
+        
         /// <summary>
         /// Occurs when the control's width is changed.
         /// </summary>
@@ -316,7 +237,7 @@ namespace Plex.Engine.GUI
                 if (value == _opacity)
                     return;
                 _opacity = value;
-                Invalidate();
+                
             }
         }
 
@@ -346,20 +267,7 @@ namespace Plex.Engine.GUI
                     return;
                 _isVisible = value;
                 VisibleChanged?.Invoke(this, EventArgs.Empty);
-                Invalidate();
-            }
-        }
-
-        /// <summary>
-        /// Gets whether the mouse is within the control's render bounds.
-        /// </summary>
-        public bool ContainsMouse
-        {
-            get
-            {
-                if (_enabled == false)
-                    return false;
-                return (_mousex >= 0 && _mousex <= Width && _mousey >= 0 && _mousey <= Height);
+                
             }
         }
 
@@ -431,29 +339,7 @@ namespace Plex.Engine.GUI
                 return;
             _children.Add(child);
             child._parent = this;
-            Invalidate();
-        }
-
-        /// <summary>
-        /// Retrieves the mouse X coordinate relative to the control's X coordinate.
-        /// </summary>
-        public int MouseX
-        {
-            get
-            {
-                return _mousex;
-            }
-        }
-
-        /// <summary>
-        /// Retrieves the mouse's Y coordinate relative to the control's Y coordinate.
-        /// </summary>
-        public int MouseY
-        {
-            get
-            {
-                return _mousey;
-            }
+            
         }
 
         /// <summary>
@@ -483,8 +369,7 @@ namespace Plex.Engine.GUI
                 if (_width == value)
                     return;
                 _width = value;
-                _resized = true;
-                Invalidate(true);
+                
                 WidthChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -505,8 +390,7 @@ namespace Plex.Engine.GUI
                 if (_height == value)
                     return;
                 _height = value;
-                _resized = true;
-                Invalidate(true);
+                
                 HeightChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -525,9 +409,7 @@ namespace Plex.Engine.GUI
                 if (_x == value)
                     return;
                 _x = value;
-                XChanged?.Invoke(this, EventArgs.Empty);
-                if (_parent != null)
-                    Invalidate();
+                XChanged?.Invoke(this, EventArgs.Empty);    
             }
         }
 
@@ -546,9 +428,113 @@ namespace Plex.Engine.GUI
                     return;
                 _y = value;
                 YChanged?.Invoke(this, EventArgs.Empty);
-                if(_parent!=null)
-                    Invalidate();
+
             }
+        }
+
+        public event EventHandler<MouseEventArgs> MouseUp;
+        public event EventHandler<MouseEventArgs> MouseDown;
+        public event EventHandler<MouseEventArgs> Click;
+        public event EventHandler<MouseEventArgs> DoubleClick;
+        public event EventHandler<MouseEventArgs> MouseMove;
+        public event EventHandler<MouseEventArgs> MouseEnter;
+        public event EventHandler<MouseEventArgs> MouseLeave;
+
+        protected virtual void OnMouseDown(MouseEventArgs e) { }
+        protected virtual void OnMouseUp(MouseEventArgs e) { }
+        protected virtual void OnClick(MouseEventArgs e) { }
+        protected virtual void OnDoubleClick(MouseEventArgs e) { }
+        protected virtual void OnMouseMove(MouseEventArgs e) { }
+        protected virtual void OnMouseEnter(MouseEventArgs e) { }
+        protected virtual void OnMouseLeave(MouseEventArgs e) { }
+
+        public bool LeftButtonPressed { get; private set; } = false;
+        public bool MiddleButtonPressed { get; private set; } = false;
+        public bool RightButtonPressed { get; private set; } = false;
+
+        internal void ResetButtonStates()
+        {
+            LeftButtonPressed = false;
+            MiddleButtonPressed = false;
+            RightButtonPressed = false;
+        }
+
+        public bool ContainsMouse
+        {
+            get
+            {
+                return Manager.HoveredControl == this;
+            }
+        }
+
+        internal void FireMouseDown(MouseEventArgs e)
+        {
+            switch (e.Button)
+            {
+                case MouseButton.Left:
+                    LeftButtonPressed = true;
+                    break;
+                case MouseButton.Middle:
+                    MiddleButtonPressed = true;
+                    break;
+                case MouseButton.Right:
+                    RightButtonPressed = true;
+                    break;
+            }
+            OnMouseUp(e);
+            MouseUp?.Invoke(this, e);
+        }
+
+        internal void FireMouseDoubleClick(MouseEventArgs e)
+        {
+            OnDoubleClick(e);
+            DoubleClick?.Invoke(this, e);
+        }
+
+        internal void FireMouseLeave(MouseEventArgs e)
+        {
+            OnMouseLeave(e);
+            MouseLeave?.Invoke(this, e);
+        }
+
+        internal void FireMouseEnter(MouseEventArgs e)
+        {
+            OnMouseEnter(e);
+            MouseEnter?.Invoke(this, e);
+        }
+
+        internal void FireMouseMove(MouseEventArgs e)
+        {
+            OnMouseMove(e);
+            MouseMove?.Invoke(this, e);
+
+            foreach (var child in Children)
+                child.FireMouseMove(e.OffsetPosition(new Vector2(child.X, child.Y)));
+        }
+
+
+        internal void FireMouseClick(MouseEventArgs e)
+        {
+            OnClick(e);
+            Click?.Invoke(this, e);
+        }
+
+        internal void FireMouseUp(MouseEventArgs e)
+        {
+            switch (e.Button)
+            {
+                case MouseButton.Left:
+                    LeftButtonPressed = false;
+                    break;
+                case MouseButton.Middle:
+                    MiddleButtonPressed = false;
+                    break;
+                case MouseButton.Right:
+                    RightButtonPressed = false;
+                    break;
+            }
+            OnMouseUp(e);
+            MouseUp?.Invoke(this, e);
         }
 
         /// <summary>
@@ -556,7 +542,7 @@ namespace Plex.Engine.GUI
         /// </summary>
         public Control()
         {
-            Plexgate.GetInstance().Inject(this);
+            GameLoop.GetInstance().Inject(this);
             _children = new List<Control>();
         }
 
@@ -569,10 +555,6 @@ namespace Plex.Engine.GUI
 
         }
 
-        private ButtonState _lastLeft;
-        private ButtonState _lastRight;
-        private ButtonState _lastMiddle;
-
         /// <summary>
         /// Removes a child from this control.
         /// </summary>
@@ -582,288 +564,17 @@ namespace Plex.Engine.GUI
             if (!_children.Contains(child))
                 return;
             _children.Remove(child);
-            Invalidate();
+            
         }
-
-        private int _lastScrollValue = 0;
-
-        /// <summary>
-        /// Processes a mouse scroll event.
-        /// </summary>
-        /// <param name="delta">The delta scroll value.</param>
-        protected virtual void OnMouseScroll(int delta)
-        {
-
-        }
-
-        /// <summary>
-        /// Occurs when the scrollwheel is moved on this control.
-        /// </summary>
-        public event Action<int> MouseScroll;
-
-        internal void ResetMouseState()
-        {
-            _mousex = -1;
-            _mousey = -1;
-            _left = ButtonState.Released;
-            _right = ButtonState.Released;
-            _middle = ButtonState.Released;
-        }
-
+        
         /// <summary>
         /// Recursively invalidate ALL child UI elements.
         /// </summary>
         public void InvalidateAll()
         {
-            Invalidate(true);
+            
             foreach (var child in Children)
                 child.InvalidateAll();
-        }
-
-        private int _lastmousex = 0;
-        private int _lastmousey = 0;
-
-        private bool _hadMouseWhenStatesChanged = false;
-
-        /// <summary>
-        /// Handle a mouse state update.
-        /// </summary>
-        /// <param name="state">The <see cref="MouseState"/> object containing mouse information.</param>
-        /// <returns>Whether the mouse was inside the control and button events were fired.</returns>
-        public virtual bool PropagateMouseState(MouseState state)
-        {
-
-#if !DERPYMOUSE
-            //Do we have the mouse right now?
-            bool hasMouseBeforeUpdate = ContainsMouse;
-            
-            //Update our mouse coordinates from the mouse state if we don't have a parent.
-            if(Parent == null)
-            {
-                _mousex = state.X - X;
-                _mousey = state.Y - Y;
-            }
-
-            //Update our children's mouse coordinates based off ours.
-            foreach(var child in Children)
-            {
-                child._mousex = _mousex - child.X;
-                child._mousey = _mousey - child.Y;
-            }
-
-            //If we're disabled or invisible, return.
-            if (_enabled == false || _isVisible == false)
-                return false;
-
-            //If we don't have the mouse, return.
-            if (!ContainsMouse)
-            {
-                return false;
-            }
-
-            //Iterate through the children again, in reverse, and propagate our mouse state.
-            foreach (var child in Children.OrderByDescending(z => Array.IndexOf(Children, z)))
-            {
-                if (child.PropagateMouseState(state))
-                    return true;
-            }
-
-            //Get the state of the three mouse buttons we care about.
-            var leftState = state.LeftButton;
-            var rightState = state.RightButton;
-            var middleState = state.MiddleButton;
-
-            //Let's handle left clicking!
-            if (_left == ButtonState.Pressed && leftState == ButtonState.Released && hasMouseBeforeUpdate && _hadMouseWhenStatesChanged)
-            {
-                if (!Manager.IsFocused(this))
-                {
-                    Manager.SetFocus(this);
-                }
-                if (_doubleClickCooldown <= 0)
-                {
-                    //We've clicked.
-                    Click?.Invoke(this, EventArgs.Empty);
-                    //Give 250 milliseconds of double-clickiness.
-                    _doubleClickCooldown = 250;
-                }
-                else
-                {
-                    DoubleClick?.Invoke(this, EventArgs.Empty);
-                    _doubleClickCooldown = 0;
-                }
-                //And the mouse has also been released.
-                MouseLeftUp?.Invoke(this, EventArgs.Empty);
-                //Also, we gain focus.
-
-                Invalidate(true);
-            }
-            //Now for left mouse-down...
-            else if (_left == ButtonState.Released && leftState == ButtonState.Pressed && hasMouseBeforeUpdate && _hadMouseWhenStatesChanged)
-            {
-                //The mouse button has been pressed down.
-                MouseLeftDown?.Invoke(this, EventArgs.Empty);
-                Invalidate(true);
-            }
-
-
-            //right-clicking
-            if (_right == ButtonState.Pressed && rightState == ButtonState.Released && hasMouseBeforeUpdate && _hadMouseWhenStatesChanged)
-            {
-                RightClick?.Invoke(this, EventArgs.Empty);
-            }
-
-            if (_middle == ButtonState.Pressed && middleState == ButtonState.Released && hasMouseBeforeUpdate && _hadMouseWhenStatesChanged)
-                MiddleClick?.Invoke(this, EventArgs.Empty);
-
-            if (_left != leftState || _middle != middleState || _right != rightState)
-            {
-                _hadMouseWhenStatesChanged = hasMouseBeforeUpdate;
-            }
-            _left = leftState;
-            _right = rightState;
-            _middle = middleState;
-
-
-            return true;
-
-
-#endif
-#if DERPYMOUSE
-            //Let's see if this beats Matt Trobbiani's mouse handler...
-
-            //Skip mouse events if the control is disabled.
-            if(_enabled == false)
-            {
-                return false;
-            }
-            //Skip them if it's not visible.
-            if(_isVisible==false)
-            {
-                return false;
-            }
-
-            //Grab the X and Y coordinates of the mouse, relative to this control.
-            int x, y = 0;
-            if(_parent == null)
-            {
-                x = state.X - X;
-                y = state.Y - Y;
-            }
-            else
-            {
-                x = _parent._mousex - X;
-                y = _parent._mousey - Y;
-            }
-
-            //Has the mouse moved?
-            bool moved = (x != _mousex) || (y != _mousey);
-            //Was the mouse previously in the control?
-            bool previouslyInControl = (_mousex >= 0 && _mousex <= Width) && (_mousey >= 0 && _mousey <= Height);
-
-            //Update the mouse coordinates.
-            _mousex = x;
-            _mousey = y;
-
-            if (moved)
-            {
-                MouseMove?.Invoke(this, new Vector2(x, y));
-            }
-
-
-            //Get the state of the three mouse buttons we care about.
-            var leftState = state.LeftButton;
-            var rightState = state.RightButton;
-            var middleState = state.MiddleButton;
-
-            //If the mouse is inside the control...
-            if (x >= 0 && x <= Width && y >= 0 && y <= Height)
-            {
-                bool ret = false;
-                //Propagate the mouse events to all children - returning true if a child does.
-                foreach(var child in Children.OrderByDescending(z=>Array.IndexOf(Children, z)))
-                {
-                        bool res = child.PropagateMouseState(state);
-                        if (res)
-                            ret = true;
-                }
-                if (ret)
-                    return true;
-                //If we moved, fire the MouseMove event.
-                //If the mouse has entered the control...
-                if(previouslyInControl == false)
-                {
-                    Invalidate(true);
-                }
-
-                //Let's handle left clicking!
-                if(_left == ButtonState.Pressed && leftState == ButtonState.Released)
-                {
-                    if (!Manager.IsFocused(this))
-                    {
-                        Manager.SetFocus(this);
-                    }
-                    if (_doubleClickCooldown <= 0)
-                    {
-                        //We've clicked.
-                        Click?.Invoke(this, EventArgs.Empty);
-                        //Give 250 milliseconds of double-clickiness.
-                        _doubleClickCooldown = 250;
-                    }
-                    else
-                    {
-                        DoubleClick?.Invoke(this, EventArgs.Empty);
-                        _doubleClickCooldown = 0;
-                    }
-                    //And the mouse has also been released.
-                    MouseLeftUp?.Invoke(this, EventArgs.Empty);
-                    //Also, we gain focus.
-                    
-                    Invalidate(true);
-                    //update the left state
-                    _left = leftState;
-                    return true;
-                }
-                //Now for left mouse-down...
-                else if(_left == ButtonState.Released && leftState == ButtonState.Pressed)
-                {
-                    //The mouse button has been pressed down.
-                    MouseLeftDown?.Invoke(this, EventArgs.Empty);
-                    Invalidate(true);
-                    //update the left state
-                    _left = leftState;
-                    return true;
-                }
-
-                //right-clicking
-                if(_right == ButtonState.Pressed && rightState == ButtonState.Released)
-                {
-                    RightClick?.Invoke(this, EventArgs.Empty);
-                }
-                _right = rightState;
-            }
-            else
-            {
-                //If the mouse left the control...
-                if(previouslyInControl)
-                {
-                    Invalidate(true);
-                }
-                //If we moved, fire the MouseMove event.
-                if (moved)
-                {
-                    MouseMove?.Invoke(this, new Vector2(x, y));
-                }
-
-                //Reset the mouse states
-                _left = ButtonState.Released;
-                _right = ButtonState.Released;
-                _middle = ButtonState.Released;
-
-                return false;
-            }
-            return true;
-#endif
         }
 
         private bool? _lastFocus = null;
@@ -886,18 +597,12 @@ namespace Plex.Engine.GUI
             }
         }
 
-        private MouseState _lastState;
-
         /// <summary>
         /// Fire an update event.
         /// </summary>
         /// <param name="time">The time since the last frame. Used for animation.</param>
         public void Update(GameTime time)
         {
-            if (_doubleClickCooldown >= 0)
-            {
-                _doubleClickCooldown = MathHelper.Clamp((int)(_doubleClickCooldown - time.ElapsedGameTime.TotalMilliseconds), 0, 250);
-            }
             if (_lastFocus != HasFocused)
             {
                 _lastFocus = HasFocused;
@@ -905,35 +610,13 @@ namespace Plex.Engine.GUI
             }
             if (_userfacingtarget == null)
             {
-                Invalidate(true);
-                _resized = true;
+                
             }
 
             if (_isVisible == false)
                 return;
             if (_disposed)
                 return;
-
-            if(!ContainsMouse)
-            {
-                //Reset mouse button states
-                _left = ButtonState.Released;
-                _right = ButtonState.Released;
-                _middle = ButtonState.Released;
-                _hadMouseWhenStatesChanged = false;
-            }
-
-            //Fire mouse move events
-            if (_lastmousex != _mousex || _lastmousey != _mousey)
-            {
-                bool childHasButton = _children.FirstOrDefault(x => x.LeftMouseState == ButtonState.Pressed || x.RightMouseState == ButtonState.Pressed || x.MiddleMouseState == ButtonState.Pressed) != null;
-                _lastmousex = _mousex;
-                _lastmousey = _mousey;
-                if (!childHasButton)
-                {
-                    MouseMove?.Invoke(this, new Vector2(_mousex, _mousey));
-                }
-            }
 
             OnUpdate(time);
             if (_children == null)
@@ -956,20 +639,16 @@ namespace Plex.Engine.GUI
             Theme.DrawControlBG(gfx, 0, 0, Width, Height);
         }
 
-        private bool _needsRerender = true;
-
-        /// <summary>
-        /// Invalidate the control's render surfaces.
-        /// </summary>
-        /// <param name="needsRepaint">Whether the control's front surface needs repainting.</param>
-        public void Invalidate(bool needsRepaint = false)
+        public Vector2 ToToplevel(int x, int y)
         {
-            if (needsRepaint)
+            var parent = this;
+            while (parent != null)
             {
-                _invalidated = true;
+                x += parent.X;
+                y += parent.Y;
+                parent = parent.Parent;
             }
-            _needsRerender = true;
-            Parent?.Invalidate();
+            return new Vector2(x, y);
         }
 
         public Vector2 ToScreen(int x, int y)
@@ -1058,41 +737,8 @@ namespace Plex.Engine.GUI
                 }
             }
             if (_userfacingtarget != null)
-                gfx.SetRenderTarget(Parent?.BackBuffer ?? Plexgate.GetInstance().GameRenderTarget);
+                gfx.SetRenderTarget(Parent?.BackBuffer ?? GameLoop.GetInstance().GameRenderTarget);
 
-        }
-
-        /// <summary>
-        /// Retrieve the left mouse state.
-        /// </summary>
-        public ButtonState LeftMouseState
-        {
-            get
-            {
-                return _left;
-            }
-        }
-
-        /// <summary>
-        /// Retrieve the right mouse state.
-        /// </summary>
-        public ButtonState RightMouseState
-        {
-            get
-            {
-                return _right;
-            }
-        }
-
-        /// <summary>
-        /// Retrieve the middle mouse state.
-        /// </summary>
-        public ButtonState MiddleMouseState
-        {
-            get
-            {
-                return _middle;
-            }
         }
 
         /// <inheritdoc/>

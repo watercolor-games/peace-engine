@@ -34,7 +34,7 @@ namespace Plex.Engine.Config
         }
 
         [Dependency]
-        private Plexgate _plexgate = null;
+        private GameLoop _GameLoop = null;
 
         [Dependency]
         private AppDataManager _appdata = null;
@@ -56,10 +56,6 @@ namespace Plex.Engine.Config
             }
 
             public void OnKeyEvent(KeyboardEventArgs e)
-            {
-            }
-
-            public void OnMouseUpdate(MouseState mouse)
             {
             }
 
@@ -92,8 +88,8 @@ namespace Plex.Engine.Config
             }
             Apply();
 
-            var entity = _plexgate.New<configEntity>();
-            _plexgate.GetLayer(LayerType.NoDraw).AddEntity(entity);
+            var entity = _GameLoop.New<configEntity>();
+            _GameLoop.GetLayer(LayerType.NoDraw).AddEntity(entity);
         }
 
 
@@ -137,18 +133,18 @@ namespace Plex.Engine.Config
         public void Apply()
         {
             Logger.Log("Config file is now being applied.");
-            string defaultResolution = _plexgate.GetSystemResolution();
+            string defaultResolution = _GameLoop.GetSystemResolution();
             string resolution = GetValue("screenResolution", defaultResolution).ToString();
 
-            string[] available = _plexgate.GetAvailableResolutions();
+            string[] available = _GameLoop.GetAvailableResolutions();
             if (!available.Contains(resolution))
             {
                 resolution = defaultResolution;
                 SetValue("screenResolution", resolution);
             }
-            _plexgate.ApplyResolution(resolution);
+            _GameLoop.ApplyResolution(resolution);
 
-            foreach (var component in _plexgate.GetAllComponents())
+            foreach (var component in _GameLoop.GetAllComponents())
             {
                 if (component.GetType().GetInterfaces().Contains(typeof(IConfigurable)))
                 {

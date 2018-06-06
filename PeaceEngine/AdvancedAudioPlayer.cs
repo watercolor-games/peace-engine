@@ -314,7 +314,7 @@ namespace Plex.Engine
     public class CheatManager : IEngineComponent
     {
         [Dependency]
-        private Plexgate _backend = null;
+        private GameLoop _backend = null;
 
         public void Initiate()
         {
@@ -345,10 +345,6 @@ namespace Plex.Engine
                     }
                     _keys.Clear();
                 }
-            }
-
-            public void OnMouseUpdate(MouseState mouse)
-            {
             }
 
             public void Update(GameTime time)

@@ -41,7 +41,7 @@ namespace Plex.Engine.GUI
                 if (_hasPassword == value)
                     return;
                 _hasPassword = value;
-                Invalidate(true);
+                
             }
         }
 
@@ -60,7 +60,7 @@ namespace Plex.Engine.GUI
                     return;
                 _text = value;
                 _index = (int)MathHelper.Clamp(_index, 0, _text.Length);
-                Invalidate(true);
+                
             }
         }
 
@@ -78,7 +78,7 @@ namespace Plex.Engine.GUI
                 if (_label == value)
                     return;
                 _label = value;
-                Invalidate(true);
+                
             }
         }
 
@@ -111,7 +111,7 @@ namespace Plex.Engine.GUI
                 if (_drawOffset != 0)
                 {
                     _drawOffset = 0;
-                    Invalidate(true);
+                    
                 }
             }
             string toCaret = displayText.Substring(0, _index);
@@ -119,7 +119,7 @@ namespace Plex.Engine.GUI
             if (_caretX != (int)measure.X)
             {
                 _caretX = (int)measure.X;
-                Invalidate(true);
+                
             }
 
             //calculate offset
@@ -158,7 +158,7 @@ namespace Plex.Engine.GUI
                 if(_index > 0)
                 {
                     _index--;
-                    Invalidate(true);
+                    
                 }
                 return;
             }
@@ -167,7 +167,7 @@ namespace Plex.Engine.GUI
                 if (_index < _text.Length)
                 {
                     _index++;
-                    Invalidate(true);
+                    
                 }
                 return;
             }
@@ -179,13 +179,13 @@ namespace Plex.Engine.GUI
                     {
                         _text = _text.Remove(_index - 1, 1);
                         _index--;
-                        Invalidate(true);
+                        
                     }
                     return;
                 }
                 _text = _text.Insert(_index, e.Character.ToString());
                 _index++;
-                Invalidate(true);
+                
             }
             base.OnKeyEvent(e);
         }
@@ -195,10 +195,6 @@ namespace Plex.Engine.GUI
         {
             Theme.DrawControlDarkBG(gfx, 0, 0, Width, Height);
             var colorBar = Color.Gray;
-            if (ContainsMouse)
-            {
-                colorBar = Color.White;
-            }
             if (IsFocused)
             {
                 colorBar = Theme.GetAccentColor();

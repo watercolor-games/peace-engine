@@ -32,7 +32,6 @@ namespace Plex.Engine.GUI
                 if (_value == value)
                     return;
                 _value = value;
-                Invalidate(true);
             }
         }
 

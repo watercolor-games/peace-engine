@@ -63,7 +63,7 @@ namespace Plex.Engine.GUI
                     _textRaw = value;
                     _currentIndex = 0;
                     recalculateLines();
-                    Invalidate(true);
+                    
                 }
                 catch (Exception ex)
                 {
@@ -85,7 +85,7 @@ namespace Plex.Engine.GUI
                     _textRaw = _textRaw.Remove(_currentIndex - 1, 1);
                     _currentIndex--;
                     recalculateLines();
-                    Invalidate(true);
+                    
                 }
                 return;
             }
@@ -95,7 +95,7 @@ namespace Plex.Engine.GUI
                 {
                     _currentIndex--;
                     recalculateLines();
-                    Invalidate(true);
+                    
                 }
             }
             else if (e.Key == Keys.Down)
@@ -137,7 +137,7 @@ namespace Plex.Engine.GUI
                     _currentIndex = _textRaw.Length;
                 }
                 recalculateLines();
-                Invalidate(true);
+                
 
             }
             else if (e.Key == Keys.Up)
@@ -178,7 +178,7 @@ namespace Plex.Engine.GUI
                     _currentIndex = 0;
                 }
                 recalculateLines();
-                Invalidate(true);
+                
             }
             else if (e.Key == Keys.Right)
             {
@@ -186,7 +186,7 @@ namespace Plex.Engine.GUI
                 {
                     _currentIndex++;
                     recalculateLines();
-                    Invalidate(true);
+                    
                 }
             }
             else if (e.Key == Keys.Home)
@@ -196,7 +196,7 @@ namespace Plex.Engine.GUI
                 string current = _lines[_currentLine];
                 _currentIndex -= current.Substring(0, _currentChar).Length;
                 recalculateLines();
-                Invalidate(true);
+                
             }
             else if (e.Key == Keys.End)
             {
@@ -205,7 +205,7 @@ namespace Plex.Engine.GUI
                 {
                     _currentIndex += current.Substring(_currentChar).Length;
                     recalculateLines();
-                    Invalidate(true);
+                    
                 }
             }
             else if (e.Key == Keys.Delete)
@@ -214,7 +214,7 @@ namespace Plex.Engine.GUI
                 {
                     _textRaw = _textRaw.Remove(_currentIndex, 1);
                     recalculateLines();
-                    Invalidate(true);
+                    
                 }
             }
             else if (e.Key == Keys.Enter)
@@ -222,7 +222,7 @@ namespace Plex.Engine.GUI
                 _textRaw = _textRaw.Insert(_currentIndex, "\n");
                 _currentIndex++;
                 recalculateLines();
-                Invalidate(true);
+                
                 return;
             }
             else if (e.Character != null)
@@ -232,7 +232,7 @@ namespace Plex.Engine.GUI
                 _textRaw = _textRaw.Insert(_currentIndex, e.Character.ToString());
                 _currentIndex++;
                 recalculateLines();
-                Invalidate(true);
+                
             }
         }
 
@@ -292,7 +292,7 @@ namespace Plex.Engine.GUI
             {
                 _caretTime = 0;
                 _caretVisible = !_caretVisible;
-                Invalidate(true);
+                
             }
             else
             {

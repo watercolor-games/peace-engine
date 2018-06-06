@@ -20,7 +20,7 @@ namespace Plex.Engine.Cutscene
 
 
         [Dependency]
-        private Plexgate _plexgate = null;
+        private GameLoop _GameLoop = null;
 
         private List<Cutscene> _cutscenes = null;
         private Cutscene _current = null;
@@ -58,7 +58,7 @@ namespace Plex.Engine.Cutscene
             {
                 _current.IsFinished = true;
                 _current.OnFinish();
-                _plexgate.GetLayer(LayerType.Foreground).RemoveEntity(_current);
+                _GameLoop.GetLayer(LayerType.Foreground).RemoveEntity(_current);
                 if (runCallback)
                     _callback?.Invoke();
                 _callback = null;
@@ -82,7 +82,7 @@ namespace Plex.Engine.Cutscene
             cs.IsFinished = false;
             _current = cs;
             _current.OnPlay();
-            _plexgate.GetLayer(LayerType.Foreground).AddEntity(_current);
+            _GameLoop.GetLayer(LayerType.Foreground).AddEntity(_current);
             return true;
         }
 
@@ -100,8 +100,8 @@ namespace Plex.Engine.Cutscene
                     Logger.Log("...but it's a duplicate.");
                     continue;
                 }
-                _plexgate.Inject(cs);
-                cs.Load(_plexgate.Content);
+                _GameLoop.Inject(cs);
+                cs.Load(_GameLoop.Content);
                 _cutscenes.Add(cs);
             }
             Logger.Log($"{_cutscenes.Count} cutscenes loaded.");

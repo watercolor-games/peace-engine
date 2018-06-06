@@ -21,13 +21,13 @@ namespace Plex.Engine.Themes
         public event Action ThemeChanged;
 
         [Dependency]
-        private Plexgate _plexgate = null;
+        private GameLoop _GameLoop = null;
 
         private Theme _theme = null;
         /// <inheritdoc/>
         public void Initiate()
         {
-            _theme = _plexgate.New<EngineTheme>();
+            _theme = _GameLoop.New<EngineTheme>();
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace Plex.Engine.Themes
                 if (_theme != null)
                     _theme.UnloadThemeData();
                 _theme = value;
-                _theme.LoadThemeData(_plexgate.GraphicsDevice, _plexgate.Content);
+                _theme.LoadThemeData(_GameLoop.GraphicsDevice, _GameLoop.Content);
                 ThemeChanged?.Invoke();
             }
         }
@@ -66,7 +66,7 @@ namespace Plex.Engine.Themes
         {
             if (_theme == null)
                 return;
-            _theme.LoadThemeData(_plexgate.GraphicsDevice, _plexgate.Content);
+            _theme.LoadThemeData(_GameLoop.GraphicsDevice, _GameLoop.Content);
         }
     }
 }

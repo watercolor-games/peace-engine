@@ -23,14 +23,14 @@ namespace Plex.Engine.Debug
     public class DeveloperConsoleComponent : IEngineComponent
     {
         [Dependency]
-        private Plexgate _plexgate = null;
+        private GameLoop _GameLoop = null;
 
         private DevConsole _console = null;
 
         public void Initiate()
         {
-            _console = _plexgate.New<DevConsole>();
-            _plexgate.GetLayer(LayerType.Foreground).AddEntity(_console);
+            _console = _GameLoop.New<DevConsole>();
+            _GameLoop.GetLayer(LayerType.Foreground).AddEntity(_console);
         }
 
         private class DevConsole : IEntity, ILoadable
@@ -39,7 +39,7 @@ namespace Plex.Engine.Debug
             private Themes.ThemeManager _theme = null;
 
             [Dependency]
-            private Plexgate _plexgate = null;
+            private GameLoop _GameLoop = null;
 
             [Dependency]
             private UIManager _ui = null;
@@ -157,8 +157,8 @@ namespace Plex.Engine.Debug
                 _stdout.AutoFlush = true;
 
                 Logger.Log("Debug Console is pre-loading .NET assemblies.");
-                _options = ScriptOptions.Default.WithReferences(_plexgate.GetAllComponents().Select(x => x.GetType().Assembly).ToArray().Concat(new[] { typeof(Game).Assembly, typeof(RuntimeBinderException).Assembly, typeof(Logger).Assembly })).WithImports("System", "Microsoft.Xna.Framework", "Plex.Engine", "Plex.Engine.Interfaces", "Plex.Engine.GraphicsSubsystem", "Plex.Engine.GUI");
-                _globals = new GlobalsType(_stdout, _plexgate.GetAllComponents());
+                _options = ScriptOptions.Default.WithReferences(_GameLoop.GetAllComponents().Select(x => x.GetType().Assembly).ToArray().Concat(new[] { typeof(Game).Assembly, typeof(RuntimeBinderException).Assembly, typeof(Logger).Assembly })).WithImports("System", "Microsoft.Xna.Framework", "Plex.Engine", "Plex.Engine.Interfaces", "Plex.Engine.GraphicsSubsystem", "Plex.Engine.GUI");
+                _globals = new GlobalsType(_stdout, _GameLoop.GetAllComponents());
                 Logger.Log("Done.");
 
                 _ui.FocusGained += () =>

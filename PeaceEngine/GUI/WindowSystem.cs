@@ -31,7 +31,7 @@ namespace Plex.Engine.GUI
         private UIManager _uiman = null;
 
         [Dependency]
-        private Plexgate _plexgate = null;
+        private GameLoop _GameLoop = null;
 
         [Dependency]
         private Config.ConfigManager _config = null;
@@ -153,7 +153,7 @@ namespace Plex.Engine.GUI
 
         internal void InjectDependencies(Window window)
         {
-            _plexgate.Inject(window);
+            _GameLoop.Inject(window);
         }
 
         private int _totalWindowsOpened = 0;
@@ -472,7 +472,7 @@ namespace Plex.Engine.GUI
                 if (_closeHitbox.Enabled == value)
                     return;
                 _closeHitbox.Enabled = value;
-                Invalidate(true);
+                
             }
         }
 
@@ -492,7 +492,7 @@ namespace Plex.Engine.GUI
                 if (_title == value)
                     return;
                 _title = value;
-                Invalidate(true);
+                
                 _needsLayout = true;
             }
         }
@@ -528,7 +528,7 @@ namespace Plex.Engine.GUI
         {
             HasFocusedChanged += (o, a) =>
             {
-                if(_windowStyle != WindowStyle.NoBorder && HasFocused == true)
+                if (_windowStyle != WindowStyle.NoBorder && HasFocused == true)
                 {
                     Manager.Remove(this, false);
                     Manager.Add(this);
@@ -562,116 +562,16 @@ namespace Plex.Engine.GUI
             AddChild(_bRightHitbox);
             AddChild(_bLeftHitbox);
 
-            _closeHitbox.Click += (o, a) =>
-            {
-                _child.Close();
-            };
-
-            _minimizeHitbox.Click += (o, a) => Visible = false;
-
-            _titleHitbox.MouseLeftDown += (o, a) =>
-            {
-                if (_windowStyle == WindowStyle.DialogNoDrag)
-                    return;
-                _moving = true;
-                _dragAnimState = 2;
-                _lastPos = new Vector2(MouseX, MouseY);
-            };
-            _titleHitbox.MouseMove += (o, pt) =>
-            {
-                if (_moving == true)
-                {
-                    var real = new Vector2(MouseX, MouseY);
-                    diff_x = (int)(real.X - _lastPos.X);
-                    diff_y = (int)(real.Y - _lastPos.Y);
-
-                    X += diff_x;
-                    Y += diff_y;
-                    _lastPos = new Vector2(real.X - diff_x, real.Y - diff_y);
-                }
-            };
-            _titleHitbox.MouseLeftUp += (o, a) =>
-            {
-                _dragAnimState = 0;
-                _moving = false;
-                diff_x = 0;
-                diff_y = 0;
-            };
 
             X = (winsys.Width - _child.Width) / 2;
             Y = (winsys.Height - _child.Height) / 2;
-            _child.WidthChanged += (o, a) => 
+            _child.WidthChanged += (o, a) =>
             {
                 _needsLayout = true;
             };
             _child.HeightChanged += (o, a) =>
             {
                 _needsLayout = true;
-            };
-            _maximizeHitbox.Click += (o, a) =>
-            {
-                if(_maximized)
-                {
-                    X = _normalSize.X;
-                    Y = _normalSize.Y;
-                    Width = _normalSize.Width;
-                    Height = _normalSize.Height;
-                    switch(_windowStyle)
-                    {
-                        case WindowStyle.NoBorder:
-                            _child.X = 0;
-                            _child.Y = 0;
-                            _child.Width = Width;
-                            _child.Height = Height;
-                            _closeHitbox.Visible = false;
-                            _minimizeHitbox.Visible = false;
-                            _maximizeHitbox.Visible = false;
-                            _titleHitbox.Visible = false;
-                            _leftHitbox.Visible = false;
-                            _rightHitbox.Visible = false;
-                            _bottomHitbox.Visible = false;
-                            _bRightHitbox.Visible = false;
-                            _bLeftHitbox.Visible = false;
-
-                            break;
-                        case WindowStyle.Default:
-                            _child.X = _borderWidth;
-                            _child.Y = _titleHeight;
-                            _child.Width = Width - (_borderWidth * 2);
-                            _child.Height = Height - (_titleHeight + _borderWidth);
-                            _closeHitbox.Visible = true;
-                            _minimizeHitbox.Visible = true;
-                            _maximizeHitbox.Visible = true;
-                            _titleHitbox.Visible = true;
-                            _leftHitbox.Visible = true;
-                            _rightHitbox.Visible = true;
-                            _bottomHitbox.Visible = true;
-                            _bRightHitbox.Visible = true;
-                            _bLeftHitbox.Visible = true;
-                            break;
-                        case WindowStyle.DialogNoDrag:
-                        case WindowStyle.Dialog:
-                            _child.X = _borderWidth;
-                            _child.Y = _titleHeight;
-                            _child.Width = Width - (_borderWidth * 2);
-                            _child.Height = Height - (_titleHeight + _borderWidth);
-                            _closeHitbox.Visible = true;
-                            _minimizeHitbox.Visible = false;
-                            _maximizeHitbox.Visible = false;
-                            _titleHitbox.Visible = true;
-                            _leftHitbox.Visible = true;
-                            _rightHitbox.Visible = true;
-                            _bottomHitbox.Visible = true;
-                            _bRightHitbox.Visible = true;
-                            _bLeftHitbox.Visible = true;
-                            break;
-                    }
-                }
-                else
-                {
-                    _normalSize = new Rectangle(X, Y, Width, Height);
-                }
-                _maximized = !_maximized;
             };
         }
 
@@ -682,47 +582,6 @@ namespace Plex.Engine.GUI
         /// <inheritdoc/>
         protected override void OnUpdate(GameTime time)
         {
-            if (_closeHasMouse != _closeHitbox.ContainsMouse)
-            {
-                _closeHasMouse = _closeHitbox.ContainsMouse;
-                Invalidate(true);
-                _titleHitbox.Invalidate();
-            }
-            if (_lastFocused != HasFocused)
-            {
-                _lastFocused = HasFocused;
-                Invalidate(true);
-            }
-            if (_windowManager.FadeWindowsWhileDragging)
-            {
-                switch (_dragAnimState)
-                {
-                    case 0:
-                        float opacity = this._child.Opacity;
-                        opacity = MathHelper.Clamp(opacity + (float)time.ElapsedGameTime.TotalSeconds * 2, 0.75f, 1);
-                        this._child.Opacity = opacity;
-                        if (opacity >= 1)
-                        {
-                            _dragAnimState++;
-                        }
-                        break;
-                    case 2:
-                        float opacity2 = this._child.Opacity;
-                        opacity2 = MathHelper.Clamp(opacity2 - (float)time.ElapsedGameTime.TotalSeconds * 2, 0.75F, 1);
-                        this._child.Opacity = opacity2;
-                        if (opacity2 <= 0.75)
-                        {
-                            _dragAnimState++;
-                        }
-
-                        break;
-                }
-            }
-            else
-            {
-                this._child.Opacity = 1;
-            }
- 
             if (_maximized)
             {
                 var rect = _windowManager.Workspace;
@@ -921,7 +780,7 @@ namespace Plex.Engine.GUI
                 if (_windowStyle == value)
                     return;
                 _windowStyle = value;
-                Invalidate(true);
+                
                 _needsLayout = true;
             }
         }

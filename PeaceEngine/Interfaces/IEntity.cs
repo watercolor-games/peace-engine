@@ -32,11 +32,7 @@ namespace Plex.Engine.Interfaces
         /// </summary>
         /// <param name="e">The <see cref="KeyboardEventArgs"/> containing information about the event.</param>
         void OnKeyEvent(KeyboardEventArgs e);
-        /// <summary>
-        /// Handle a mouse event with this entity.
-        /// </summary>
-        /// <param name="mouse">A <see cref="MouseState"/> containing information about the mouse's current state.</param>
-        void OnMouseUpdate(MouseState mouse);
+
         void OnGameExit();
     }
 
@@ -136,13 +132,6 @@ namespace Plex.Engine.Interfaces
         {
             foreach (var entity in Entities)
                 entity.OnKeyEvent(e);
-        }
-
-        /// <inheritdoc/>
-        public virtual void OnMouseUpdate(MouseState mouse)
-        {
-            foreach (var entity in Entities)
-                entity.OnMouseUpdate(mouse);
         }
 
         /// <inheritdoc/>

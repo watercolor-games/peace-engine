@@ -63,7 +63,7 @@ namespace Plex.Engine.GraphicsSubsystem
 
         public GraphicsContext(GraphicsDevice device)
         {
-            Plexgate.GetInstance().Inject(this);
+            GameLoop.GetInstance().Inject(this);
 
             _spriteBatch = new SpriteBatch(device);
             _device = device;

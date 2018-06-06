@@ -22,12 +22,12 @@ namespace Plex.Engine.Saves
         private ISaveBackend _backend = null;
 
         [Dependency]
-        private Plexgate _plexgate = null;
+        private GameLoop _GameLoop = null;
 
         /// <inheritdoc/>
         public void Initiate()
         {
-            _backend = _plexgate.New<DefaultSaveBackend>();
+            _backend = _GameLoop.New<DefaultSaveBackend>();
         }
 
         /// <summary>
@@ -58,11 +58,11 @@ namespace Plex.Engine.Saves
             _backend = backend;
             if(_backend == null)
             {
-                _backend = _plexgate.New<DefaultSaveBackend>();
+                _backend = _GameLoop.New<DefaultSaveBackend>();
             }
             else
             {
-                _plexgate.Inject(_backend);
+                _GameLoop.Inject(_backend);
             }
         }
 

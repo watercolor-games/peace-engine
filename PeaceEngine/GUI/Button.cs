@@ -66,7 +66,6 @@ namespace Plex.Engine.GUI
                 if (_showImage == value)
                     return;
                 _showImage = value;
-                Invalidate(true);
                 _requireLayout = true;
             }
         }
@@ -85,7 +84,6 @@ namespace Plex.Engine.GUI
                 if (_texture == value)
                     return;
                 _texture = value;
-                Invalidate(true);
                 _requireLayout = true;
             }
         }
@@ -104,7 +102,6 @@ namespace Plex.Engine.GUI
                 if (_text == value)
                     return;
                 _text = value;
-                Invalidate(true);
                 _requireLayout = true;
             }
         }
@@ -180,7 +177,7 @@ namespace Plex.Engine.GUI
             var state = Themes.UIButtonState.Idle;
             if (ContainsMouse)
                 state = Themes.UIButtonState.Hover;
-            if (LeftMouseState == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+            if (LeftButtonPressed)
                 state = Themes.UIButtonState.Pressed;
             Theme.DrawButton(gfx, _text, _texture, state, _showImage, new Rectangle(_textureX, _textureY, _textureW, _textureH), new Rectangle(_lX, _lY, _lW, _lH));
 

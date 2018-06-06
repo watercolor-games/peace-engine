@@ -56,10 +56,6 @@ namespace Plex.Engine
         {
         }
 
-        public void OnMouseUpdate(MouseState mouse)
-        {
-        }
-
         public VideoPlayer(IVideoFormat vid)
         {
             this.vid = vid;

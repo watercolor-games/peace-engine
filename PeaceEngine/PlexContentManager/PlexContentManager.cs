@@ -14,10 +14,10 @@ namespace Plex.Engine.PlexContentManager
     /// </summary>
     public sealed class PlexContentManager : ContentManager
     {
-        readonly Plexgate plex;
+        readonly GameLoop plex;
         readonly ContentManager real;
         Dictionary<string, WeakReference<object>> cache;
-        public PlexContentManager(Plexgate plex) : base(plex.Content.ServiceProvider, plex.Content.RootDirectory)
+        public PlexContentManager(GameLoop plex) : base(plex.Content.ServiceProvider, plex.Content.RootDirectory)
         {
             this.plex = plex; // no injecting because we need to call base
             real = plex.Content;

@@ -10,7 +10,7 @@ namespace Plex.Engine
     public class FrameWatch : IEngineComponent, IDisposable
     {
         [Dependency]
-        Plexgate plexgate;
+        GameLoop GameLoop;
 
         EventWaitHandle updated;
         EventWaitHandle waite;
@@ -30,7 +30,7 @@ namespace Plex.Engine
             updated = new ManualResetEvent(false);
             waite = new AutoResetEvent(true);
             if (!subscribed)
-                plexgate.FrameDrawn += gameUpdated;
+                GameLoop.FrameDrawn += gameUpdated;
             subscribed = true;
             Task.Run(() =>
             {
@@ -54,7 +54,7 @@ namespace Plex.Engine
             waite = null;
             waiting = 0;
             if (subscribed)
-                plexgate.FrameDrawn -= gameUpdated;
+                GameLoop.FrameDrawn -= gameUpdated;
             subscribed = false;
         }
 

@@ -98,9 +98,14 @@
     <Reference Include="Microsoft.Scripting.Metadata, Version=1.1.2.22, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
       <HintPath>..\packages\DynamicLanguageRuntime.1.1.2\lib\Net45\Microsoft.Scripting.Metadata.dll</HintPath>
     </Reference>
-    <Reference Include="MonoGame.Extended.Input, Version=0.6.602.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MonoGame.Extended.Input.1.0.617\lib\portable-net45+win8+wpa81\MonoGame.Extended.Input.dll</HintPath>
+    <Reference Include="MonoGame.Extended, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MonoGame.Extended.1.1.0\lib\portable-net45+win8+wpa81\MonoGame.Extended.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoGame.Extended.Graphics, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MonoGame.Extended.Graphics.1.1.0\lib\portable-net45+win8+wpa81\MonoGame.Extended.Graphics.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoGame.Extended.Input, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MonoGame.Extended.Input.1.1.0\lib\portable-net45+win8+wpa81\MonoGame.Extended.Input.dll</HintPath>
     </Reference>
     <Reference Include="NetSockets">
       <HintPath>..\Libraries\NetSockets.dll</HintPath>
@@ -199,9 +204,6 @@
       <HintPath>..\packages\Whoa.1.5.0\lib\net45\Whoa.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MonoGame.Extended">
-      <HintPath>..\packages\MonoGame.Extended.0.6.602\lib\portable-net45+win8+wpa81\MonoGame.Extended.dll</HintPath>
-    </Reference>
     <Reference Include="MonoGame.Framework">
       <HintPath>..\packages\MonoGame.Framework.DesktopGL.3.6.0.1625\lib\net40\MonoGame.Framework.dll</HintPath>
     </Reference>
@@ -223,18 +225,17 @@
     <Compile Include="GUI\Button.cs" />
     <Compile Include="GUI\CheckBox.cs" />
     <Compile Include="GUI\CheckLabel.cs" />
-    <Compile Include="GUI\ContextMenu.cs" />
     <Compile Include="GUI\Control.cs" />
     <Compile Include="GUI\Hitbox.cs" />
     <Compile Include="GUI\Label.cs" />
-    <Compile Include="GUI\ListView.cs" />
+    <Compile Include="GUI\ListBox.cs" />
     <Compile Include="GUI\Panel.cs" />
     <Compile Include="GUI\PictureBox.cs" />
     <Compile Include="GUI\ProgressBar.cs" />
+    <Compile Include="GUI\Scrollable.cs" />
     <Compile Include="GUI\ScrollBar.cs" />
     <Compile Include="GUI\ScrollView.cs" />
     <Compile Include="GUI\SliderBar.cs" />
-    <Compile Include="GUI\TabPanel.cs" />
     <Compile Include="GUI\TextBox.cs" />
     <Compile Include="GUI\TextEditor.cs" />
     <Compile Include="GUI\WindowSystem.cs" />

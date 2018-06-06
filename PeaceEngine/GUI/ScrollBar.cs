@@ -41,7 +41,6 @@ namespace Plex.Engine.GUI
                 _preferredScrollHeight = value;
                 _scrollOffset = 0;
                 _animState = 0;
-                Invalidate();
             }
         }
 
@@ -57,7 +56,6 @@ namespace Plex.Engine.GUI
                     return;
                 _scrollOffset = value;
                 _animState = 0;
-                Invalidate(true);
             }
         }
 

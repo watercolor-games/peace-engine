@@ -8,7 +8,7 @@ namespace Plex.Engine.PlexContentManager
     public class Texture2DLoader : ILoader<Texture2D>
     {
         [Dependency]
-        Plexgate plex;
+        GameLoop plex;
         public IEnumerable<string> Extensions => new[] { ".BMP", ".GIF", ".JPG", ".JPEG", ".PNG", ".TIF", ".TIFF", ".DDS" };
 
         public Texture2D Load(Stream fobj)

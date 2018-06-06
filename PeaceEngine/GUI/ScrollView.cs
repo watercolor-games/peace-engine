@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using MonoGame.Extended.Input.InputListeners;
 using Plex.Engine.GraphicsSubsystem;
 
 namespace Plex.Engine.GUI
@@ -11,7 +12,7 @@ namespace Plex.Engine.GUI
     /// <summary>
     /// A GUI element which can only contain one child and allows the child to be scrolled up and down by the mouse.
     /// </summary>
-    public class ScrollView : Control
+    public class ScrollView : Scrollable
     {
         private int _scrollOffset = 0;
         private Control _host = null;
@@ -29,7 +30,6 @@ namespace Plex.Engine.GUI
                 _host = child;
             _scrollOffset = 0;
             child.WidthChanged += Child_WidthChanged;
-            child.MouseScroll += OnMouseScroll;
             _scrollBar = new ScrollBar();
             base.AddChild(_scrollBar);
             _needsLayout = true;
@@ -42,7 +42,6 @@ namespace Plex.Engine.GUI
             if (_host == child)
             {
                 child.WidthChanged -= Child_WidthChanged;
-                child.MouseScroll -= OnMouseScroll;
                 _host = null;
                 _needsLayout = true;
                 _scrollOffset = 0;
@@ -51,8 +50,9 @@ namespace Plex.Engine.GUI
         }
 
         /// <inheritdoc/>
-        protected override void OnMouseScroll(int delta)
+        protected override void OnMouseScroll(MouseEventArgs e)
         {
+            int delta = e.ScrollWheelDelta;
             int offset = MathHelper.Clamp(_scrollOffset - delta, 0, _scrollHeight - Height);
             if(offset != _scrollOffset)
             {
@@ -98,14 +98,6 @@ namespace Plex.Engine.GUI
                 _scrollBar.ScrollOffset = _scrollOffset;
                 base.OnUpdate(time);
                 _needsLayout = false;
-            }
-        }
-
-        protected override bool CanBeScrolled
-        {
-            get
-            {
-                return true;
             }
         }
 

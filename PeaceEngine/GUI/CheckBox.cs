@@ -40,7 +40,6 @@ namespace Plex.Engine.GUI
                 if (_checked == value)
                     return;
                 _checked = value;
-                Invalidate(true);
             }
         }
 

@@ -28,13 +28,13 @@ namespace Plex.Engine.GraphicsSubsystem
     ///     <para>The <see cref="UIManager"/> class is used as a way to simply add, remove and reorder top-level user interface elements in the Peace engine. Unless you need to directly access these abilities from a <see cref="IEngineComponent"/>, <see cref="IEntity"/> or <see cref="Window"/> object, you do not under any circumstances need to depend on this component.</para>
     ///     <para>This component is also not meant to be used for the opening and closing of <see cref="Window"/>s. This functionality is built directly into the <see cref="Window"/> class and available through the <see cref="WindowSystem"/> engine component.</para>
     ///     <para>In most cases, you shouldn't need to directly access the UIManager unless you are working inside the engine itself. Mods and games should use the <see cref="Window"/> and <see cref="WindowSystem"/> APIs for managing top-levels.</para>
-    ///     <para>Also, <see cref="UIManager"/> is strictly meant for user interface entities. For other <see cref="IEntity"/> entities, use the <see cref="Plexgate"/> and <see cref="Layer"/> APIs.</para>
+    ///     <para>Also, <see cref="UIManager"/> is strictly meant for user interface entities. For other <see cref="IEntity"/> entities, use the <see cref="GameLoop"/> and <see cref="Layer"/> APIs.</para>
     /// </remarks>
     /// <threadsafety static="true" instance="false"/>
     /// <seealso cref="Window"/>
     /// <seealso cref="Control"/>
     /// <seealso cref="WindowSystem"/> 
-    /// <seealso cref="Plexgate"/>
+    /// <seealso cref="GameLoop"/>
     /// <seealso cref="Layer"/>
     /// <seealso cref="IEngineComponent"/>
     /// <seealso cref="IEntity"/>
@@ -94,7 +94,7 @@ namespace Plex.Engine.GraphicsSubsystem
             private ConfigManager _config = null;
 
             [Dependency]
-            private Plexgate _plexgate = null;
+            private GameLoop _GameLoop = null;
 
             private List<Control> _toplevels = new List<Control>();
 
@@ -124,7 +124,6 @@ namespace Plex.Engine.GraphicsSubsystem
                 _toplevels.Add(ctrl);
                 ctrl.SetManager(_ui);
                 ctrl.SetTheme(_thememgr.Theme);
-                ctrl.Invalidate(true);
             }
 
             public void RemoveControl(Control ctrl, bool dispose)
@@ -147,15 +146,46 @@ namespace Plex.Engine.GraphicsSubsystem
             {
                 if (_focused == ctrl)
                     return;
-                var alreadyFocused = _focused;
                 _focused = ctrl;
-                if (alreadyFocused != null)
-                {
-                    alreadyFocused.Invalidate();
-                }
-                ctrl?.Invalidate();
-
             }
+
+            public Control GetHovered(Vector2 mousePosition)
+            {
+                Control[] controls = this.Controls.Where(x => x.Visible).OrderByDescending(x => Array.IndexOf(Controls, x)).ToArray();
+                for(int i = 0; i < controls.Length; i++)
+                {
+                    var control = controls[i];
+                    var location = control.ToScreen(0, 0);
+                    if(mousePosition.X >= location.X && mousePosition.Y >= location.Y && mousePosition.X <= location.X + control.Width && mousePosition.Y <= location.Y + control.Height)
+                    {
+                        var children = control.Children;
+                        var filtered = children.Where(x => x.Visible && control.Bounds.Intersects(x.Bounds)).OrderByDescending(x => Array.IndexOf(children, x)).ToArray();
+                        if (filtered.Length == 0)
+                            return control;
+                        controls = filtered;
+                        i = -1;
+                    }
+                }
+                return null;
+            }
+
+            public Scrollable GetHoveredScrollable(Vector2 mousePosition)
+            {
+                var hoveredControl = GetHovered(mousePosition);
+                if (hoveredControl == null)
+                    return null;
+
+                var parent = hoveredControl;
+                while(parent != null)
+                {
+                    if (parent is Scrollable)
+                        return parent as Scrollable;
+                    parent = parent.Parent;
+                }
+
+                return null;
+            }
+
 
             public void Draw(GameTime time, GraphicsContext ctx)
             {
@@ -216,7 +246,7 @@ namespace Plex.Engine.GraphicsSubsystem
                     string fname = DateTime.Now.ToString("yyyy-M-dd_HH-mm-ss") + ".png";
                     using (var fstream = File.OpenWrite(Path.Combine(_screenshots, fname)))
                     {
-                        _plexgate.GameRenderTarget.SaveAsPng(fstream, _plexgate.GameRenderTarget.Width, _plexgate.GameRenderTarget.Height);
+                        _GameLoop.GameRenderTarget.SaveAsPng(fstream, _GameLoop.GameRenderTarget.Width, _GameLoop.GameRenderTarget.Height);
                     }
                     return;
                 }
@@ -227,43 +257,6 @@ namespace Plex.Engine.GraphicsSubsystem
                     _focused.ProcessKeyboardEvent(e);
             }
 
-            public void OnMouseUpdate(MouseState mouse)
-            {
-                if (!DoInput)
-                    return;
-                if (mouse == _lastMouseState)
-                    return;
-                _lastMouseState = mouse;
-                //Propagate mouse events.
-                var controls = Controls.OrderByDescending(x => Array.IndexOf(Controls, x)).ToArray();
-                foreach (var ctrl in controls)
-                {
-                    if (ctrl.PropagateMouseState(mouse))
-                        break;
-                }
-
-                if(mouse.ScrollWheelValue != _scrollDestination)
-                {
-                    _scrollDestination = mouse.ScrollWheelValue;
-                    if (!_config.GetValue("ui.smoothScrolling", true))
-                    {
-                        _scrollProgress = 1;
-                        _lastScrollValue = mouse.ScrollWheelValue;
-                    }
-                    else
-                    {
-                        _scrollProgress = 0;
-                        _lastScrollValue = _scrollValue;
-                    }
-                }
-            }
-
-            private int _deltaValue = 0;
-            private int _scrollValue = 0;
-            private int _scrollDestination = 0;
-
-            private float _scrollProgress = 1;
-
             public void Update(GameTime time)
             {
                 foreach (var ctrl in Controls)
@@ -272,23 +265,17 @@ namespace Plex.Engine.GraphicsSubsystem
                         continue;
                     ctrl.Update(time);
                 }
-
-                _scrollProgress = MathHelper.Clamp(_scrollProgress + ((float)time.ElapsedGameTime.TotalSeconds * 4), 0, 1);
-                _scrollValue = (int)MathHelper.Lerp(_lastScrollValue, _scrollDestination, _scrollProgress);
-                if (_scrollValue != _deltaValue)
-                {
-                    var controls = Controls.OrderByDescending(x => Array.IndexOf(Controls, x)).ToArray();
-                    foreach (var ctrl in controls)
-                        if (ctrl.PropagateScrollDelta(_scrollValue - _deltaValue))
-                            break;
-                    _deltaValue = _scrollValue;
-                }
-
-
             }
 
             public void Load(ContentManager content)
             {
+                _GameLoop.MouseDown += _GameLoop_MouseDown;
+                _GameLoop.MouseUp += _GameLoop_MouseUp;
+                _GameLoop.MouseMove += _GameLoop_MouseMove;
+                _GameLoop.MouseClicked += _GameLoop_MouseClicked;
+                _GameLoop.MouseDoubleClicked += _GameLoop_MouseDoubleClicked;
+                _GameLoop.MouseWheelMoved += _GameLoop_MouseWheelMoved;
+
                 _config.GetValue("ui.smoothScrolling", true); //turn smooth scrolling on by default.
 
                 _screenshots = Path.Combine(_appdata.GamePath, "screenshots");
@@ -304,6 +291,100 @@ namespace Plex.Engine.GraphicsSubsystem
                 {
                     Logger.Log("Cannot poll CPU usage stats because Windows is a garbage operating system and this specific install has a corrupt registry.");
                 }
+            }
+
+            private void _GameLoop_MouseWheelMoved(object sender, MouseEventArgs e)
+            {
+                var scrollable = GetHoveredScrollable(e.Position.ToVector2());
+
+                if (scrollable != null)
+                    scrollable.FireScroll(e.OffsetPosition(scrollable.ToToplevel(0, 0)));
+            }
+
+            public Control HoveredControl { get; private set; }
+
+            private void _GameLoop_MouseMove(object sender, MouseEventArgs e)
+            {
+                //Traverse the control hierarchy and find a control that the mouse is hovering over.
+                var hovered = GetHovered(e.Position.ToVector2());
+                if (HoveredControl != hovered)
+                {
+                    //If HoveredControl isn't null, fire a mouse leave event on it.
+                    if (HoveredControl != null)
+                        HoveredControl.FireMouseLeave(e.OffsetPosition(HoveredControl.ToToplevel(0, 0)));
+                    //If we're not null, fire a mouse enter event.
+                    if (hovered != null)
+                        hovered.FireMouseEnter(e.OffsetPosition(hovered.ToToplevel(0, 0)));
+                }
+                //Make it the "Hovered Control" so it renders as hovered.
+                HoveredControl = hovered;
+
+                //Now we propagate the mouse move event if the control isn't null.
+                if (hovered != null)
+                    hovered.FireMouseMove(e.OffsetPosition(hovered.ToToplevel(0, 0)));
+            }
+
+            private void _GameLoop_MouseDoubleClicked(object sender, MouseEventArgs e)
+            {
+                //Traverse the control hierarchy and find a control that the mouse is hovering over.
+                var hovered = GetHovered(e.Position.ToVector2());
+                //Is the mouse on a UI element?
+                if (hovered != null)
+                {
+                    //Is it the focused UI element?
+                    if (hovered == _focused)
+                    {
+                        //Fire "mouse up" event.
+                        hovered.FireMouseDoubleClick(e.OffsetPosition(hovered.ToToplevel(0, 0)));
+                    }
+                }
+            }
+
+
+            private void _GameLoop_MouseClicked(object sender, MouseEventArgs e)
+            {
+                //Traverse the control hierarchy and find a control that the mouse is hovering over.
+                var hovered = GetHovered(e.Position.ToVector2());
+                //Is the mouse on a UI element?
+                if (hovered != null)
+                {
+                    //Is it the focused UI element?
+                    if (hovered == _focused)
+                    {
+                        //Fire "mouse up" event.
+                        hovered.FireMouseClick(e.OffsetPosition(hovered.ToToplevel(0, 0)));
+                    }
+                }
+            }
+
+                private void _GameLoop_MouseUp(object sender, MouseEventArgs e)
+            {
+                //Traverse the control hierarchy and find a control that the mouse is hovering over.
+                var hovered = GetHovered(e.Position.ToVector2());
+                //Is the mouse on a UI element?
+                if (hovered != null)
+                {
+                    //Is it the focused UI element?
+                    if (hovered == _focused)
+                    {
+                        //Fire "mouse up" event.
+                        hovered.FireMouseUp(e.OffsetPosition(hovered.ToToplevel(0, 0)));
+                    }
+                }
+
+                //If we do have a focused ui element, now would be a good time to make sure it's not rendering as "pressed"
+                _focused?.ResetButtonStates();
+            }
+
+            private void _GameLoop_MouseDown(object sender, MouseEventArgs e)
+            {
+                //Traverse the control hierarchy and find a control that the mouse is hovering over.
+                var hovered = GetHovered(e.Position.ToVector2());
+                //Set the control as the current focus. If we didn't find any, this will cause control focus to be lost - i.e, the player clicked somewhere other than in the UI.
+                SetFocus(hovered);
+                //If we DO have a new focused control, fire a click event on it.
+                if (hovered != null)
+                    hovered.FireMouseDown(e.OffsetPosition(hovered.ToToplevel(0, 0)));
             }
 
             public void InvalidateAll()
@@ -351,7 +432,7 @@ namespace Plex.Engine.GraphicsSubsystem
         private UIContainer _container = null;
 
         [Dependency]
-        private Plexgate _plexgate = null;
+        private GameLoop _GameLoop = null;
 
         public event Action FocusGained;
 
@@ -360,11 +441,13 @@ namespace Plex.Engine.GraphicsSubsystem
         /// </summary>
         public void ShowUI()
         {
-            _plexgate.GetLayer(LayerType.UserInterface).AddEntity(_container);
+            _GameLoop.GetLayer(LayerType.UserInterface).AddEntity(_container);
         }
 
         [Dependency]
         private ThemeManager _themeManager = null;
+
+        public Control HoveredControl => _container.HoveredControl;
 
         public Theme Theme
         {
@@ -379,7 +462,7 @@ namespace Plex.Engine.GraphicsSubsystem
         /// </summary>
         public void HideUI()
         {
-            _plexgate.GetLayer(LayerType.UserInterface).RemoveEntity(_container);
+            _GameLoop.GetLayer(LayerType.UserInterface).RemoveEntity(_container);
         }
 
         /// <summary>
@@ -389,9 +472,9 @@ namespace Plex.Engine.GraphicsSubsystem
         {
             get
             {
-                if (_plexgate.GameRenderTarget == null)
+                if (_GameLoop.GameRenderTarget == null)
                     return 1;
-                return _plexgate.GameRenderTarget.Width;
+                return _GameLoop.GameRenderTarget.Width;
             }
         }
 
@@ -413,9 +496,9 @@ namespace Plex.Engine.GraphicsSubsystem
         {
             get
             {
-                if (_plexgate.GameRenderTarget == null)
+                if (_GameLoop.GameRenderTarget == null)
                     return 1;
-                return _plexgate.GameRenderTarget.Height;
+                return _GameLoop.GameRenderTarget.Height;
             }
         }
 
@@ -492,8 +575,8 @@ namespace Plex.Engine.GraphicsSubsystem
         /// <inheritdoc/>
         public void Initiate()
         {
-            _container = _plexgate.New<UIContainer>();
-            _plexgate.GetLayer(LayerType.UserInterface).AddEntity(_container);
+            _container = _GameLoop.New<UIContainer>();
+            _GameLoop.GetLayer(LayerType.UserInterface).AddEntity(_container);
             _startThreadId = Thread.CurrentThread.ManagedThreadId;
         }
 
@@ -504,7 +587,7 @@ namespace Plex.Engine.GraphicsSubsystem
             if (Thread.CurrentThread.ManagedThreadId == _startThreadId)
                 action.Invoke();
             else
-                _plexgate.Invoke(action);
+                _GameLoop.Invoke(action);
         }
 
         private bool _ignoreControlOpacity = false;
@@ -527,8 +610,7 @@ namespace Plex.Engine.GraphicsSubsystem
         public void ApplyConfig()
         {
             bool fullscreen = (bool)_config.GetValue("uiFullscreen", true);
-            _plexgate.graphicsDevice.IsFullScreen = fullscreen;
-            _plexgate.graphicsDevice.ApplyChanges();
+            _GameLoop.IsFullScreen = fullscreen;
             _ignoreControlOpacity = (bool)_config.GetValue("uiIgnoreControlOpacity", false);
         }
 
@@ -542,6 +624,24 @@ namespace Plex.Engine.GraphicsSubsystem
             {
                 _container.BringToFront(_tutorialLabel);
             });
+        }
+    }
+
+    public static class MouseEventArgsExtensions
+    {
+        public static MouseEventArgs OffsetPosition(this MouseEventArgs e, Vector2 offset)
+        {
+            var gl = GameLoop.GetInstance();
+
+
+            offset = new Vector2((offset.X / gl.ViewportAdapter.VirtualWidth) * gl.GraphicsDevice.PresentationParameters.BackBufferWidth, (offset.Y / gl.ViewportAdapter.VirtualHeight) * gl.GraphicsDevice.PresentationParameters.BackBufferHeight);
+
+            var prevState = new MouseState(e.PreviousState.X - (int)offset.X, e.PreviousState.Y - (int)offset.Y, e.PreviousState.ScrollWheelValue, e.PreviousState.LeftButton, e.PreviousState.MiddleButton, e.PreviousState.RightButton, e.PreviousState.XButton1, e.PreviousState.XButton2);
+            var currState = new MouseState(e.CurrentState.X - (int)offset.X, e.CurrentState.Y - (int)offset.Y, e.CurrentState.ScrollWheelValue, e.CurrentState.LeftButton, e.CurrentState.MiddleButton, e.CurrentState.RightButton, e.CurrentState.XButton1, e.CurrentState.XButton2);
+
+            var res = new MouseEventArgs(GameLoop.GetInstance().ViewportAdapter, e.Time, prevState, currState, e.Button);
+
+            return res;
         }
     }
 }
