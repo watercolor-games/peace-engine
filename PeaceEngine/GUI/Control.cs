@@ -73,14 +73,7 @@ namespace Plex.Engine.GUI
             {
                 if (IsFocused)
                     return true;
-                foreach(var child in Children)
-                {
-                    if (child.HasFocused)
-                    {
-                        return true;
-                    }
-                }
-                return false;
+                return Children.Any(x => x.HasFocused);
             }
         }
         
@@ -463,7 +456,8 @@ namespace Plex.Engine.GUI
         {
             get
             {
-                return Manager.HoveredControl == this;
+                if (Manager.HoveredControl == this) return true;
+                return Children.Any(x => x.ContainsMouse);
             }
         }
 

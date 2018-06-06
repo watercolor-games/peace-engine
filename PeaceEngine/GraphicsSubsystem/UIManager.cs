@@ -151,22 +151,26 @@ namespace Plex.Engine.GraphicsSubsystem
 
             public Control GetHovered(Vector2 mousePosition)
             {
-                Control[] controls = this.Controls.Where(x => x.Visible).OrderByDescending(x => Array.IndexOf(Controls, x)).ToArray();
-                for(int i = 0; i < controls.Length; i++)
+                //The last control in the search iteration.
+                Control last = null;
+                //Find a top-level that the mouse is in.
+                Control current = Controls.OrderByDescending(x => Array.IndexOf(Controls, x)).FirstOrDefault(x => x.Visible && MouseInBounds(x, mousePosition));
+                //Walk down the control's children using the same search query until the current control is null.
+                while(current != null)
                 {
-                    var control = controls[i];
-                    var location = control.ToScreen(0, 0);
-                    if(mousePosition.X >= location.X && mousePosition.Y >= location.Y && mousePosition.X <= location.X + control.Width && mousePosition.Y <= location.Y + control.Height)
-                    {
-                        var children = control.Children;
-                        var filtered = children.Where(x => x.Visible && control.Bounds.Intersects(x.Bounds)).OrderByDescending(x => Array.IndexOf(children, x)).ToArray();
-                        if (filtered.Length == 0)
-                            return control;
-                        controls = filtered;
-                        i = -1;
-                    }
+                    //Set the last control to the current
+                    last = current;
+                    //Search for a child.
+                    current = current.Children.OrderByDescending(x => Array.IndexOf(current.Children, x)).FirstOrDefault(x => x.Visible && MouseInBounds(x, mousePosition));
                 }
-                return null;
+                //Return the last control
+                return last;
+            }
+
+            private bool MouseInBounds(Control ctrl, Vector2 pos)
+            {
+                var controlScreen = ctrl.ToToplevel(0, 0);
+                return (pos.X >= controlScreen.X && pos.Y >= controlScreen.Y && pos.X <= controlScreen.X + ctrl.Width && pos.Y <= controlScreen.Y + ctrl.Height);
             }
 
             public Scrollable GetHoveredScrollable(Vector2 mousePosition)
@@ -357,6 +361,8 @@ namespace Plex.Engine.GraphicsSubsystem
                 }
             }
 
+            private Control _mousedown = null;
+
                 private void _GameLoop_MouseUp(object sender, MouseEventArgs e)
             {
                 //Traverse the control hierarchy and find a control that the mouse is hovering over.
@@ -373,7 +379,8 @@ namespace Plex.Engine.GraphicsSubsystem
                 }
 
                 //If we do have a focused ui element, now would be a good time to make sure it's not rendering as "pressed"
-                _focused?.ResetButtonStates();
+                _mousedown?.ResetButtonStates();
+                _mousedown = null;
             }
 
             private void _GameLoop_MouseDown(object sender, MouseEventArgs e)
@@ -385,6 +392,7 @@ namespace Plex.Engine.GraphicsSubsystem
                 //If we DO have a new focused control, fire a click event on it.
                 if (hovered != null)
                     hovered.FireMouseDown(e.OffsetPosition(hovered.ToToplevel(0, 0)));
+                _mousedown = hovered;
             }
 
             public void InvalidateAll()
