@@ -273,6 +273,9 @@ namespace Plex.Engine.GraphicsSubsystem
 
             public void Load(ContentManager content)
             {
+                _GameLoop.MouseDragStart += _GameLoop_MouseDragStart;
+                _GameLoop.MouseDrag += _GameLoop_MouseDrag;
+                _GameLoop.MouseDragEnd += _GameLoop_MouseDragEnd;
                 _GameLoop.MouseDown += _GameLoop_MouseDown;
                 _GameLoop.MouseUp += _GameLoop_MouseUp;
                 _GameLoop.MouseMove += _GameLoop_MouseMove;
@@ -294,6 +297,33 @@ namespace Plex.Engine.GraphicsSubsystem
                 catch
                 {
                     Logger.Log("Cannot poll CPU usage stats because Windows is a garbage operating system and this specific install has a corrupt registry.");
+                }
+            }
+
+            private Control _dragging = null;
+
+            private void _GameLoop_MouseDragEnd(object sender, MouseEventArgs e)
+            {
+                if (_dragging != null)
+                {
+                    _dragging.FireMouseDragEnd(e.OffsetPosition(_dragging.ToToplevel(0, 0)));
+                    _dragging = null;
+                }
+            }
+
+            private void _GameLoop_MouseDrag(object sender, MouseEventArgs e)
+            {
+                if (_dragging != null)
+                    _dragging.FireMouseDrag(e.OffsetPosition(_dragging.ToToplevel(0, 0)));
+            }
+
+            private void _GameLoop_MouseDragStart(object sender, MouseEventArgs e)
+            {
+                var hovered = GetHovered(e.Position.ToVector2());
+                if(hovered != null)
+                {
+                    _dragging = hovered;
+                    hovered.FireMouseDragStart(e.OffsetPosition(_dragging.ToToplevel(0, 0)));
                 }
             }
 

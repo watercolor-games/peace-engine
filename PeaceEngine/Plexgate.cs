@@ -200,6 +200,16 @@ namespace Plex.Engine
 
         #region Public methods
 
+        public Vector2 PointToBackbuffer(Vector2 point)
+        {
+            return new Vector2((point.X / ViewportAdapter.VirtualWidth) * GraphicsDevice.PresentationParameters.BackBufferWidth, (point.Y / ViewportAdapter.VirtualHeight) * GraphicsDevice.PresentationParameters.BackBufferHeight);
+        }
+
+        public Vector2 PointToViewport(Vector2 point)
+        {
+            return new Vector2((point.X / GraphicsDevice.PresentationParameters.BackBufferWidth) * ViewportAdapter.VirtualWidth, (point.Y / GraphicsDevice.PresentationParameters.BackBufferHeight) * ViewportAdapter.VirtualHeight);
+        }
+
         /// <summary>
         /// Create a new instance of the specified type, injecting all dependencies.
         /// </summary>

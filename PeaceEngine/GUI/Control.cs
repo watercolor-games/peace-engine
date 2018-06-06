@@ -432,6 +432,9 @@ namespace Plex.Engine.GUI
         public event EventHandler<MouseEventArgs> MouseMove;
         public event EventHandler<MouseEventArgs> MouseEnter;
         public event EventHandler<MouseEventArgs> MouseLeave;
+        public event EventHandler<MouseEventArgs> MouseDragStart;
+        public event EventHandler<MouseEventArgs> MouseDragEnd;
+        public event EventHandler<MouseEventArgs> MouseDrag;
 
         protected virtual void OnMouseDown(MouseEventArgs e) { }
         protected virtual void OnMouseUp(MouseEventArgs e) { }
@@ -440,6 +443,9 @@ namespace Plex.Engine.GUI
         protected virtual void OnMouseMove(MouseEventArgs e) { }
         protected virtual void OnMouseEnter(MouseEventArgs e) { }
         protected virtual void OnMouseLeave(MouseEventArgs e) { }
+        protected virtual void OnMouseDragStart(MouseEventArgs e) { }
+        protected virtual void OnMouseDrag(MouseEventArgs e) { }
+        protected virtual void OnMouseDragEnd(MouseEventArgs e) { }
 
         public bool LeftButtonPressed { get; private set; } = false;
         public bool MiddleButtonPressed { get; private set; } = false;
@@ -459,6 +465,24 @@ namespace Plex.Engine.GUI
                 if (Manager.HoveredControl == this) return true;
                 return Children.Any(x => x.ContainsMouse);
             }
+        }
+
+        internal void FireMouseDragEnd(MouseEventArgs e)
+        {
+            OnMouseDragEnd(e);
+            MouseDragEnd?.Invoke(this, e);
+        }
+
+        internal void FireMouseDrag(MouseEventArgs e)
+        {
+            OnMouseDrag(e);
+            MouseDrag?.Invoke(this, e);
+        }
+
+        internal void FireMouseDragStart(MouseEventArgs e)
+        {
+            OnMouseDragStart(e);
+            MouseDragStart?.Invoke(this, e);
         }
 
         internal void FireMouseDown(MouseEventArgs e)

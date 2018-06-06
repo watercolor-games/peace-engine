@@ -31,7 +31,7 @@ namespace Plex.Engine.GUI
         private UIManager _uiman = null;
 
         [Dependency]
-        private GameLoop _GameLoop = null;
+        private GameLoop _plexgate = null;
 
         [Dependency]
         private Config.ConfigManager _config = null;
@@ -90,7 +90,7 @@ namespace Plex.Engine.GUI
                 return _uiman.ScreenHeight;
             }
         }
-        
+
         /// <summary>
         /// Set the title of a window.
         /// </summary>
@@ -153,7 +153,7 @@ namespace Plex.Engine.GUI
 
         internal void InjectDependencies(Window window)
         {
-            _GameLoop.Inject(window);
+            _plexgate.Inject(window);
         }
 
         private int _totalWindowsOpened = 0;
@@ -327,7 +327,7 @@ namespace Plex.Engine.GUI
             _winsystem = _winsys;
             _winsystem.InjectDependencies(this);
         }
-        
+
         /// <summary>
         /// Retrieves the window system associated with the window.
         /// </summary>
@@ -339,7 +339,7 @@ namespace Plex.Engine.GUI
         /// <param name="style">The new style for the border.</param>
         public void SetWindowStyle(WindowStyle style)
         {
-            if(_wid == null)
+            if (_wid == null)
             {
                 _preferredStyle = style;
             }
@@ -361,7 +361,7 @@ namespace Plex.Engine.GUI
         {
             if (_wid == null)
                 _wid = _winsystem.CreateWindowInfo(this, _preferredStyle, _preferredCanClose);
-            if(x > -1)
+            if (x > -1)
             {
                 Parent.X = x;
             }
@@ -457,7 +457,7 @@ namespace Plex.Engine.GUI
         private Hitbox _bottomHitbox = null;
         private Hitbox _bRightHitbox = null;
         private Hitbox _bLeftHitbox = null;
-        
+
         /// <summary>
         /// Gets or sets whether the window border can be closed using the close button.
         /// </summary>
@@ -472,7 +472,6 @@ namespace Plex.Engine.GUI
                 if (_closeHitbox.Enabled == value)
                     return;
                 _closeHitbox.Enabled = value;
-                
             }
         }
 
@@ -492,7 +491,6 @@ namespace Plex.Engine.GUI
                 if (_title == value)
                     return;
                 _title = value;
-                
                 _needsLayout = true;
             }
         }
@@ -517,6 +515,11 @@ namespace Plex.Engine.GUI
                 return _child;
             }
         }
+
+        [Dependency]
+        private GameLoop _plexgate = null;
+
+        private Vector2 _lastPosition = Vector2.Zero;
 
         /// <summary>
         /// Creates a new instance of the <see cref="WindowBorder"/> control. 
@@ -562,6 +565,40 @@ namespace Plex.Engine.GUI
             AddChild(_bRightHitbox);
             AddChild(_bLeftHitbox);
 
+            _closeHitbox.Click += (o, a) =>
+            {
+                _child.Close();
+            };
+
+            _minimizeHitbox.Click += (o, a) => Visible = false;
+
+            _titleHitbox.MouseDragStart += (o, a) =>
+            {
+                if (a.Button != MouseButton.Left)
+                    return;
+                if (_windowStyle == WindowStyle.DialogNoDrag)
+                    return;
+                _moving = true;
+                _dragAnimState = 2;
+                _lastPosition = a.Position.ToVector2();
+            };
+            _titleHitbox.MouseDrag += (o, pt) =>
+            {
+                if (_moving == true)
+                {
+                    var distance = pt.Position.ToVector2() - _lastPosition;
+
+                    X += (int)distance.X;
+                    Y += (int)distance.Y;
+
+                    _lastPos = pt.Position.ToVector2();
+                }
+            };
+            _titleHitbox.MouseDragEnd += (o, a) =>
+            {
+                _dragAnimState = 0;
+                _moving = false;
+            };
 
             X = (winsys.Width - _child.Width) / 2;
             Y = (winsys.Height - _child.Height) / 2;
@@ -573,6 +610,71 @@ namespace Plex.Engine.GUI
             {
                 _needsLayout = true;
             };
+            _maximizeHitbox.Click += (o, a) =>
+            {
+                if (_maximized)
+                {
+                    X = _normalSize.X;
+                    Y = _normalSize.Y;
+                    Width = _normalSize.Width;
+                    Height = _normalSize.Height;
+                    switch (_windowStyle)
+                    {
+                        case WindowStyle.NoBorder:
+                            _child.X = 0;
+                            _child.Y = 0;
+                            _child.Width = Width;
+                            _child.Height = Height;
+                            _closeHitbox.Visible = false;
+                            _minimizeHitbox.Visible = false;
+                            _maximizeHitbox.Visible = false;
+                            _titleHitbox.Visible = false;
+                            _leftHitbox.Visible = false;
+                            _rightHitbox.Visible = false;
+                            _bottomHitbox.Visible = false;
+                            _bRightHitbox.Visible = false;
+                            _bLeftHitbox.Visible = false;
+
+                            break;
+                        case WindowStyle.Default:
+                            _child.X = _borderWidth;
+                            _child.Y = _titleHeight;
+                            _child.Width = Width - (_borderWidth * 2);
+                            _child.Height = Height - (_titleHeight + _borderWidth);
+                            _closeHitbox.Visible = true;
+                            _minimizeHitbox.Visible = true;
+                            _maximizeHitbox.Visible = true;
+                            _titleHitbox.Visible = true;
+                            _leftHitbox.Visible = true;
+                            _rightHitbox.Visible = true;
+                            _bottomHitbox.Visible = true;
+                            _bRightHitbox.Visible = true;
+                            _bLeftHitbox.Visible = true;
+                            break;
+                        case WindowStyle.DialogNoDrag:
+                        case WindowStyle.Dialog:
+                            _child.X = _borderWidth;
+                            _child.Y = _titleHeight;
+                            _child.Width = Width - (_borderWidth * 2);
+                            _child.Height = Height - (_titleHeight + _borderWidth);
+                            _closeHitbox.Visible = true;
+                            _minimizeHitbox.Visible = false;
+                            _maximizeHitbox.Visible = false;
+                            _titleHitbox.Visible = true;
+                            _leftHitbox.Visible = true;
+                            _rightHitbox.Visible = true;
+                            _bottomHitbox.Visible = true;
+                            _bRightHitbox.Visible = true;
+                            _bLeftHitbox.Visible = true;
+                            break;
+                    }
+                }
+                else
+                {
+                    _normalSize = new Rectangle(X, Y, Width, Height);
+                }
+                _maximized = !_maximized;
+            };
         }
 
         private bool _closeHasMouse = false;
@@ -582,10 +684,48 @@ namespace Plex.Engine.GUI
         /// <inheritdoc/>
         protected override void OnUpdate(GameTime time)
         {
+            if (_closeHasMouse != _closeHitbox.ContainsMouse)
+            {
+                _closeHasMouse = _closeHitbox.ContainsMouse;
+            }
+            if (_lastFocused != HasFocused)
+            {
+                _lastFocused = HasFocused;
+            }
+            if (_windowManager.FadeWindowsWhileDragging)
+            {
+                switch (_dragAnimState)
+                {
+                    case 0:
+                        float opacity = this._child.Opacity;
+                        opacity = MathHelper.Clamp(opacity + (float)time.ElapsedGameTime.TotalSeconds * 2, 0.75f, 1);
+                        this._child.Opacity = opacity;
+                        if (opacity >= 1)
+                        {
+                            _dragAnimState++;
+                        }
+                        break;
+                    case 2:
+                        float opacity2 = this._child.Opacity;
+                        opacity2 = MathHelper.Clamp(opacity2 - (float)time.ElapsedGameTime.TotalSeconds * 2, 0.75F, 1);
+                        this._child.Opacity = opacity2;
+                        if (opacity2 <= 0.75)
+                        {
+                            _dragAnimState++;
+                        }
+
+                        break;
+                }
+            }
+            else
+            {
+                this._child.Opacity = 1;
+            }
+
             if (_maximized)
             {
                 var rect = _windowManager.Workspace;
-                if(rect == Rectangle.Empty)
+                if (rect == Rectangle.Empty)
                 {
                     rect = new Rectangle(0, 0, _windowManager.Width, _windowManager.Height);
                 }
@@ -755,7 +895,7 @@ namespace Plex.Engine.GUI
             _maximizeHitbox.Y = mxsize.Y;
 
 
-            
+
 
             base.OnUpdate(time);
         }
@@ -780,7 +920,6 @@ namespace Plex.Engine.GUI
                 if (_windowStyle == value)
                     return;
                 _windowStyle = value;
-                
                 _needsLayout = true;
             }
         }
