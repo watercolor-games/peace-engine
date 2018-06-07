@@ -118,7 +118,7 @@ namespace Plex.Engine.GUI
                 var imageTint = Theme.GetFontColor(Themes.TextFontStyle.System);
                     if (i == SelectedIndex)
                         imageTint = Theme.GetAccentColor();
-                    gfx.FillRectangle(new Rectangle(rect.X + ((rect.Width - _itemImageSize) / 2), rect.Y + _itemImageMargin, _itemImageSize, _itemImageSize), imageTint, image);
+                    gfx.FillRectangle(new Rectangle(rect.X + ((rect.Width - _itemImageSize) / 2), rect.Y + _itemImageMargin, _itemImageSize, _itemImageSize), image, imageTint);
 #if !LISTVIEW_PAINT_BLANK_IMAGES
                 }
 #endif

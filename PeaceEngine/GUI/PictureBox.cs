@@ -111,7 +111,7 @@ namespace Plex.Engine.GUI
         {
             if (_texture == null)
                 return;
-            gfx.FillRectangle(0, 0, Width, Height, _tint, _texture, _layout);
+            gfx.FillRectangle(0, 0, Width, Height, _texture, _tint, _layout);
         }
 
         /// <inheritdoc/>

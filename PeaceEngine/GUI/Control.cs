@@ -751,7 +751,7 @@ namespace Plex.Engine.GUI
                 if (child._userfacingtarget != null)
                 {
                     var s = ToScreen(child.X, child.Y);
-                    gfx.FillRectangle(s.X, s.Y, child.Width, child.Height, Color.White * child.Opacity, child._userfacingtarget);
+                    gfx.FillRectangle(new RectangleF(s.X, s.Y, child.Width, child.Height), child._userfacingtarget, Color.White * child.Opacity);
                 }
             }
             if (_userfacingtarget != null)

@@ -838,7 +838,7 @@ namespace Plex.Engine
 
                     int halfWidth = _ctx.Width / 2;
                     int halfHeight = _ctx.Height / 2;
-                    _ctx.FillRectangle(new Vector2((_ctx.Width - halfWidth) / 2, (_ctx.Height - halfHeight) / 2), new Vector2(halfWidth, halfHeight), _logo, ImageLayout.Zoom);
+                    _ctx.FillRectangle(new Vector2((_ctx.Width - halfWidth) / 2, (_ctx.Height - halfHeight) / 2), new Vector2(halfWidth, halfHeight), _logo, Color.White, ImageLayout.Zoom);
 
                     string status = _status;
 

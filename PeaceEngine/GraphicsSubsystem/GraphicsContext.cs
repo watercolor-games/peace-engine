@@ -76,10 +76,12 @@ namespace Plex.Engine.GraphicsSubsystem
             _circleDefaultStepSize = _batcher.GetCircleStepSize(OpenWheels.Rendering.Batcher.RightStartAngle, OpenWheels.Rendering.Batcher.RightEndAngle, 180);
         }
 
+
+
         private string getID(Texture2D tex)
         {
             if (tex == null)
-                return _whiteUid;
+                throw new ArgumentNullException(nameof(tex));
             if (string.IsNullOrWhiteSpace(tex.Name))
                 tex.Name = Guid.NewGuid().ToString();
             _batcher.RegisterTexture(tex);
@@ -94,6 +96,21 @@ namespace Plex.Engine.GraphicsSubsystem
             RenderOffsetX = 0;
             RenderOffsetY = 0;
             _batcher.Start();
+        }
+
+        private Vector2 ToBounds(Vector2 point)
+        {
+            return new Vector2((point.X) + RenderOffsetX, (point.Y) + RenderOffsetY);
+        }
+
+        private Rectangle ToBounds(Rectangle rect)
+        {
+            return new Rectangle((rect.X) + (int)RenderOffsetX, (rect.Y) + (int)RenderOffsetY, rect.Width, rect.Height);
+        }
+
+        private RectangleF ToBounds(RectangleF rect)
+        {
+            return new RectangleF((rect.X) + RenderOffsetX, (rect.Y) + RenderOffsetY, rect.Width, rect.Height);
         }
 
         internal void StartFrame(BlendState blendState)
@@ -114,10 +131,17 @@ namespace Plex.Engine.GraphicsSubsystem
             return new RenderTarget2D(_device, width, height, false, _device.PresentationParameters.BackBufferFormat, _device.PresentationParameters.DepthStencilFormat, 0, RenderTargetUsage.PreserveContents);
         }
 
-        public void DrawLine(Vector2 a, Vector2 b, float width, Color color, Texture2D texture = null)
+        public void DrawLine(Vector2 a, Vector2 b, float width, Color color)
         {
+            DrawLine(a, b, width, _white, color);
+        }
+
+        public void DrawLine(Vector2 a, Vector2 b, float width, Texture2D texture, Color color)
+        {
+            if (texture == null)
+                return;
             _batcher.SetTexture(getID(texture));
-            _batcher.DrawLine(a.ToNum() + new Vector2(RenderOffsetX,RenderOffsetY).ToNum(), b.ToNum() - new Vector2(RenderOffsetX,RenderOffsetY).ToNum(), color.ToOw(), width);
+            _batcher.DrawLine(a.ToNum() + new Vector2(RenderOffsetX, RenderOffsetY).ToNum(), b.ToNum() - new Vector2(RenderOffsetX, RenderOffsetY).ToNum(), color.ToOw(), width);
         }
 
         public Texture2D CreateTexture(int w, int h)
@@ -130,47 +154,83 @@ namespace Plex.Engine.GraphicsSubsystem
             FillRectangle(new RectangleF(0, 0, Width, Height), color);
         }
 
-        public void FillRectangle(float x, float y, float w, float h, Texture2D texture, ImageLayout layout = ImageLayout.Stretch)
+        public void FillCircle(Vector2 center, float radius, Color color)
         {
-            FillRectangle(x, y, w, h, Color.White, texture, layout);
+            FillCircle(center, radius, _white, color);
         }
 
-        public void DrawCircle(Vector2 center, float radius, Color color, Texture2D texture = null)
+        public void FillCircle(Vector2 center, float radius, Texture2D texture, Color color)
         {
+            if (texture == null)
+                return;
             _batcher.SetTexture(getID(texture));
             float circumference = (float)(Math.PI * (Math.Pow(radius, 2)));
             int triangles = (int)Math.Round(circumference * _circleDefaultStepSize);
             if (triangles < 1)
             {
-                _batcher.FillRect(new RectangleF(new Vector2(center.X + radius, center.Y - radius) - new Vector2(RenderOffsetX, RenderOffsetY), new Vector2(radius * 2, radius * 2)).ToOw(), color.ToOw());
+                _batcher.FillRect(new RectangleF(ToBounds(new Vector2(center.X + radius, center.Y - radius)), new Vector2(radius * 2, radius * 2)).ToOw(), color.ToOw());
             }
             else
             {
-                _batcher.FillCircle(center.ToNum() + new Vector2(RenderOffsetX, RenderOffsetY).ToNum(), radius, color.ToOw(), 180);
+                _batcher.FillCircle(ToBounds(center).ToNum(), radius, color.ToOw(), triangles);
             }
         }
 
-        public void FillRectangle(RectangleF rect, Texture2D texture)
+        #region Rectangle -> Filled
+
+        public void FillRectangle(RectangleF rect, Color color)
         {
-            FillRectangle(rect, texture);
+            FillRectangle(rect, _white, color);
         }
 
-        public void FillRectangle(Vector2 pos, Vector2 size, Color color, Texture2D texture = null, ImageLayout layout = ImageLayout.Stretch)
+        public void FillRectangle(Vector2 pos, Vector2 size, Color color)
         {
-            FillRectangle(new RectangleF(pos.X, pos.Y, size.X, size.Y), color, texture, layout);
+            FillRectangle(new RectangleF(pos, size), color);
         }
 
-        public void FillRectangle(Vector2 pos, Vector2 size, Texture2D texture, ImageLayout layout = ImageLayout.Stretch)
+        public void FillRectangle(Vector2 pos, Vector2 size, Texture2D texture, Color color, ImageLayout layout = ImageLayout.Stretch)
         {
-            FillRectangle(new RectangleF(pos.X, pos.Y, size.X, size.Y), Color.White, texture, layout);
+            FillRectangle(new RectangleF(pos, size), texture, color, layout);
         }
 
-
-        public void FillRectangle(RectangleF rect, Color color, Texture2D texture = null, ImageLayout layout = ImageLayout.Stretch)
+        public void FillRectangle(Rectangle rect, Color color)
         {
+            FillRectangle(new RectangleF(rect.X, rect.Y, rect.Width, rect.Height), color);
+        }
+
+        public void FillRectangle(Rectangle rect, Texture2D texture, Color color, ImageLayout layout = ImageLayout.Stretch)
+        {
+            FillRectangle(new RectangleF(rect.X, rect.Y, rect.Width, rect.Height), texture, color, layout); ;
+        }
+
+        public void FillRectangle(int x, int y, int w, int h, Color color)
+        {
+            FillRectangle(new RectangleF(x, y, w, h), color);
+        }
+
+        public void FillRectangle(float x, float y, float w, float h, Color color)
+        {
+            FillRectangle(new RectangleF(x, y, w, h), color);
+        }
+
+        public void FillRectangle(int x, int y, int w, int h, Texture2D texture, Color color, ImageLayout layout = ImageLayout.Stretch)
+        {
+            FillRectangle(new RectangleF(x, y, w, h), texture, color, layout);
+        }
+
+        public void FillRectangle(float x, float y, float w, float h, Texture2D texture, Color color, ImageLayout layout = ImageLayout.Stretch)
+        {
+            FillRectangle(new RectangleF(x, y, w, h), texture, color, layout);
+        }
+
+        public void FillRectangle(RectangleF rect, Texture2D texture, Color color, ImageLayout layout = ImageLayout.Stretch)
+        {
+            if (texture == null)
+                return;
+
             _batcher.SetTexture(getID(texture));
 
-            rect = new RectangleF(rect.X + RenderOffsetX, rect.Y + RenderOffsetY, rect.Width, rect.Height);
+            rect = ToBounds(rect);
 
             float tw = (texture == null) ? rect.Width : texture.Width;
             float th = (texture == null) ? rect.Height : texture.Height;
@@ -198,10 +258,92 @@ namespace Plex.Engine.GraphicsSubsystem
             }
         }
 
-        public void FillRectangle(float x, float y, float w, float h, Color color, Texture2D texture = null, ImageLayout layout = ImageLayout.Stretch)
+        #endregion
+
+        #region Rectangle -> Filled -> Rounded
+
+        public void FillRoundedRectangle(RectangleF rect, float radius, Color color)
         {
-            FillRectangle(new RectangleF(x, y, w, h), color, texture, layout);
+            FillRoundedRectangle(rect, radius, _white, color);
         }
+
+        public void FillRoundedRectangle(Vector2 pos, Vector2 size, float radius, Color color)
+        {
+            FillRoundedRectangle(new RectangleF(pos, size), radius, color);
+        }
+
+        public void FillRoundedRectangle(Vector2 pos, Vector2 size, float radius, Texture2D texture, Color color, ImageLayout layout = ImageLayout.Stretch)
+        {
+            FillRoundedRectangle(new RectangleF(pos, size), radius, texture, color, layout);
+        }
+
+        public void FillRoundedRectangle(Rectangle rect, float radius, Color color)
+        {
+            FillRoundedRectangle(new RectangleF(rect.X, rect.Y, rect.Width, rect.Height), radius, color);
+        }
+
+        public void FillRoundedRectangle(Rectangle rect, float radius, Texture2D texture, Color color, ImageLayout layout = ImageLayout.Stretch)
+        {
+            FillRoundedRectangle(new RectangleF(rect.X, rect.Y, rect.Width, rect.Height), radius, texture, color, layout); ;
+        }
+
+        public void FillRoundedRectangle(int x, int y, int w, int h, float radius, Color color)
+        {
+            FillRoundedRectangle(new RectangleF(x, y, w, h), radius, color);
+        }
+
+        public void FillRoundedRectangle(float x, float y, float w, float h, float radius, Color color)
+        {
+            FillRoundedRectangle(new RectangleF(x, y, w, h), radius, color);
+        }
+
+        public void FillRoundedRectangle(int x, int y, int w, int h, float radius, Texture2D texture, Color color, ImageLayout layout = ImageLayout.Stretch)
+        {
+            FillRoundedRectangle(new RectangleF(x, y, w, h), radius, texture, color, layout);
+        }
+
+        public void FillRoundedRectangle(float x, float y, float w, float h, float radius, Texture2D texture, Color color, ImageLayout layout = ImageLayout.Stretch)
+        {
+            FillRoundedRectangle(new RectangleF(x, y, w, h), radius, texture, color, layout);
+        }
+
+        public void FillRoundedRectangle(RectangleF rect, float radius, Texture2D texture, Color color, ImageLayout layout = ImageLayout.Stretch)
+        {
+            if (texture == null)
+                return;
+
+            _batcher.SetTexture(getID(texture));
+
+            rect = ToBounds(rect);
+
+            float tw = (texture == null) ? rect.Width : texture.Width;
+            float th = (texture == null) ? rect.Height : texture.Height;
+
+            switch (layout)
+            {
+                case ImageLayout.None:
+                    _batcher.FillRoundedRect(new RectangleF(rect.X + X, rect.Y + Y, (texture == null) ? rect.Width : texture.Width, (texture == null) ? rect.Height : texture.Height).ToOw(), radius, 32, color.ToOw());
+                    break;
+                case ImageLayout.Stretch:
+                    _batcher.FillRoundedRect(new RectangleF(rect.X + X, rect.Y + Y, rect.Width, rect.Height).ToOw(), radius,32, color.ToOw());
+                    break;
+                case ImageLayout.Center:
+                    _batcher.FillRoundedRect(new RectangleF(X + rect.X + ((rect.Width - tw) / 2), Y + rect.Y + ((rect.Height - th) / 2), tw, th).ToOw(), radius, 32, color.ToOw());
+                    break;
+                case ImageLayout.Zoom:
+
+                    float scale = Math.Min(rect.Width / tw, rect.Height / th);
+
+                    var scaleWidth = (tw * scale);
+                    var scaleHeight = (th * scale);
+
+                    _batcher.FillRoundedRect(new RectangleF(X + rect.X + ((rect.Width - scaleWidth) / 2), Y + rect.Y + ((rect.Height - scaleHeight) / 2), scaleWidth, scaleHeight).ToOw(), radius, 32, color.ToOw());
+                    break;
+            }
+        }
+
+        #endregion
+
 
         private SamplerState _sampler = null;
 

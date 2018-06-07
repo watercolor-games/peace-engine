@@ -11,20 +11,20 @@ namespace Plex.Engine.Cutscenes
     public class PNV : IVideoFormat, IDisposable
     {
         private Texture2D _frameTexture = null;
-        Stream fobj;
-        BinaryReader read;
-        Color[] frame;
+        private Stream _fobj;
+        private BinaryReader _read;
+        private uint[] _frame;
         public PNV(Stream fobj)
         {
-            this.fobj = new GZipStream(fobj, CompressionMode.Decompress, true);
-            this.read = new BinaryReader(this.fobj, Encoding.UTF8, true);
-            if (read.ReadUInt32() != 0x56654E50)
+            this._fobj = new GZipStream(fobj, CompressionMode.Decompress, true);
+            this._read = new BinaryReader(this._fobj, Encoding.UTF8, true);
+            if (_read.ReadUInt32() != 0x56654E50)
                 throw new InvalidDataException("This is not a PNV file.");
-            Length = read.ReadInt32();
-            FlicksPerFrame = read.ReadInt32();
-            w = read.ReadInt32();
-            h = read.ReadInt32();
-            frame = new Color[w * h];
+            Length = _read.ReadInt32();
+            FlicksPerFrame = _read.ReadInt32();
+            w = _read.ReadInt32();
+            h = _read.ReadInt32();
+            _frame = new uint[w * h];
         }
 
         public int Length { get; private set; }
@@ -34,9 +34,9 @@ namespace Plex.Engine.Cutscenes
 
         public void Dispose()
         {
-            read?.Dispose();
-            fobj?.Dispose();
-            frame = null;
+            _read?.Dispose();
+            _fobj?.Dispose();
+            _frame = null;
             _frameTexture?.Dispose();
         }
 
@@ -46,21 +46,19 @@ namespace Plex.Engine.Cutscenes
                 _frameTexture = gfx.CreateTexture(w, h);
             VideoFrame ret;
             int p = 0;
-            while (p < frame.Length)
+            while (p < _frame.Length)
             {
-                uint inst = read.ReadUInt32();
+                uint inst = _read.ReadUInt32();
                 uint l = inst >> 24;
                 for (uint i = 0; i < l; i++)
                 {
-                    frame[p].R ^= (byte)inst;
-                    frame[p].G ^= (byte)(inst >> 8);
-                    frame[p].B ^= (byte)(inst >> 16);
+                    _frame[p] ^= inst;
                     p++;
                 }
             }
             ret.sound = null;
             ret.picture = _frameTexture;
-            ret.picture.SetData(frame);
+            ret.picture.SetData(_frame);
             return ret;
         }
     }

@@ -201,7 +201,7 @@ namespace Plex.Engine.GraphicsSubsystem
                         ctrl.Draw(time, ctx);
                     if(ctrl._userfacingtarget != null)
                     {
-                        ctx.FillRectangle(new RectangleF(ctrl.X, ctrl.Y, ctrl.Width, ctrl.Height), Color.White * ctrl.Opacity, ctrl._userfacingtarget);
+                        ctx.FillRectangle(new RectangleF(ctrl.X, ctrl.Y, ctrl.Width, ctrl.Height), ctrl._userfacingtarget, Color.White * ctrl.Opacity);
                     }
                 }
 
