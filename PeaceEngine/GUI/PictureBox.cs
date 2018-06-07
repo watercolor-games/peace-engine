@@ -109,6 +109,8 @@ namespace Plex.Engine.GUI
         /// <inheritdoc/>
         protected override void OnPaint(GameTime time, GraphicsContext gfx)
         {
+            if (_texture == null)
+                return;
             gfx.FillRectangle(0, 0, Width, Height, _tint, _texture, _layout);
         }
 

@@ -1,6 +1,4 @@
-﻿#define LISTVIEW_PAINT_BLANK_IMAGES
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
