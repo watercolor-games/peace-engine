@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using MonoGame.Extended.Input.InputListeners;
 
 namespace Plex.Engine.GUI
 {
@@ -12,40 +13,43 @@ namespace Plex.Engine.GUI
     /// </summary>
     public class SliderBar : ProgressBar
     {
-        private bool _isMouseDown = false;
+        private bool _dragging = false;
 
         /// <summary>
         /// Creates a new instance of the <see cref="SliderBar"/> class. 
         /// </summary>
         public SliderBar()
         {
-            MouseDown += (o, a) =>
-            {
-                if(a.Button == MonoGame.Extended.Input.InputListeners.MouseButton.Left)
-                    _isMouseDown = true;
-            };
-            MouseMove += (o, a) =>
-            {
-                if (_isMouseDown)
-                {
-                    float mousex = a.Position.X;
-                    float width = Width;
-                    Value = (mousex / width);
-                }
-            };
-            MouseUp += (o, a) =>
-            {
-                if (a.Button == MonoGame.Extended.Input.InputListeners.MouseButton.Left)
-                    _isMouseDown = false;
-            };
+            
         }
 
-        /// <inheritdoc/>
-        protected override void OnUpdate(GameTime time)
+        protected override void OnMouseDragStart(MouseEventArgs e)
         {
-            if (!LeftButtonPressed)
-                _isMouseDown = false;
-            base.OnUpdate(time);
+            if (e.Button == MouseButton.Left)
+                _dragging = true;
+            base.OnMouseDragStart(e);
+        }
+
+        protected override void OnClick(MouseEventArgs e)
+        {
+            Value = (float)MathHelper.Clamp(e.Position.X, 0, Width) / (float)Width;
+            base.OnClick(e);
+        }
+
+        protected override void OnMouseDrag(MouseEventArgs e)
+        {
+            if(_dragging == true)
+            {
+                float mouseX = MathHelper.Clamp(e.Position.X, 0, Width);
+                Value = mouseX / (float)Width;
+            }
+            base.OnMouseDrag(e);
+        }
+
+        protected override void OnMouseDragEnd(MouseEventArgs e)
+        {
+            _dragging = false;
+            base.OnMouseDragEnd(e);
         }
     }
 }
