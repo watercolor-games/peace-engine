@@ -263,6 +263,15 @@ namespace Plex.Engine.GraphicsSubsystem
 
             public void Update(GameTime time)
             {
+                if (_smoothScrollUIElement != null)
+                {
+                    _smoothScrollProgress = MathHelper.Clamp(_smoothScrollProgress + ((float)time.ElapsedGameTime.TotalSeconds * 4), 0, 1);
+                    int curr = (int)MathHelper.Lerp(_smoothScrollPrevious, _smoothScrollDest, _smoothScrollProgress);
+                    _smoothScrollUIElement.FireScroll(new MouseEventArgs(_GameLoop.ViewportAdapter, time.ElapsedGameTime, new MouseState(0, 0, _smoothScrollCurr, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released), new MouseState(0, 0, curr, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released), MouseButton.None));
+                    if (_smoothScrollProgress == 1)
+                        _smoothScrollUIElement = null;
+                }
+
                 foreach (var ctrl in Controls)
                 {
                     if (!ctrl.Visible)
@@ -327,12 +336,33 @@ namespace Plex.Engine.GraphicsSubsystem
                 }
             }
 
+            private float _smoothScrollProgress = 0f;
+            private int _smoothScrollPrevious = 0;
+            private int _smoothScrollDest = 0;
+            private int _smoothScrollCurr = 0;
+            private Scrollable _smoothScrollUIElement = null;
+            
+
             private void _GameLoop_MouseWheelMoved(object sender, MouseEventArgs e)
             {
+                bool doSmoothScroll = _config.GetValue("ui.smoothScrolling", true);
+
                 var scrollable = GetHoveredScrollable(e.Position.ToVector2());
 
-                if (scrollable != null)
+                if (scrollable == null)
+                    return;
+
+                if (doSmoothScroll)
+                {
+                    _smoothScrollPrevious = _smoothScrollCurr;
+                    _smoothScrollDest = _smoothScrollPrevious + (e.ScrollWheelDelta/4);
+                    _smoothScrollProgress = 0;
+                    _smoothScrollUIElement = scrollable;
+                }
+                else
+                {
                     scrollable.FireScroll(e.OffsetPosition(scrollable.ToToplevel(0, 0)));
+                }
             }
 
             public Control HoveredControl { get; private set; }

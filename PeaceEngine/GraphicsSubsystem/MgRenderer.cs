@@ -166,8 +166,11 @@ namespace Plex.Engine.GraphicsSubsystem
                 if (state.UseScissorRect)
                     GraphicsDevice.ScissorRectangle = state.ScissorRect.ToMg();
 
+            if (state.Texture == -1)
+                throw new InvalidOperationException("An attempt was made to render a polygon without a texture.");
+
             _effect.CurrentTechnique.Passes[0].Apply();
-            GraphicsDevice.Textures[0] = _textures[state.Texture];
+            GraphicsDevice.Textures[0] = _textures[state.Texture] ?? throw new InvalidOperationException("An attempt was made to render a polygon without a texture.");
 
             _prevState = state;
         }
