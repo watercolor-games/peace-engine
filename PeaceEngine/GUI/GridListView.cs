@@ -111,17 +111,13 @@ namespace Plex.Engine.GUI
                 string text = item.Text;
                 var image = GetImage(item.ImageKey);
 
-#if !LISTVIEW_PAINT_BLANK_IMAGES
-                if(image != null)
+                if (image != null)
                 {
-#endif
-                var imageTint = Theme.GetFontColor(Themes.TextFontStyle.System);
+                    var imageTint = Theme.GetFontColor(Themes.TextFontStyle.System);
                     if (i == SelectedIndex)
                         imageTint = Theme.GetAccentColor();
                     gfx.FillRectangle(new Rectangle(rect.X + ((rect.Width - _itemImageSize) / 2), rect.Y + _itemImageMargin, _itemImageSize, _itemImageSize), image, imageTint);
-#if !LISTVIEW_PAINT_BLANK_IMAGES
                 }
-#endif
 
                 var highlight = Color.Transparent;
                 if (i == SelectedIndex)

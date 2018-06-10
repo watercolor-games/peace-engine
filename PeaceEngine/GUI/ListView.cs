@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Input.InputListeners;
 using Plex.Engine.GraphicsSubsystem;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,15 +13,79 @@ namespace Plex.Engine.GUI
 {
     public abstract class ListView : Control
     {
+        public class ListViewCollection : ICollection<ListViewItem>
+        {
+            private List<ListViewItem> _items = new List<ListViewItem>();
+            private ListView _view = null;
+
+            internal ListViewCollection(ListView view)
+            {
+                _view = view;
+            }
+
+            public int Count => _items.Count;
+
+            public bool IsReadOnly => false;
+
+            public void Add(ListViewItem item)
+            {
+                _items.Add(item);
+                _view.SelectedIndex = -1;
+            }
+
+            public void Clear()
+            {
+                _view.SelectedIndex = -1;
+                _items.Clear();
+            }
+
+            public ListViewItem this[int index]
+            {
+                get { return _items[index]; }
+                set { _items[index] = value; }
+            }
+
+            public bool Contains(ListViewItem item)
+            {
+                return _items.Contains(item);
+            }
+
+            public void CopyTo(ListViewItem[] array, int arrayIndex)
+            {
+                _items.CopyTo(array, arrayIndex);
+            }
+
+            public IEnumerator<ListViewItem> GetEnumerator()
+            {
+                return _items.GetEnumerator();
+            }
+
+            public bool Remove(ListViewItem item)
+            {
+                _view.SelectedIndex = -1;
+                return _items.Remove(item);
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return _items.GetEnumerator();
+            }
+        }
+
         private int _selected = -1;
         private int _tracked = -1;
         private readonly Dictionary<string, Texture2D> _images = new Dictionary<string, Texture2D>();
 
-        public readonly List<ListViewItem> Items = new List<ListViewItem>();
+        public readonly ListViewCollection Items = null;
         
         public ListViewItem SelectedItem => (_selected == -1) ? null : Items[_selected];
 
         public int TrackedIndex => _tracked;
+
+        public ListView()
+        {
+            Items = new ListViewCollection(this);
+        }
 
         public int SelectedIndex
         {

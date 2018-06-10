@@ -243,7 +243,7 @@ namespace Plex.Engine.GUI
             int x = 0;
             int y = 0;
             int i = 0;
-            string wrapped = TextRenderer.WrapText(_font, _textRaw, Width-4, TextRenderers.WrapMode.Letters);
+            string wrapped = TextRenderer.WrapText(_font, _textRaw, Width-4, TextRenderers.WrapMode.Words);
             if (_currentIndex > 0)
             {
                 foreach (char c in wrapped)
@@ -280,7 +280,7 @@ namespace Plex.Engine.GUI
         {
             if(_font == null)
             {
-                _font = Theme.GetFont(Themes.TextFontStyle.Mono);
+                _font = Theme.GetFont(Themes.TextFontStyle.System);
                 recalculateLines();
             }
             if(_lastWidth != Width)

@@ -92,7 +92,7 @@ namespace Plex.Engine
                     }
 
                 }
-                return sb.ToString().TrimEnd();
+                return sb.ToString();
             }
             else
             {
