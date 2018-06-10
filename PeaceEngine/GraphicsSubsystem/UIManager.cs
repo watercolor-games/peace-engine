@@ -154,14 +154,14 @@ namespace Plex.Engine.GraphicsSubsystem
                 //The last control in the search iteration.
                 Control last = null;
                 //Find a top-level that the mouse is in.
-                Control current = Controls.OrderByDescending(x => Array.IndexOf(Controls, x)).FirstOrDefault(x => x.Visible && MouseInBounds(x, mousePosition));
+                Control current = Controls.OrderByDescending(x => Array.IndexOf(Controls, x)).FirstOrDefault(x => x.Visible && x.Enabled && MouseInBounds(x, mousePosition));
                 //Walk down the control's children using the same search query until the current control is null.
                 while(current != null)
                 {
                     //Set the last control to the current
                     last = current;
                     //Search for a child.
-                    current = current.Children.OrderByDescending(x => Array.IndexOf(current.Children, x)).FirstOrDefault(x => x.Visible && MouseInBounds(x, mousePosition));
+                    current = current.Children.OrderByDescending(x => Array.IndexOf(current.Children, x)).FirstOrDefault(x => x.Visible && x.Enabled && MouseInBounds(x, mousePosition));
                 }
                 //Return the last control
                 return last;
@@ -203,7 +203,8 @@ namespace Plex.Engine.GraphicsSubsystem
 
                     if(ctrl._userfacingtarget != null)
                     {
-                        ctx.FillRectangle(new RectangleF(ctrl.X, ctrl.Y, ctrl.Width, ctrl.Height), ctrl._userfacingtarget, Color.White * ctrl.Opacity);
+                        var tint = ctrl.Enabled ? Color.White : Color.Gray;
+                        ctx.FillRectangle(new RectangleF(ctrl.X, ctrl.Y, ctrl.Width, ctrl.Height), ctrl._userfacingtarget, tint * ((_ui.IgnoreControlOpacity) ? 1 : ctrl.Opacity));
                     }
                 }
 

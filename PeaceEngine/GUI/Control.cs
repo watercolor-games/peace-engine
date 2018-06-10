@@ -717,7 +717,7 @@ namespace Plex.Engine.GUI
                 return;
             //If we're disabled, set the Grayout property.
             
-            if (Opacity < 1 && !Manager.IgnoreControlOpacity && _userfacingtarget == null)
+            if (((Opacity < 1 && !Manager.IgnoreControlOpacity) || Enabled == false) && _userfacingtarget == null)
                 _userfacingtarget = gfx.CreateRenderTarget(Width, Height);
             else if(Opacity == 1)
             {
@@ -751,7 +751,8 @@ namespace Plex.Engine.GUI
                 if (child._userfacingtarget != null)
                 {
                     var s = ToScreen(child.X, child.Y);
-                    gfx.FillRectangle(new RectangleF(s.X, s.Y, child.Width, child.Height), child._userfacingtarget, Color.White * child.Opacity);
+                    var tint = child.Enabled ? Color.White : Color.Gray;
+                    gfx.FillRectangle(new RectangleF(s.X, s.Y, child.Width, child.Height), child._userfacingtarget, tint * ((Manager.IgnoreControlOpacity) ? 1 : child.Opacity));
                 }
             }
             if (_userfacingtarget != null)
