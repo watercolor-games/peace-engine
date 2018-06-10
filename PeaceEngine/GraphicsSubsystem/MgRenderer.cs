@@ -5,7 +5,9 @@ using OpenWheels.Rendering;
 using Vector2 = System.Numerics.Vector2;
 using SamplerState = OpenWheels.Rendering.SamplerState;
 using BlendState = OpenWheels.Rendering.BlendState;
+using Matrix = Microsoft.Xna.Framework.Matrix;
 using OpenWheels;
+using Plex.Objects;
 
 namespace Plex.Engine.GraphicsSubsystem
 {
@@ -18,7 +20,7 @@ namespace Plex.Engine.GraphicsSubsystem
         private readonly Dictionary<int, Texture2D> _textures;
         private readonly Dictionary<int, SpriteFont> _fonts;
 
-        private readonly Effect _effect;
+        private readonly BasicEffect _effect;
 
         private GraphicsState _prevState = GraphicsState.Default;
 
@@ -41,11 +43,13 @@ namespace Plex.Engine.GraphicsSubsystem
 
             // note that this effect already performs the 2D transformation
             // so we don't need it in the batcher
-            _effect = new SpriteEffect(gd);
+            _effect = new BasicEffect(gd);
         }
 
         public int AddTexture(Texture2D texture)
         {
+            if (texture == null)
+                throw new ArgumentNullException(nameof(texture));
             var id = GetTextureId();
             _textures.Add(id, texture);
             return id;
@@ -102,13 +106,41 @@ namespace Plex.Engine.GraphicsSubsystem
             int indexCount, object batchUserData)
         {
             SetGraphicsState(state);
+
             var vd = VertexPositionColorTexture.VertexDeclaration;
-            GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, vertexBuffer, 0, vertexBuffer.Length,
-                indexBuffer, startIndex, indexCount / 3, vd);
+            foreach (var pass in _effect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, vertexBuffer, 0, vertexBuffer.Length,
+                    indexBuffer, startIndex, indexCount / 3, vd);
+            }
         }
 
         public void EndRender()
         {
+        }
+
+        public void RemoveTexture(int id)
+        {
+            _textures.Remove(id);
+        }
+
+        public Texture2D GetTexture(int id)
+        {
+            return _textures[id];
+        }
+
+        public int GetTextureID(Texture2D texture)
+        {
+            if (texture == null)
+                throw new ArgumentNullException(nameof(texture));
+
+            foreach(var key in _textures)
+            {
+                if (key.Value == texture)
+                    return key.Key;
+            }
+            throw new ArgumentException("The texture was not found in the dictionary.");
         }
 
         #endregion
@@ -117,60 +149,61 @@ namespace Plex.Engine.GraphicsSubsystem
 
         private void SetGraphicsState(GraphicsState state)
         {
-            if (state.SamplerState != _prevState.SamplerState)
+            switch (state.SamplerState)
             {
-                switch (state.SamplerState)
-                {
-                    case SamplerState.PointWrap:
-                        GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.PointWrap;
-                        break;
-                    case SamplerState.PointClamp:
-                        GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.PointClamp;
-                        break;
-                    case SamplerState.LinearWrap:
-                        GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.LinearWrap;
-                        break;
-                    case SamplerState.LinearClamp:
-                        GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.LinearClamp;
-                        break;
-                    case SamplerState.AnisotropicWrap:
-                        GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.AnisotropicWrap;
-                        break;
-                    case SamplerState.AnisotropicClamp:
-                        GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.AnisotropicClamp;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                case SamplerState.PointWrap:
+                    GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.PointWrap;
+                    break;
+                case SamplerState.PointClamp:
+                    GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.PointClamp;
+                    break;
+                case SamplerState.LinearWrap:
+                    GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.LinearWrap;
+                    break;
+                case SamplerState.LinearClamp:
+                    GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.LinearClamp;
+                    break;
+                case SamplerState.AnisotropicWrap:
+                    GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.AnisotropicWrap;
+                    break;
+                case SamplerState.AnisotropicClamp:
+                    GraphicsDevice.SamplerStates[0] = Microsoft.Xna.Framework.Graphics.SamplerState.AnisotropicClamp;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
-            if (state.BlendState != _prevState.BlendState)
+            switch (state.BlendState)
             {
-                switch (state.BlendState)
-                {
-                    case BlendState.AlphaBlend:
-                        GraphicsDevice.BlendState = Microsoft.Xna.Framework.Graphics.BlendState.AlphaBlend;
-                        break;
-                    case BlendState.Opaque:
-                        GraphicsDevice.BlendState = Microsoft.Xna.Framework.Graphics.BlendState.Opaque;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                case BlendState.AlphaBlend:
+                    GraphicsDevice.BlendState = Microsoft.Xna.Framework.Graphics.BlendState.AlphaBlend;
+                    break;
+                case BlendState.Opaque:
+                    GraphicsDevice.BlendState = Microsoft.Xna.Framework.Graphics.BlendState.Opaque;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
-            if(state.UseScissorRect != _prevState.UseScissorRect)
-                GraphicsDevice.RasterizerState = (state.UseScissorRect) ? NoScissor : Scissor;
 
-            if(state.ScissorRect != _prevState.ScissorRect)
-                if (state.UseScissorRect)
-                    GraphicsDevice.ScissorRectangle = state.ScissorRect.ToMg();
+            GraphicsDevice.RasterizerState = (state.UseScissorRect) ? Scissor : NoScissor;
+
+            if (state.UseScissorRect)
+                GraphicsDevice.ScissorRectangle = state.ScissorRect.ToMg();
 
             if (state.Texture == -1)
                 throw new InvalidOperationException("An attempt was made to render a polygon without a texture.");
 
-            _effect.CurrentTechnique.Passes[0].Apply();
-            GraphicsDevice.Textures[0] = _textures[state.Texture] ?? throw new InvalidOperationException("An attempt was made to render a polygon without a texture.");
+            _effect.Alpha = 1f;
+            _effect.FogEnabled = false;
+            _effect.LightingEnabled = false;
+            _effect.Projection = Matrix.CreateOrthographicOffCenter(GraphicsDevice.Viewport.Bounds, GraphicsDevice.Viewport.MinDepth, GraphicsDevice.Viewport.MaxDepth);
+            _effect.View = Matrix.Identity;
+            _effect.World = Matrix.Identity;
+            _effect.TextureEnabled = true;
+            _effect.Texture = _textures[state.Texture];
+            _effect.VertexColorEnabled = true;
+
 
             _prevState = state;
         }

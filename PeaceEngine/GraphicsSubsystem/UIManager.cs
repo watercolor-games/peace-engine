@@ -197,8 +197,10 @@ namespace Plex.Engine.GraphicsSubsystem
                 {
                     if (!ctrl.Visible)
                         continue;
-                    if (ctrl.Opacity > 0)
-                        ctrl.Draw(time, ctx);
+                    if (ctrl.Opacity == 0)
+                        continue;
+                    ctrl.Draw(time, ctx);
+
                     if(ctrl._userfacingtarget != null)
                     {
                         ctx.FillRectangle(new RectangleF(ctrl.X, ctrl.Y, ctrl.Width, ctrl.Height), ctrl._userfacingtarget, Color.White * ctrl.Opacity);

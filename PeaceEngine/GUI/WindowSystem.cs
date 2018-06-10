@@ -269,7 +269,7 @@ namespace Plex.Engine.GUI
     /// <summary>
     /// A control which is tied to a <see cref="WindowSystem"/> and acts as a program window's client area. 
     /// </summary>
-    public abstract class Window : Control
+    public abstract class Window : Scrollable
     {
         private WindowSystem _winsystem = null;
         private int? _wid = null;

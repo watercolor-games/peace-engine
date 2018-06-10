@@ -36,7 +36,7 @@ namespace Plex.Objects
             lock (Console.Out)
             {
                 Console.ForegroundColor = colour;
-                Console.WriteLine($"[{DateTime.Now}] <{Path.GetFileName(filePath)}:line {lineNumber}> {callerName}: {message}");
+                Console.WriteLine($"[{DateTime.Now}] <thread {System.Threading.Thread.CurrentThread.ManagedThreadId.ToString("X")}> <{Path.GetFileName(filePath)}:line {lineNumber}> {callerName}: {message}");
             }
         }
     }

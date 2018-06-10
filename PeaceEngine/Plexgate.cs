@@ -67,6 +67,7 @@ namespace Plex.Engine
 
         #region Events
 
+        public EventHandler<KeyboardEventArgs>      OnKeyEvent;
         public event EventHandler                   FrameDrawn;
         public event EventHandler<MouseEventArgs>   MouseMove;
         public event EventHandler<MouseEventArgs>   MouseDown;
@@ -621,6 +622,7 @@ namespace Plex.Engine
 
         private void KeyboardListener_KeyPressed(object sender, KeyboardEventArgs e)
         {
+            OnKeyEvent?.Invoke(this, e);
             foreach(var layer in _layers.ToArray())
             {
                 foreach(var entity in layer.Entities)
@@ -757,7 +759,7 @@ namespace Plex.Engine
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            while (_actions.Count != 0)
+            if (_actions.Count != 0)
             {
                 _actions.Dequeue().Invoke();
             }

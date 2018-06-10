@@ -100,21 +100,22 @@ namespace Plex.Engine.GraphicsSubsystem
 
         private Vector2 ToBounds(Vector2 point)
         {
-            return new Vector2((point.X) + RenderOffsetX, (point.Y) + RenderOffsetY);
+            return new Vector2((X+point.X) + RenderOffsetX, (Y+point.Y) + RenderOffsetY);
         }
 
         private Rectangle ToBounds(Rectangle rect)
         {
-            return new Rectangle((rect.X) + (int)RenderOffsetX, (rect.Y) + (int)RenderOffsetY, rect.Width, rect.Height);
+            return new Rectangle((X+rect.X) + (int)RenderOffsetX, (Y+rect.Y) + (int)RenderOffsetY, rect.Width, rect.Height);
         }
 
         private RectangleF ToBounds(RectangleF rect)
         {
-            return new RectangleF((rect.X) + RenderOffsetX, (rect.Y) + RenderOffsetY, rect.Width, rect.Height);
+            return new RectangleF((X+rect.X) + RenderOffsetX, (Y+rect.Y) + RenderOffsetY, rect.Width, rect.Height);
         }
 
         internal void StartFrame(BlendState blendState)
         {
+            _batcher.ClearTextures();
             _sampler = _config.GetValue("anisotropicFiltering", true) ? SamplerState.AnisotropicClamp : SamplerState.LinearClamp;
             _batcher.SamplerState = _sampler.ToOw();
             _batcher.BlendState = blendState.ToOw();
@@ -140,8 +141,10 @@ namespace Plex.Engine.GraphicsSubsystem
         {
             if (texture == null)
                 return;
+            if (color.A == 0)
+                return;
             _batcher.SetTexture(getID(texture));
-            _batcher.DrawLine(a.ToNum() + new Vector2(RenderOffsetX, RenderOffsetY).ToNum(), b.ToNum() - new Vector2(RenderOffsetX, RenderOffsetY).ToNum(), color.ToOw(), width);
+            _batcher.DrawLine(ToBounds(a).ToNum(), ToBounds(b).ToNum(), color.ToOw(), width);
         }
 
         public Texture2D CreateTexture(int w, int h)
@@ -163,12 +166,16 @@ namespace Plex.Engine.GraphicsSubsystem
         {
             if (texture == null)
                 return;
+
+            if (color.A == 0)
+                return;
+
             _batcher.SetTexture(getID(texture));
             float circumference = (float)(Math.PI * (Math.Pow(radius, 2)));
             int triangles = (int)Math.Round(circumference * _circleDefaultStepSize);
             if (triangles < 1)
             {
-                _batcher.FillRect(new RectangleF(ToBounds(new Vector2(center.X + radius, center.Y - radius)), new Vector2(radius * 2, radius * 2)).ToOw(), color.ToOw());
+                _batcher.FillRect(new RectangleF(ToBounds(new Vector2(center.X - radius, center.Y - radius)), new Vector2(radius * 2, radius * 2)).ToOw(), color.ToOw());
             }
             else
             {
@@ -228,6 +235,10 @@ namespace Plex.Engine.GraphicsSubsystem
             if (texture == null)
                 return;
 
+            if (color.A == 0)
+                return;
+
+
             _batcher.SetTexture(getID(texture));
 
             rect = ToBounds(rect);
@@ -238,13 +249,13 @@ namespace Plex.Engine.GraphicsSubsystem
             switch (layout)
             {
                 case ImageLayout.None:
-                    _batcher.FillRect(new RectangleF(rect.X+X, rect.Y+Y, (texture == null) ? rect.Width : texture.Width, (texture == null) ? rect.Height : texture.Height).ToOw(), color.ToOw());
+                    _batcher.FillRect(new RectangleF(rect.X, rect.Y, (texture == null) ? rect.Width : texture.Width, (texture == null) ? rect.Height : texture.Height).ToOw(), color.ToOw());
                     break;
                 case ImageLayout.Stretch:
-                    _batcher.FillRect(new RectangleF(rect.X+X,rect.Y+Y,rect.Width,rect.Height).ToOw(), color.ToOw());
+                    _batcher.FillRect(new RectangleF(rect.X,rect.Y,rect.Width,rect.Height).ToOw(), color.ToOw());
                     break;
                 case ImageLayout.Center:
-                    _batcher.FillRect(new RectangleF(X+rect.X + ((rect.Width - tw) / 2), Y+rect.Y + ((rect.Height - th) / 2), tw, th).ToOw(), color.ToOw());
+                    _batcher.FillRect(new RectangleF(rect.X + ((rect.Width - tw) / 2), rect.Y + ((rect.Height - th) / 2), tw, th).ToOw(), color.ToOw());
                     break;
                 case ImageLayout.Zoom:
 
@@ -253,7 +264,7 @@ namespace Plex.Engine.GraphicsSubsystem
                     var scaleWidth = (tw * scale);
                     var scaleHeight = (th * scale);
 
-                    _batcher.FillRect(new RectangleF(X+rect.X + ((rect.Width - scaleWidth) / 2), Y+rect.Y + ((rect.Height - scaleHeight) / 2), scaleWidth, scaleHeight).ToOw(), color.ToOw());
+                    _batcher.FillRect(new RectangleF(rect.X + ((rect.Width - scaleWidth) / 2), rect.Y + ((rect.Height - scaleHeight) / 2), scaleWidth, scaleHeight).ToOw(), color.ToOw());
                     break;
             }
         }
@@ -312,6 +323,9 @@ namespace Plex.Engine.GraphicsSubsystem
             if (texture == null)
                 return;
 
+            if (color.A == 0)
+                return;
+
             _batcher.SetTexture(getID(texture));
 
             rect = ToBounds(rect);
@@ -322,13 +336,13 @@ namespace Plex.Engine.GraphicsSubsystem
             switch (layout)
             {
                 case ImageLayout.None:
-                    _batcher.FillRoundedRect(new RectangleF(rect.X + X, rect.Y + Y, (texture == null) ? rect.Width : texture.Width, (texture == null) ? rect.Height : texture.Height).ToOw(), radius, 32, color.ToOw());
+                    _batcher.FillRoundedRect(new RectangleF(rect.X, rect.Y, (texture == null) ? rect.Width : texture.Width, (texture == null) ? rect.Height : texture.Height).ToOw(), radius, 32, color.ToOw());
                     break;
                 case ImageLayout.Stretch:
-                    _batcher.FillRoundedRect(new RectangleF(rect.X + X, rect.Y + Y, rect.Width, rect.Height).ToOw(), radius,32, color.ToOw());
+                    _batcher.FillRoundedRect(new RectangleF(rect.X, rect.Y, rect.Width, rect.Height).ToOw(), radius,32, color.ToOw());
                     break;
                 case ImageLayout.Center:
-                    _batcher.FillRoundedRect(new RectangleF(X + rect.X + ((rect.Width - tw) / 2), Y + rect.Y + ((rect.Height - th) / 2), tw, th).ToOw(), radius, 32, color.ToOw());
+                    _batcher.FillRoundedRect(new RectangleF(rect.X + ((rect.Width - tw) / 2), rect.Y + ((rect.Height - th) / 2), tw, th).ToOw(), radius, 32, color.ToOw());
                     break;
                 case ImageLayout.Zoom:
 
@@ -337,7 +351,7 @@ namespace Plex.Engine.GraphicsSubsystem
                     var scaleWidth = (tw * scale);
                     var scaleHeight = (th * scale);
 
-                    _batcher.FillRoundedRect(new RectangleF(X + rect.X + ((rect.Width - scaleWidth) / 2), Y + rect.Y + ((rect.Height - scaleHeight) / 2), scaleWidth, scaleHeight).ToOw(), radius, 32, color.ToOw());
+                    _batcher.FillRoundedRect(new RectangleF(rect.X + ((rect.Width - scaleWidth) / 2), rect.Y + ((rect.Height - scaleHeight) / 2), scaleWidth, scaleHeight).ToOw(), radius, 32, color.ToOw());
                     break;
             }
         }
@@ -361,6 +375,9 @@ namespace Plex.Engine.GraphicsSubsystem
                 DrawString(font, text, pos, color);
                 return;
             }
+
+            StartSpriteBatch();
+
             var wrap = TextRenderer.WrapText(font, text, wrapWidth, mode).Split('\n');
             for(int i = 0; i < wrap.Length; i++)
             {
@@ -369,16 +386,18 @@ namespace Plex.Engine.GraphicsSubsystem
                 switch(alignment)
                 {
                     case TextAlignment.Center:
-                        DrawString(font, line, new Vector2(pos.X + ((wrapWidth - measure.X) / 2), pos.Y + (font.LineSpacing * i)), color);
+                        DrawStringInternal(font, line, new Vector2(pos.X + ((wrapWidth - measure.X) / 2), pos.Y + (font.LineSpacing * i)), color);
                         break;
                     case TextAlignment.Left:
-                        DrawString(font, line, new Vector2(pos.X, pos.Y + (font.LineSpacing * i)), color);
+                        DrawStringInternal(font, line, new Vector2(pos.X, pos.Y + (font.LineSpacing * i)), color);
                         break;
                     case TextAlignment.Right:
-                        DrawString(font, line, new Vector2(pos.X + (wrapWidth - measure.X), pos.Y + (font.LineSpacing * i)), color);
+                        DrawStringInternal(font, line, new Vector2(pos.X + (wrapWidth - measure.X), pos.Y + (font.LineSpacing * i)), color);
                         break;
                 }
             }
+
+            EndSpriteBatch();
         }
 
         private RasterizerState GetRasterizerState()
@@ -393,6 +412,35 @@ namespace Plex.Engine.GraphicsSubsystem
             }
         }
 
+        private Rectangle _tempScissor = Rectangle.Empty;
+
+        private void StartSpriteBatch()
+        {
+            _batcher.Finish();
+
+            _tempScissor = _device.ScissorRectangle;
+
+            _device.ScissorRectangle = (_batcher.ScissorRect == OpenWheels.Rectangle.Empty) ? _device.Viewport.Bounds : ScissorRectangle;
+
+            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, _sampler, DepthStencilState.None, GetRasterizerState(), null);
+        }
+
+        private void EndSpriteBatch()
+        {
+            _spriteBatch.End();
+
+            _device.ScissorRectangle = _tempScissor;
+
+            _batcher.Start();
+        }
+
+        public void DrawStringInternal(SpriteFont font, string text, Vector2 position, Color color)
+        {
+            var pos = new Vector2((position.X + _device.ScissorRectangle.X) + RenderOffsetX, (position.Y + _device.ScissorRectangle.Y) + RenderOffsetY);
+
+            _spriteBatch.DrawString(font, text, pos, color);
+        }
+
         public void DrawString(SpriteFont font, string text, Vector2 position, Color color)
         {
             if (string.IsNullOrWhiteSpace(text))
@@ -400,19 +448,11 @@ namespace Plex.Engine.GraphicsSubsystem
             if (color.A == 0)
                 return;
 
-            _batcher.Finish();
+            StartSpriteBatch();
 
-            _device.ScissorRectangle = (_batcher.ScissorRect == OpenWheels.Rectangle.Empty) ? _device.Viewport.Bounds : ScissorRectangle;
+            DrawStringInternal(font, text, position, color);
 
-            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, _sampler, DepthStencilState.None, GetRasterizerState(), null);
-
-            var pos = new Vector2((position.X + _device.ScissorRectangle.X) + RenderOffsetX, (position.Y + _device.ScissorRectangle.Y) + RenderOffsetY);
-
-            _spriteBatch.DrawString(font, text, pos, color);
-
-            _spriteBatch.End();
-
-            _batcher.Start();
+            EndSpriteBatch();
         }
     }
 

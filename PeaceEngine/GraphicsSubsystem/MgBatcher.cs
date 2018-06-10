@@ -28,8 +28,17 @@ namespace Plex.Engine.GraphicsSubsystem
 
         public void RegisterTexture(Texture2D texture, string name)
         {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+            if (texture == null)
+                throw new ArgumentNullException(nameof(texture));
+
             if (_textureIds.ContainsKey(name))
-                return;
+            {
+                if (_renderer.GetTexture(_textureIds[name]) == texture)
+                    return;
+                _textureIds.Remove(name);
+            }
             var id = _renderer.AddTexture(texture);
             _textureIds.Add(name, id);
         }
@@ -38,6 +47,16 @@ namespace Plex.Engine.GraphicsSubsystem
         {
             var id = _textureIds[texture];
             SetTexture(id);
+        }
+
+        public void ClearTextures()
+        {
+            while(_textureIds.Count>0)
+            {
+                var first = _textureIds.First();
+                _renderer.RemoveTexture(first.Value);
+                _textureIds.Remove(first.Key);
+            }
         }
     }
 }

@@ -44,6 +44,7 @@ namespace Plex.Engine.Cutscenes
         {
             if (_frameTexture == null)
                 _frameTexture = gfx.CreateTexture(w, h);
+            _frameTexture.Name = "PNVFrameTexture";
             VideoFrame ret;
             int p = 0;
             while (p < _frame.Length)
