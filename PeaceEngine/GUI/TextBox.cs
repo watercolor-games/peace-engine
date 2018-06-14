@@ -97,13 +97,13 @@ namespace Plex.Engine.GUI
         {
             string displayText = (_hasPassword) ? "*".Repeat(_text.Length) : _text;
 
-            if(_lastText != displayText)
+            if (_lastText != displayText)
             {
                 _lastText = displayText;
                 TextChanged?.Invoke(this, EventArgs.Empty);
             }
 
-            var hashMeasure = TextRenderer.MeasureText("#", _drawFont, int.MaxValue, TextRenderers.WrapMode.None);
+            var hashMeasure = _drawFont.MeasureString("#");
             Height = Math.Max((int)hashMeasure.Y + 4, Height);
 
             if (string.IsNullOrEmpty(displayText))
@@ -111,24 +111,24 @@ namespace Plex.Engine.GUI
                 if (_drawOffset != 0)
                 {
                     _drawOffset = 0;
-                    
+
                 }
             }
             string toCaret = displayText.Substring(0, _index);
-            var measure = TextRenderer.MeasureText(toCaret, _drawFont, int.MaxValue, TextRenderers.WrapMode.None);
+            var measure = _drawFont.MeasureString(toCaret);
             if (_caretX != (int)measure.X)
             {
                 _caretX = (int)measure.X;
-                
+
             }
 
             //calculate offset
             int realCaretX = _caretX - _drawOffset;
-            if(realCaretX > Width-4)
+            if (realCaretX > Width - 4)
             {
-                _drawOffset = _caretX - (Width-4);
+                _drawOffset = _caretX - (Width - 4);
             }
-            else if(realCaretX < 0)
+            else if (realCaretX < 0)
             {
                 _drawOffset = _caretX + (Width - 4);
             }
