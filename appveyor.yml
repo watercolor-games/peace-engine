@@ -20,3 +20,7 @@ build:
   verbosity: minimal
 after_build:
 - ps: 
+artifacts:
+- path: PeaceEngine/bin/Release
+- path: Documentation/Help
+  name: Documentation
