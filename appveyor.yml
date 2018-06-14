@@ -12,7 +12,9 @@ install:
 
     nuget restore
 before_build:
-- ps: 
+- ps: nuget restore PeaceEngine.sln
+- ps: nuget restore OpenWheels/src/OpenWheels.sln
+- ps: nuget restore 
 build:
   project: PeaceEngine.sln
   verbosity: minimal
