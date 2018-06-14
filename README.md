@@ -1,5 +1,7 @@
 # The Peace Engine
 
+[![Build status](https://ci.appveyor.com/api/projects/status/lylidkgga0j7rnps?svg=true)](https://ci.appveyor.com/project/TheFuzzyRiolu/peace-engine)
+
 Peace Engine is a game engine written ontop of the MonoGame framework, compatible with Windows, macOS and Linux using OpenGL.
 
 There are three main key features of Peace Engine that may interest you.
