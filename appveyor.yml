@@ -1,0 +1,19 @@
+version: 1.0.{build}
+configuration: Release
+image: Visual Studio 2017
+install:
+- ps: >-
+    git submodule update --init --recursive
+
+    choco install sandcastle -y
+
+    choco install monogame -y
+
+    nuget restore
+before_build:
+- ps: 
+build:
+  project: PeaceEngine.sln
+  verbosity: minimal
+after_build:
+- ps: 
