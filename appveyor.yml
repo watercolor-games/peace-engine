@@ -2,6 +2,7 @@ version: 1.0.{build}
 configuration: Release
 image: Visual Studio 2017
 environment:
+  SHFBROOT: C:\Program Files (x86)\EWSoftware\Sandcastle Help File Builder\
   access_token:
     secure: 2zi2g91y5yk8KWNadflyPsTTg4+rILTOP6x4wE2FVy6RCAYY5Ku1VTdZZn1I4tHz
 install:
