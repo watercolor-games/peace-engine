@@ -6,7 +6,7 @@ environment:
   access_token:
     secure: 2zi2g91y5yk8KWNadflyPsTTg4+rILTOP6x4wE2FVy6RCAYY5Ku1VTdZZn1I4tHz
 install:
-- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 - ps: >-
     git submodule update --init --recursive
 
@@ -30,6 +30,6 @@ artifacts:
   name: Documentation
 deploy_script:
  - ps: Add-Content "$HOME\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
- - ps: git config --global user.email "theplexgate@gmail.com"
- - ps: git config --global user.name "The Fuzzy Riolu"
- - ps: git subtree push --prefix Documentation/Help origin gh-pages
+ - git config --global user.email "theplexgate@gmail.com"
+ - git config --global user.name "The Fuzzy Riolu"
+ - git subtree push --prefix Documentation/Help origin gh-pages
