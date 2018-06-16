@@ -388,6 +388,8 @@ namespace Plex.Engine
         /// <returns>The found layer</returns>
         public Layer GetLayer(LayerType type)
         {
+            if (_layers == null)
+                return null;
             return _layers[(int)type];
         }
 
