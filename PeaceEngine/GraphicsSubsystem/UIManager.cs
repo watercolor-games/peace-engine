@@ -478,6 +478,8 @@ namespace Plex.Engine.GraphicsSubsystem
 
             public void BringToFront(Control ctrl)
             {
+                if (_toplevels.Last() == ctrl)
+                    return;
                 if (_toplevels.Contains(ctrl))
                 {
                     _toplevels.Remove(ctrl);
@@ -554,10 +556,7 @@ namespace Plex.Engine.GraphicsSubsystem
         /// </summary>
         public void InvalidateAll()
         {
-            _crossthreadInvoke(() =>
-            {
-                this._container.InvalidateAll();
-            });
+            this._container.InvalidateAll();
         }
 
         /// <summary>
@@ -579,14 +578,11 @@ namespace Plex.Engine.GraphicsSubsystem
         /// <param name="ctrl">The control to focus.</param>
         public void SetFocus(Control ctrl)
         {
-            _crossthreadInvoke(() =>
-            {
-                if (IsFocused(ctrl))
-                    return;
-                _container.SetFocus(ctrl);
-                if (ctrl != null)
-                    FocusGained?.Invoke();
-            });
+            if (IsFocused(ctrl))
+                return;
+            _container.SetFocus(ctrl);
+            if (ctrl != null)
+                FocusGained?.Invoke();
         }
 
         /// <summary>
@@ -607,12 +603,9 @@ namespace Plex.Engine.GraphicsSubsystem
         /// <param name="ctrl">The control to add.</param>
         public void Add(Control ctrl)
         {
-            _crossthreadInvoke(() =>
-            {
-                if (_container.Controls.Contains(ctrl))
-                    return;
-                _container.AddControl(ctrl);
-            });
+            if (_container.Controls.Contains(ctrl))
+                return;
+            _container.AddControl(ctrl);
         }
 
         /// <summary>
@@ -622,12 +615,9 @@ namespace Plex.Engine.GraphicsSubsystem
         /// <param name="dispose">Whether the control should be disposed.</param>
         public void Remove(Control ctrl, bool dispose = true)
         {
-            _crossthreadInvoke(() =>
-            {
-                if (!_container.Controls.Contains(ctrl))
-                    return;
-                _container.RemoveControl(ctrl, dispose);
-            });
+            if (!_container.Controls.Contains(ctrl))
+                return;
+            _container.RemoveControl(ctrl, dispose);
         }
 
         /// <summary>
@@ -649,16 +639,6 @@ namespace Plex.Engine.GraphicsSubsystem
             _container = _GameLoop.New<UIContainer>();
             _GameLoop.GetLayer(LayerType.UserInterface).AddEntity(_container);
             _startThreadId = Thread.CurrentThread.ManagedThreadId;
-        }
-
-        private void _crossthreadInvoke(Action action)
-        {
-            if (action == null)
-                return;
-            if (Thread.CurrentThread.ManagedThreadId == _startThreadId)
-                action.Invoke();
-            else
-                _GameLoop.Invoke(action);
         }
 
         private bool _ignoreControlOpacity = false;
@@ -690,11 +670,8 @@ namespace Plex.Engine.GraphicsSubsystem
         /// </summary>
         /// <param name="_tutorialLabel">The control to move.</param>
         public void BringToFront(Control _tutorialLabel)
-        { 
-            _crossthreadInvoke(() =>
-            {
-                _container.BringToFront(_tutorialLabel);
-            });
+        {
+            _container.BringToFront(_tutorialLabel);
         }
     }
 

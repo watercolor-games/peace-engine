@@ -28,9 +28,8 @@ artifacts:
 - path: PeaceEngine/bin/Release
 - path: Documentation/Help
   name: Documentation
-deploy_script:
- - ps: Add-Content "$HOME\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
- - git config --global user.email "theplexgate@gmail.com"
- - git config --global user.name "The Fuzzy Riolu"
- - git add Documentation/Help/* && git commit -m "Automatic documentation update"
- - git subtree push --prefix Documentation/Help origin gh-pages
+deploy:
+- provider: Webhook
+  url: https://hooks.watercolorgames.net/peace-engine-docs
+  authorization:
+    secure: x57kTVLkXMOE8EVTzAnk3rCgF5Q01YGUvxNTAWLLKaKvjT1mFYUG0rypGFgyC0WrHIIDC+aPtPcW8fakys9Fgy3dB9hWxcEcTujIVNjNrRc=

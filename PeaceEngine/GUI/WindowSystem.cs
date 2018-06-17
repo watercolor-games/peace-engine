@@ -209,6 +209,16 @@ namespace Plex.Engine.GUI
             }
         }
 
+        public void BringToFront(Window window)
+        {
+            if (window == null)
+                return;
+            if (window.Parent == null)
+                return;
+            var border = window.Parent;
+            _uiman.BringToFront(border);
+        }
+
         /// <summary>
         /// Close a window
         /// </summary>
