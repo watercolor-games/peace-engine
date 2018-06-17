@@ -32,4 +32,4 @@ deploy:
 - provider: Webhook
   url: https://hooks.watercolorgames.net/peace-engine-docs
   authorization:
-    secure: x57kTVLkXMOE8EVTzAnk3rCgF5Q01YGUvxNTAWLLKaKvjT1mFYUG0rypGFgyC0WrHIIDC+aPtPcW8fakys9Fgy3dB9hWxcEcTujIVNjNrRc=
+    secure: OOE/Ck3cbp/Q9efNIw1uQ/0QULFAHDG4NxjWXZOGbFUU6e7KOOtdzaQuGs9oo9OmUDo0OQU0/gfIn6oEDpOlINGmLvZFfLG5jrws6Lj8hJk=
