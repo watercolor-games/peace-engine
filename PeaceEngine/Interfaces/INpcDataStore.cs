@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace Plex.Engine.Interfaces
 {
-    public interface IEngineComponent
+    class INpcDataStore
     {
-        void Initiate();
     }
 }
