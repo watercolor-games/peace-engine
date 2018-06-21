@@ -110,7 +110,7 @@ namespace Plex.Engine.Cutscene
         /// <inheritdoc/>
         public void Dispose()
         {
-            while(_cutscenes.Count == 0)
+            while(_cutscenes.Count > 0)
             {
                 var cs = _cutscenes[0];
                 cs.Dispose();

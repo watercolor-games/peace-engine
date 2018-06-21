@@ -120,6 +120,8 @@ namespace Plex.Engine
                 _layers[i] = new Engine.Layer();
             }
 
+            IsMouseVisible = true;
+
             Args = args;
             QuietMode = args.Contains("-q");
         }
@@ -699,16 +701,6 @@ namespace Plex.Engine
             // Create a new SpriteBatch, which can be used to draw textures.
             _spriteBatch = new SpriteBatch(base.GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
-            var bmp = Engine.Properties.Resources.cursor_9x_pointer;
-            var _lock = bmp.LockBits(new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            byte[] rgb = new byte[Math.Abs(_lock.Stride) * _lock.Height];
-            Marshal.Copy(_lock.Scan0, rgb, 0, rgb.Length);
-            bmp.UnlockBits(_lock);
-            _mouseTexture = new Texture2D(GraphicsDevice, bmp.Width, bmp.Height);
-            _mouseTexture.SetData<byte>(rgb);
-            rgb = null;
-
             foreach(var component in _components)
             {
                 if (component.Component is ILoadable)
@@ -724,8 +716,6 @@ namespace Plex.Engine
         /// </summary>
         protected override void UnloadContent()
         {
-            _mouseTexture.Dispose();
-            _mouseTexture = null;
             Logger.Log("Despawning all entities...");
             foreach(var layer in _layers)
             {
@@ -872,20 +862,7 @@ namespace Plex.Engine
                         }
 
                 }
-                var mouse = Mouse.GetState();
-
-                var mouseLoc = new Vector2(
-                        ((float)mouse.X / BackBufferWidth) * _ctx.Width,
-                        ((float)mouse.Y / BackBufferHeight) * _ctx.Height
-                    );
-
                 _ctx.EndFrame();
-                _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied,
-                                SamplerState.LinearWrap, DepthStencilState.Default,
-                                RasterizerState.CullNone);
-                _spriteBatch.Draw(_mouseTexture, new Rectangle((int)mouseLoc.X, (int)mouseLoc.Y, _mouseTexture.Width, _mouseTexture.Height), Color.White);
-
-                _spriteBatch.End();
                 GraphicsDevice.SetRenderTarget(null);
             }
             var rstate = new RasterizerState

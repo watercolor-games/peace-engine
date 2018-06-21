@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenWheels.NetFramework", "
 EndProject
 Project("{7CF6DF6D-3B04-46F8-A40B-537D21BCA0B4}") = "Documentation", "Documentation\Documentation.shfbproj", "{6D3A5695-1905-4812-B971-55177EB3CCD7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeaceEngine.DemoProject", "PeaceEngine.DemoProject\PeaceEngine.DemoProject.csproj", "{B373BA34-CEC0-4B3F-9DE1-33E82E3DF90B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,8 +22,8 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7C979B07-0585-4033-A110-E5555B9D6651}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7C979B07-0585-4033-A110-E5555B9D6651}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C979B07-0585-4033-A110-E5555B9D6651}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{7C979B07-0585-4033-A110-E5555B9D6651}.Debug|Any CPU.Build.0 = Debug|x64
 		{7C979B07-0585-4033-A110-E5555B9D6651}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{7C979B07-0585-4033-A110-E5555B9D6651}.Debug|x64.Build.0 = Debug|Any CPU
 		{7C979B07-0585-4033-A110-E5555B9D6651}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -68,6 +70,18 @@ Global
 		{6D3A5695-1905-4812-B971-55177EB3CCD7}.Release|x64.Build.0 = Release|Any CPU
 		{6D3A5695-1905-4812-B971-55177EB3CCD7}.Release|x86.ActiveCfg = Release|Any CPU
 		{6D3A5695-1905-4812-B971-55177EB3CCD7}.Release|x86.Build.0 = Release|Any CPU
+		{B373BA34-CEC0-4B3F-9DE1-33E82E3DF90B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B373BA34-CEC0-4B3F-9DE1-33E82E3DF90B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B373BA34-CEC0-4B3F-9DE1-33E82E3DF90B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B373BA34-CEC0-4B3F-9DE1-33E82E3DF90B}.Debug|x64.Build.0 = Debug|Any CPU
+		{B373BA34-CEC0-4B3F-9DE1-33E82E3DF90B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B373BA34-CEC0-4B3F-9DE1-33E82E3DF90B}.Debug|x86.Build.0 = Debug|Any CPU
+		{B373BA34-CEC0-4B3F-9DE1-33E82E3DF90B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B373BA34-CEC0-4B3F-9DE1-33E82E3DF90B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B373BA34-CEC0-4B3F-9DE1-33E82E3DF90B}.Release|x64.ActiveCfg = Release|Any CPU
+		{B373BA34-CEC0-4B3F-9DE1-33E82E3DF90B}.Release|x64.Build.0 = Release|Any CPU
+		{B373BA34-CEC0-4B3F-9DE1-33E82E3DF90B}.Release|x86.ActiveCfg = Release|Any CPU
+		{B373BA34-CEC0-4B3F-9DE1-33E82E3DF90B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
