@@ -14,7 +14,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Numerics;
 
-namespace Plex.Engine
+namespace Plex.Engine.Audio
 {
     public class AdvancedAudioPlayer : IDisposable
     {
@@ -190,7 +190,7 @@ namespace Plex.Engine
                 data = null;
             }
         }
-        
+
         void readthreadfun()
         {
             while (!disposed)
@@ -311,45 +311,4 @@ namespace Plex.Engine
         }
     }
 
-    public class CheatManager : IEngineComponent
-    {
-        [Dependency]
-        private GameLoop _backend = null;
-
-        public void Initiate()
-        {
-            _backend.GetLayer(LayerType.NoDraw).AddEntity(_backend.New<CheatEntity>());
-        }
-
-        class CheatEntity : IEntity
-        {
-            private readonly Keys[] _cheatSequence = new Keys[] { Keys.A, Keys.N, Keys.D, Keys.E, Keys.R, Keys.S, Keys.J, Keys.E, Keys.N, Keys.S, Keys.E, Keys.N };
-            private List<Keys> _keys = new List<Keys>();
-
-            public void Draw(GameTime time, GraphicsContext gfx)
-            {
-            }
-
-            public void OnGameExit()
-            {
-            }
-
-            public void OnKeyEvent(KeyboardEventArgs e)
-            {
-                _keys.Add(e.Key);
-                if(_keys.Count == _cheatSequence.Length)
-                {
-                    if(_keys.ToArray().SequenceEqual(_cheatSequence))
-                    {
-                        AdvancedAudioPlayer._reversed = !AdvancedAudioPlayer._reversed;
-                    }
-                    _keys.Clear();
-                }
-            }
-
-            public void Update(GameTime time)
-            {
-            }
-        }
-    }
 }

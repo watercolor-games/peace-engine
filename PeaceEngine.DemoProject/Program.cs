@@ -14,8 +14,9 @@ namespace PeaceEngine.DemoProject
         [STAThread]
         static void Main(string[] args)
         {
-            using (var game = new GameLoop(args))
-                game.Run();
+            var game = new EngineOptions();
+            game.GameName = "Peace Engine Demo";
+            game.Start<DemoScene>(args);
         }
     }
 }

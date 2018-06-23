@@ -38,6 +38,8 @@ namespace Plex.Engine
         /// <returns>The resulting wrapped text.</returns>
         public static string WrapText(SpriteFont font, string text, float maxLineWidth, WrapMode mode)
         {
+            if (maxLineWidth < 1)
+                return text;
             if (string.IsNullOrEmpty(text))
                 return text;
             if (font.MeasureString(text).X <= maxLineWidth)

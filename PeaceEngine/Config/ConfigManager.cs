@@ -18,7 +18,7 @@ namespace Plex.Engine.Config
     /// <summary>
     /// Provides an engine component that allows other components to have user-configurable values.
     /// </summary>
-    public class ConfigManager : IEngineComponent, IDisposable
+    public class ConfigManager : IEngineModule, IGameService, IDisposable
     {
 
         private Dictionary<string, object> _config = null;
@@ -41,36 +41,6 @@ namespace Plex.Engine.Config
 
         private string _path = "";
 
-        private class configEntity : IEntity
-        {
-            /// <inheritdoc/>
-            public void OnGameExit()
-            {
-                _config.SaveToDisk();
-            }
-
-            [Dependency]
-            private ConfigManager _config = null;
-            public void Draw(GameTime time, GraphicsContext gfx)
-            {
-            }
-
-            public void OnKeyEvent(KeyboardEventArgs e)
-            {
-            }
-
-            public void Update(GameTime time)
-            {
-                float sfx = _config.GetValue("audioSfxVolume", 0.5F); //default value of 50% so we don't fucking ear rape the player by default.
-                float sfxClamped = MathHelper.Clamp(sfx, 0, 1);
-                if (sfxClamped != sfx)
-                {
-                    _config.SetValue("audioSfxVolume", sfxClamped);
-                }
-                SoundEffect.MasterVolume = sfxClamped;
-            }
-        }
-
         /// <inheritdoc/>
         public void Initiate()
         {
@@ -87,9 +57,6 @@ namespace Plex.Engine.Config
                 LoadFromDisk();
             }
             Apply();
-
-            var entity = _GameLoop.New<configEntity>();
-            _GameLoop.GetLayer(LayerType.NoDraw).AddEntity(entity);
         }
 
 
@@ -178,10 +145,21 @@ namespace Plex.Engine.Config
             SaveToDisk();
             _config = null;
         }
+
+        public void Update(GameTime time)
+        {
+            float sfx = GetValue("audioSfxVolume", 0.5F); //default value of 50% so we don't fucking ear rape the player by default.
+            float sfxClamped = MathHelper.Clamp(sfx, 0, 1);
+            if (sfxClamped != sfx)
+            {
+                SetValue("audioSfxVolume", sfxClamped);
+            }
+            SoundEffect.MasterVolume = sfxClamped;
+        }
     }
 
     /// <summary>
-    /// Provides an API for a configurable <see cref="IEngineComponent"/>. 
+    /// Provides an API for a configurable <see cref="IEngineModule"/>. 
     /// </summary>
     public interface IConfigurable
     {
@@ -194,7 +172,7 @@ namespace Plex.Engine.Config
     /// <summary>
     /// Provides a cross-platform path where game data may be stored.
     /// </summary>
-    public class AppDataManager : IEngineComponent
+    public class AppDataManager : IEngineModule
     {
         private string _path = "";
 

@@ -7,7 +7,7 @@ namespace Plex.Engine
     /// <summary>
     /// I got my eyes on you.
     /// </summary>
-    public class FrameWatch : IEngineComponent, IDisposable
+    public class FrameWatch : IEngineModule, IDisposable
     {
         [Dependency]
         GameLoop GameLoop;

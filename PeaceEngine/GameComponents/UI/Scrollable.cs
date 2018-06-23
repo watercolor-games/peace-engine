@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Plex.Engine.GUI
+namespace Plex.Engine.GameComponents.UI
 {
     public class Scrollable : Control
     {

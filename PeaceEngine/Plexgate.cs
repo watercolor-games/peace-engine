@@ -20,6 +20,8 @@ using System.Reflection;
 using System.IO;
 using System.Threading.Tasks;
 using MonoGame.Extended.ViewportAdapters;
+using Microsoft.Xna.Framework.Content;
+using Plex.Engine.GameComponents;
 
 namespace Plex.Engine
 {
@@ -42,10 +44,10 @@ namespace Plex.Engine
 
         #region Private fields
 
+        private GameScene               _scene = null;
         private Queue<Action>           _actions = new Queue<Action>();
         private List<ComponentInfo>     _components = new List<ComponentInfo>();
         private GraphicsContext         _ctx = null;
-        private Layer[]                 _layers = null;
         private float                   _renderScale = 1.0f;
         private SpriteFont              _font =  null;
         private Texture2D               _logo =   null;
@@ -87,7 +89,7 @@ namespace Plex.Engine
         /// <summary>
         /// Creates a new instance of the <see cref="GameLoop"/> game loop. 
         /// </summary>
-        public GameLoop(string[] args)
+        internal GameLoop(string[] args)
         {
             if (_instance != null)
                 throw new InvalidOperationException("GameLoop is already running! You cannot create multiple instances of GameLoop at the same time in one process. Instead, please let the already-running instance shut down fully.");
@@ -113,13 +115,6 @@ namespace Plex.Engine
             IsFixedTimeStep = true;
             _graphicsDevice.SynchronizeWithVerticalRetrace = true;
 
-            int layerCount = Enum.GetValues(typeof(LayerType)).Length;
-            _layers = new Layer[layerCount];
-            for (int i = 0; i < layerCount; i++)
-            {
-                _layers[i] = new Engine.Layer();
-            }
-
             IsMouseVisible = true;
 
             Args = args;
@@ -134,7 +129,8 @@ namespace Plex.Engine
         public int                      BackBufferWidth => GraphicsDevice.PresentationParameters.BackBufferWidth;
         public int                      BackBufferHeight => GraphicsDevice.PresentationParameters.BackBufferHeight;
         public float                    AspectRatio => (float)GraphicsDevice.PresentationParameters.BackBufferWidth / GraphicsDevice.PresentationParameters.BackBufferHeight;
-
+        public string                   GameName { get; internal set; }
+        internal Type                   StartingSceneType { get; set; }
 
         /// <summary>
         /// Gets or sets whether the game window is full-screen.
@@ -202,6 +198,17 @@ namespace Plex.Engine
         #endregion
 
         #region Public methods
+
+        public void SetScene<T>() where T : GameScene
+        {
+            if (_scene != null)
+            {
+                _scene.Unload();
+                _scene = null;
+            }
+            _scene = (GameScene)New(typeof(T));
+            _scene.Load();
+        }
 
         public Vector2 PointToBackbuffer(Vector2 point)
         {
@@ -331,9 +338,9 @@ namespace Plex.Engine
         /// <param name="t">The type to search for</param>
         /// <returns>The engine component instance.</returns>
         /// <exception cref="ArgumentException">No components were found.</exception> 
-        public IEngineComponent GetEngineComponent(Type t)
+        public IEngineModule GetEngineComponent(Type t)
         {
-            if (!typeof(IEngineComponent).IsAssignableFrom(t) || t.GetConstructor(Type.EmptyTypes) == null)
+            if (!typeof(IEngineModule).IsAssignableFrom(t) || t.GetConstructor(Type.EmptyTypes) == null)
                 throw new ArgumentException($"{t.Name} is not an IEngineComponent, or does not provide a parameterless constructor.");
             return _components.First(x => t.IsAssignableFrom(x.Component.GetType())).Component;
         }
@@ -372,27 +379,15 @@ namespace Plex.Engine
         }
 
         /// <summary>
-        /// Retrieve all loaded <see cref="IEngineComponent"/> objects. 
+        /// Retrieve all loaded <see cref="IEngineModule"/> objects. 
         /// </summary>
         /// <returns>Every loaded engine component.</returns>
-        public IEngineComponent[] GetAllComponents()
+        public IEngineModule[] GetAllComponents()
         {
-            List<IEngineComponent> cpts = new List<IEngineComponent>();
+            List<IEngineModule> cpts = new List<IEngineModule>();
             foreach (var cpt in _components)
                 cpts.Add(cpt.Component);
             return cpts.ToArray();
-        }
-
-        /// <summary>
-        /// Gets the layer represented by the specified layer type.
-        /// </summary>
-        /// <param name="type">The type of the layer to find</param>
-        /// <returns>The found layer</returns>
-        public Layer GetLayer(LayerType type)
-        {
-            if (_layers == null)
-                return null;
-            return _layers[(int)type];
         }
 
         /// <summary>
@@ -530,7 +525,7 @@ namespace Plex.Engine
             this._percentage = 0f;
             Logger.Log("Peace Engine is now initializing your game.");
             List<Type> typesToInit = new List<Type>();
-            foreach (var type in ReflectMan.Types.Where(x => x.Assembly != this.GetType().Assembly && x.GetInterfaces().Contains(typeof(IEngineComponent))))
+            foreach (var type in ReflectMan.Types.Where(x => x.Assembly != this.GetType().Assembly && x.GetInterfaces().Contains(typeof(IEngineModule))))
             {
                 if (type.GetConstructor(Type.EmptyTypes) == null)
                 {
@@ -551,7 +546,7 @@ namespace Plex.Engine
                     var componentInfo = new ComponentInfo
                     {
                         IsInitiated = false,
-                        Component = (IEngineComponent)Activator.CreateInstance(type, null)
+                        Component = (IEngineModule)Activator.CreateInstance(type, null)
                     };
                     _components.Add(componentInfo);
                     _percentage = (float)typesToInit.IndexOf(type) / typesToInit.Count;
@@ -602,10 +597,18 @@ namespace Plex.Engine
 
             Logger.Log("Done initiating engine.");
 
+            Invoke(() =>
+            {
+                if (StartingSceneType != null)
+                {
+                    _scene = (GameScene)New(StartingSceneType);
+                    _scene.Load();
+                }
+            });
         }
 
 
-        private void RecursiveInit(IEngineComponent component)
+        private void RecursiveInit(IEngineModule component)
         {
             foreach (var field in component.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic).Where(f => f.GetCustomAttributes(false).Any(t => t is DependencyAttribute)))
             {
@@ -627,18 +630,11 @@ namespace Plex.Engine
         private void KeyboardListener_KeyPressed(object sender, KeyboardEventArgs e)
         {
             OnKeyEvent?.Invoke(this, e);
-            foreach(var layer in _layers.ToArray())
-            {
-                foreach(var entity in layer.Entities)
-                {
-                    entity.OnKeyEvent(e);
-                }
-            }
         }
 
 #endregion
 
-#region MonoGame overrides
+        #region MonoGame overrides
 
         protected override void Initialize()
         {
@@ -653,7 +649,7 @@ namespace Plex.Engine
 
             Logger.Log("Peace Engine is now initializing core engine components...");
             List<Type> typesToInit = new List<Type>();
-            foreach (var type in ReflectMan.Types.Where(x => x.Assembly == this.GetType().Assembly && x.GetInterfaces().Contains(typeof(IEngineComponent))))
+            foreach (var type in ReflectMan.Types.Where(x => x.Assembly == this.GetType().Assembly && x.GetInterfaces().Contains(typeof(IEngineModule))))
             {
                 if (type.GetConstructor(Type.EmptyTypes) == null)
                 {
@@ -668,7 +664,7 @@ namespace Plex.Engine
                 var componentInfo = new ComponentInfo
                 {
                     IsInitiated = false,
-                    Component = (IEngineComponent)Activator.CreateInstance(type, null)
+                    Component = (IEngineModule)Activator.CreateInstance(type, null)
                 };
                 _components.Add(componentInfo);
             }
@@ -716,21 +712,8 @@ namespace Plex.Engine
         /// </summary>
         protected override void UnloadContent()
         {
-            Logger.Log("Despawning all entities...");
-            foreach(var layer in _layers)
-            {
-                while(layer.Entities.Length > 0)
-                {
-                    var entity = layer.Entities[0];
-                    entity.OnGameExit();
-                    if (entity is IDisposable)
-                        (entity as IDisposable).Dispose();
-                    layer.RemoveEntity(entity);
-                }
-            }
-            _layers = null;
-            Logger.Log("Unloading all engine modules!");
-            while(_components.Count > 0)
+            Logger.Log("Unloading engine modules.");
+            while (_components.Count > 0)
             {
                 var component = _components[0];
                 Logger.Log("Unloading: " + component.Component.GetType().Name);
@@ -739,8 +722,12 @@ namespace Plex.Engine
                 _components.RemoveAt(0);
             }
             Logger.Log("Done.");
-            // TODO: Unload any non ContentManager content here
+
+            if (_scene != null)
+                _scene.Unload();
+
             _instance = null;
+
             base.UnloadContent();
         }
 
@@ -751,7 +738,10 @@ namespace Plex.Engine
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (_actions.Count != 0)
+            Window.Title = GameName;
+            
+
+            while (_actions.Count != 0)
             {
                 _actions.Dequeue().Invoke();
             }
@@ -803,15 +793,20 @@ namespace Plex.Engine
 
             if (_loadTask == null || _loadTask.IsCompleted)
             {
-                foreach (var layer in _layers.ToArray())
+                _scene?.Update(gameTime);
+                foreach (var component in _components)
                 {
-                    foreach (var entity in layer.Entities)
-                    {
-                        entity.Update(gameTime);
-                    }
+                    if (component.Component is IGameService)
+                        (component.Component as IGameService).Update(gameTime);
                 }
             }
             base.Update(gameTime);
+        }
+
+        public ContentManager CreateContentManager()
+        {
+            var backend = new ContentManager(Services, Content.RootDirectory);
+            return new PlexContentManager.PlexContentManager(this, backend);
         }
 
         /// <summary>
@@ -852,15 +847,10 @@ namespace Plex.Engine
                 else
                 {
                     _ctx.StartFrame(BlendState.AlphaBlend);
-                    foreach (var layer in _layers.ToArray())
-                        foreach (var entity in layer.Entities)
-                        {
-                            _ctx.ScissorRectangle = Rectangle.Empty;
-
-                            entity.Draw(gameTime, this._ctx);
-
-                        }
-
+                    _scene?.Draw(gameTime, _ctx);
+                    _ctx.RenderOffsetX = 0;
+                    _ctx.RenderOffsetY = 0;
+                    _ctx.ScissorRectangle = Rectangle.Empty;
                 }
                 _ctx.EndFrame();
                 GraphicsDevice.SetRenderTarget(null);
@@ -881,7 +871,7 @@ namespace Plex.Engine
     }
 
     /// <summary>
-    /// Contains an <see cref="IEngineComponent"/> and whether it's been initialized properly yet. 
+    /// Contains an <see cref="IEngineModule"/> and whether it's been initialized properly yet. 
     /// </summary>
     public class ComponentInfo
     {
@@ -892,96 +882,6 @@ namespace Plex.Engine
         /// <summary>
         /// The underlying component.
         /// </summary>
-        public IEngineComponent Component { get; set; }
-    }
-
-    /// <summary>
-    /// A class containing a list of <see cref="IEntity"/> objects that acts as a top-level entity container. 
-    /// </summary>
-    public sealed class Layer
-    {
-        private List<IEntity> _entities = new List<IEntity>();
-
-        /// <summary>
-        /// Gets a list of all entities on the layer.
-        /// </summary>
-        public IEntity[] Entities
-        {
-            get
-            {
-                return _entities.ToArray();
-            }
-        }
-
-        /// <summary>
-        /// Adds an entity to the layer.
-        /// </summary>
-        /// <param name="entity">The entity to add.</param>
-        public void AddEntity(IEntity entity)
-        {
-            if (entity == null)
-                return;
-            if (_entities.Contains(entity))
-                return;
-            _entities.Add(entity);
-        }
-
-        /// <summary>
-        /// Removes an entity from the layer.
-        /// </summary>
-        /// <param name="entity">The entity to remove.</param>
-        public void RemoveEntity(IEntity entity)
-        {
-            if (entity == null)
-                return;
-            if (!_entities.Contains(entity))
-                return;
-            _entities.Remove(entity);
-        }
-
-        /// <summary>
-        /// Clears all entities from the layer.
-        /// </summary>
-        public void ClearEntities()
-        {
-            _entities.Clear();
-        }
-
-        /// <summary>
-        /// Sends the specified entity to the back of the layer.
-        /// </summary>
-        /// <param name="entity">The entity to move.</param>
-        public void SendToBack(IEntity entity)
-        {
-            if (entity == null)
-                return;
-            if (!_entities.Contains(entity))
-                return;
-            if (_entities.IndexOf(entity) == 0)
-                return;
-            RemoveEntity(entity);
-            _entities.Insert(0, entity);
-        }
-
-        /// <summary>
-        /// Brings the specified entity to the front of the layer.
-        /// </summary>
-        /// <param name="entity">The entity to mve.</param>
-        public void BringToFront(IEntity entity)
-        {
-            if (entity == null)
-                return;
-            if (!_entities.Contains(entity))
-                return;
-            if (_entities.IndexOf(entity) == _entities.Count - 1)
-                return;
-            RemoveEntity(entity);
-            AddEntity(entity);
-        }
-
-        public bool HasEntity(IEntity entity)
-        {
-            return _entities.Contains(entity);
-        }
+        public IEngineModule Component { get; set; }
     }
 }

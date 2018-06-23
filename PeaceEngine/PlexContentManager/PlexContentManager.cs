@@ -17,12 +17,19 @@ namespace Plex.Engine.PlexContentManager
         readonly GameLoop plex;
         readonly ContentManager real;
         Dictionary<string, WeakReference<object>> cache;
-        public PlexContentManager(GameLoop plex) : base(plex.Content.ServiceProvider, plex.Content.RootDirectory)
+
+        public PlexContentManager(GameLoop plex) : this(plex, plex.Content)
         {
-            this.plex = plex; // no injecting because we need to call base
-            real = plex.Content;
+
+        }
+
+        public PlexContentManager(GameLoop plex, ContentManager backend) : base(backend.ServiceProvider, backend.RootDirectory)
+        {
+            this.plex = plex;
+            real = backend;
             cache = new Dictionary<string, WeakReference<object>>();
         }
+
         public override T Load<T>(string assetName)
         {
             var split = assetName.Split('/');

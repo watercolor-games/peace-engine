@@ -17,7 +17,7 @@ namespace Plex.Engine.Saves
     /// <summary>
     /// Provides a simple API for interacting with a save file.
     /// </summary>
-    public class SaveManager : IEngineComponent
+    public class SaveManager : IEngineModule
     {
         private ISaveBackend _backend = null;
 

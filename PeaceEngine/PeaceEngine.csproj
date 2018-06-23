@@ -252,38 +252,29 @@
     <Compile Include="ATextRenderer.cs" />
     <Compile Include="ColorExtensions.cs" />
     <Compile Include="Config\ConfigManager.cs" />
-    <Compile Include="Cutscene\Cutscene.cs" />
-    <Compile Include="Cutscene\CutsceneManager.cs" />
     <Compile Include="DependencyAttribute.cs" />
+    <Compile Include="EngineOptions.cs" />
     <Compile Include="EnumerableExtensions.cs" />
+    <Compile Include="GameComponents\ChildComponentAttribute.cs" />
+    <Compile Include="GameComponents\GameComponent.cs" />
+    <Compile Include="GameComponents\GameScene.cs" />
+    <Compile Include="GameComponents\UI\Button.cs" />
+    <Compile Include="GameComponents\UI\Control.cs" />
+    <Compile Include="GameComponents\UI\MouseEventArgsExtensions.cs" />
+    <Compile Include="GameComponents\UI\Panel.cs" />
+    <Compile Include="GameComponents\UI\Scrollable.cs" />
+    <Compile Include="GameComponents\UI\Themes\EngineTheme.cs" />
+    <Compile Include="GameComponents\UI\Themes\TextStyle.cs" />
+    <Compile Include="GameComponents\UI\Themes\Theme.cs" />
+    <Compile Include="GameComponents\UI\ToolTipComponent.cs" />
+    <Compile Include="GameComponents\UI\UserInterface.cs" />
     <Compile Include="GraphicsSubsystem\GraphicsContext.cs" />
     <Compile Include="GraphicsSubsystem\MgBatcher.cs" />
     <Compile Include="GraphicsSubsystem\MgRenderer.cs" />
     <Compile Include="GraphicsSubsystem\OpenWheelsConversions.cs" />
-    <Compile Include="GraphicsSubsystem\UIManager.cs" />
-    <Compile Include="GUI\Button.cs" />
-    <Compile Include="GUI\CheckBox.cs" />
-    <Compile Include="GUI\CheckLabel.cs" />
-    <Compile Include="GUI\Control.cs" />
-    <Compile Include="GUI\GridListView.cs" />
-    <Compile Include="GUI\Hitbox.cs" />
-    <Compile Include="GUI\Label.cs" />
-    <Compile Include="GUI\ListBox.cs" />
-    <Compile Include="GUI\ListView.cs" />
-    <Compile Include="GUI\Panel.cs" />
-    <Compile Include="GUI\PictureBox.cs" />
-    <Compile Include="GUI\ProgressBar.cs" />
-    <Compile Include="GUI\Scrollable.cs" />
-    <Compile Include="GUI\ScrollBar.cs" />
-    <Compile Include="GUI\ScrollView.cs" />
-    <Compile Include="GUI\SliderBar.cs" />
-    <Compile Include="GUI\TextBox.cs" />
-    <Compile Include="GUI\TextEditor.cs" />
-    <Compile Include="GUI\WindowSystem.cs" />
-    <Compile Include="Interfaces\IEngineComponent.cs" />
-    <Compile Include="Interfaces\IEntity.cs" />
+    <Compile Include="Interfaces\GameService.cs" />
+    <Compile Include="Interfaces\IEngineModule.cs" />
     <Compile Include="Interfaces\ILoadable.cs" />
-    <Compile Include="LayerType.cs" />
     <Compile Include="PlexContentManager\JsonLoader.cs" />
     <Compile Include="Plexgate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -293,11 +284,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="RectangleF.cs" />
+    <Compile Include="ReflectionExtensions.cs" />
     <Compile Include="Saves\SaveManager.cs" />
     <Compile Include="TextRenderers\WrapMode.cs" />
-    <Compile Include="Themes\EngineTheme.cs" />
-    <Compile Include="Themes\Theme.cs" />
-    <Compile Include="Themes\ThemeManager.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -326,7 +315,6 @@
     <Compile Include="Cutscenes\IVideoFormat.cs" />
     <Compile Include="Cutscenes\VideoFrame.cs" />
     <Compile Include="Cutscenes\PNV.cs" />
-    <Compile Include="GUI\VideoPlayer.cs" />
     <Compile Include="PlexContentManager\PlexContentManager.cs" />
     <Compile Include="PlexContentManager\ILoader.cs" />
     <Compile Include="PlexContentManager\Texture2DLoader.cs" />
@@ -343,7 +331,7 @@
     <None Include="x86\libSDL2-2.0.so.0">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Compile Include="AdvancedAudioPlayer.cs" />
+    <Compile Include="Audio\AdvancedAudioPlayer.cs" />
     <Compile Include="FrameWatch.cs" />
   </ItemGroup>
   <ItemGroup>
