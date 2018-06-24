@@ -43,15 +43,16 @@ namespace PeaceEngine.DemoProject
 
         private void _uiLabel_MouseDrag(object sender, MonoGame.Extended.Input.InputListeners.MouseEventArgs e)
         {
-            var diff = e.Position.ToVector2() - _labelMousePos;
-            _uiLabel.X += (int)diff.X;
-            _uiLabel.Y += (int)diff.Y;
-            _labelMousePos = e.Position.ToVector2();
+            var pos = _uiLabel.ToScreen(e.Position.X, e.Position.Y);
+            var diff = _labelMousePos - pos;
+            _uiLabel.X -= (int)diff.X;
+            _uiLabel.Y -= (int)diff.Y;
+            _labelMousePos = pos;
         }
 
         private void _uiLabel_MouseDragStart(object sender, MonoGame.Extended.Input.InputListeners.MouseEventArgs e)
         {
-            _labelMousePos = e.Position.ToVector2();
+            _labelMousePos = _uiLabel.ToScreen(e.Position.X, e.Position.Y);
         }
 
         private Vector2 _labelMousePos = Vector2.Zero;

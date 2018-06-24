@@ -39,7 +39,14 @@ namespace Plex.Engine.GameComponents.UI
 
         public Control GetHovered(Vector2 mousePosition)
         {
-            mousePosition = ToLocal(mousePosition);
+            //Check if the mouse is inside our bounds.
+            var rect = GetScissorRectangle();
+
+            if (mousePosition.X < rect.X || mousePosition.Y < rect.Y)
+                return null;
+            if (mousePosition.X > rect.X + rect.Width || mousePosition.Y > rect.Y + rect.Height)
+                return null;
+
             //The last control in the search iteration.
             Control last = null;
             //Find a top-level that the mouse is in.

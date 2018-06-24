@@ -218,7 +218,7 @@ namespace Plex.Engine.GameComponents
                 component.Update(time);
         }
 
-        private Rectangle GetScissorRectangle()
+        public Rectangle GetScissorRectangle()
         {
             var screen = ToScreen(Vector2.Zero);
             Rectangle bounds = new Rectangle((int)screen.X, (int)screen.Y, Width, Height);

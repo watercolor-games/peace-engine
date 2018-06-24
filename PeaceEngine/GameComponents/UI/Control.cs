@@ -208,7 +208,8 @@ namespace Plex.Engine.GameComponents.UI
                 y += parent.Y;
                 parent = parent.Parent;
             }
-            return new Vector2(x, y);
+
+            return UserInterface.ToScreen(new Vector2(x, y));
         }
 
         public Vector2 ToScreen(int x, int y)
@@ -281,7 +282,7 @@ namespace Plex.Engine.GameComponents.UI
                 parent = parent.Parent;
             }
             if (parent == null)
-                bounds = Rectangle.Intersect(bounds, UserInterface.Bounds);
+                bounds = Rectangle.Intersect(bounds, UserInterface.GetScissorRectangle());
             return bounds;
         }
 
