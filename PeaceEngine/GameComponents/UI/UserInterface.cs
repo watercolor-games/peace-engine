@@ -20,6 +20,18 @@ namespace Plex.Engine.GameComponents.UI
 
         private Control _focused = null;
 
+        private string GetToolTip(Control child)
+        {
+            var parent = child;
+            while(parent != null)
+            {
+                if (!string.IsNullOrWhiteSpace(parent.ToolTip))
+                    return parent.ToolTip;
+                parent = parent.Parent;
+            }
+            return null;
+        }
+
         public bool IsFocused(Control ctrl)
         {
             return ctrl == _focused;
@@ -27,6 +39,7 @@ namespace Plex.Engine.GameComponents.UI
 
         public Control GetHovered(Vector2 mousePosition)
         {
+            mousePosition = ToLocal(mousePosition);
             //The last control in the search iteration.
             Control last = null;
             //Find a top-level that the mouse is in.
@@ -210,20 +223,6 @@ namespace Plex.Engine.GameComponents.UI
                     hovered.FireMouseEnter(e.OffsetPosition(hovered.ToToplevel(0, 0)));
                 }
             }
-            
-            if(hovered != null)
-            {
-                //Now, for tool tips.
-                _tooltip.Text = hovered.ToolTip;
-                _tooltip.X = e.Position.X;
-                _tooltip.Y = e.Position.Y;
-                _tooltipHoverTime = 0;
-
-            }
-            else
-            {
-                _tooltip.Text = "";
-            }
 
             //Make it the "Hovered Control" so it renders as hovered.
             HoveredControl = hovered;
@@ -231,6 +230,13 @@ namespace Plex.Engine.GameComponents.UI
             //Now we propagate the mouse move event if the control isn't null.
             if (hovered != null)
                 hovered.FireMouseMove(e.OffsetPosition(hovered.ToToplevel(0, 0)));
+
+            string text = GetToolTip(HoveredControl);
+            _tooltip.Visible = !string.IsNullOrWhiteSpace(text) && (_dragging == null);
+            _tooltip.Text = text;
+            var localCoords = ToLocal(e.Position.ToVector2());
+            _tooltip.X = (int)localCoords.X;
+            _tooltip.Y = (int)localCoords.Y;
         }
 
         private void _GameLoop_MouseDoubleClicked(object sender, MouseEventArgs e)
@@ -323,9 +329,17 @@ namespace Plex.Engine.GameComponents.UI
             gfx.ScissorRectangle = Rectangle.Empty;
         }
 
+        private Vector2 GetParentSize()
+        {
+            if (Parent == null)
+                return new Vector2(Scene.Width, Scene.Height);
+            return new Vector2(Parent.Width, Parent.Height);
+        }
+
         protected override void OnUpdate(GameTime time)
         {
-            Bounds = new Rectangle(0, 0, _GameLoop.GameRenderTarget.Width, _GameLoop.GameRenderTarget.Height);
+            var size = GetParentSize();
+            Bounds = new Rectangle(0, 0, (int)size.X, (int)size.Y);
 
             if (_smoothScrollUIElement != null)
             {
@@ -345,15 +359,6 @@ namespace Plex.Engine.GameComponents.UI
 
             _tooltip.Theme = Theme;
 
-            if(HoveredControl!=null)
-            {
-                _tooltipHoverTime += time.ElapsedGameTime.TotalSeconds;
-                _tooltip.Visible = _tooltipHoverTime >= _totalTooltipHoverTime;
-            }
-            else
-            {
-                _tooltip.Visible = false;
-            }
         }
     }
 }

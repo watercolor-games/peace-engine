@@ -258,6 +258,7 @@
     <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="GameComponents\AutoLoadAttribute.cs" />
     <Compile Include="GameComponents\ChildComponentAttribute.cs" />
+    <Compile Include="GameComponents\FrameComponent.cs" />
     <Compile Include="GameComponents\GameComponent.cs" />
     <Compile Include="GameComponents\GameScene.cs" />
     <Compile Include="GameComponents\UI\Button.cs" />
@@ -283,6 +284,7 @@
     <Compile Include="GameComponents\UI\Themes\Theme.cs" />
     <Compile Include="GameComponents\UI\ToolTipComponent.cs" />
     <Compile Include="GameComponents\UI\UserInterface.cs" />
+    <Compile Include="GameComponents\UI\VStacker.cs" />
     <Compile Include="GraphicsSubsystem\GraphicsContext.cs" />
     <Compile Include="GraphicsSubsystem\MgBatcher.cs" />
     <Compile Include="GraphicsSubsystem\MgRenderer.cs" />

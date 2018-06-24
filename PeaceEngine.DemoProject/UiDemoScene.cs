@@ -2,6 +2,7 @@
 using PeaceEngine.DemoProject.Themes;
 using Plex.Engine.GameComponents;
 using Plex.Engine.GameComponents.UI;
+using Plex.Engine.GameComponents.UI.Themes;
 using Plex.Engine.GraphicsSubsystem;
 using System;
 using System.Collections.Generic;
@@ -64,6 +65,12 @@ namespace PeaceEngine.DemoProject
         [AutoLoad]
         private SliderBar _sliderBar = null;
 
+        [AutoLoad]
+        private ScrollView _scrollView = null;
+
+        [AutoLoad]
+        private VStacker _verticalStacker = null;
+
         protected override void OnDraw(GameTime time, GraphicsContext gfx)
         {
         }
@@ -88,7 +95,20 @@ namespace PeaceEngine.DemoProject
             _ui.Controls.Add(_verticalGrid);
             _ui.Controls.Add(_progressBar);
             _ui.Controls.Add(_sliderBar);
+            _ui.Controls.Add(_scrollView);
 
+            _scrollView.Children.Add(_verticalStacker);
+
+            _verticalStacker.AutoSize = true;
+            
+            foreach(TextStyle style in Enum.GetValues(typeof(TextStyle)))
+            {
+                var label = New<Label>();
+                label.Text = style.ToString();
+                label.TextStyle = style;
+                label.AutoSize = true;
+                _verticalStacker.Children.Add(label);
+            }
 
             for (int i = 0; i < 10; i++)
             {
@@ -154,7 +174,7 @@ namespace PeaceEngine.DemoProject
             _description.Y = _heading.Y + _heading.Height + 7;
             _heading.AutoSizeMaxWidth = Width - 30;
             _description.AutoSizeMaxWidth = _heading.AutoSizeMaxWidth;
-            
+
             _regularButton.X = 15;
             _regularButton.Y = _description.Y + _description.Height + 15;
 
@@ -201,12 +221,21 @@ namespace PeaceEngine.DemoProject
             _sliderBar.X = 15;
             _sliderBar.Y = _progressBar.Y + _progressBar.Height + 7;
 
-            _progressBar.Value = MathHelper.Clamp(_progressBar.Value + ((float)time.ElapsedGameTime.TotalSeconds/4), 0, 1);
+            _progressBar.Value = MathHelper.Clamp(_progressBar.Value + ((float)time.ElapsedGameTime.TotalSeconds / 4), 0, 1);
             if (_progressBar.Value == 1)
                 _progressBar.Value = 0;
 
             _back.X = 15;
             _back.Y = (Height - _back.Height) - 15;
+
+            _scrollView.X = 15;
+            _scrollView.Y = _sliderBar.Y + _sliderBar.Height + 15;
+            _scrollView.Width = Width - 30;
+            _scrollView.Height = (_back.Y - 15) - _scrollView.Y;
+
+            _verticalStacker.X = 0;
+            _verticalStacker.Y = 0;
+            _verticalStacker.Width = _scrollView.Width;
         }
     }
 }

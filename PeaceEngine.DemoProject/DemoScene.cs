@@ -41,6 +41,9 @@ namespace PeaceEngine.DemoProject
         //This label will tell the player a bit about the engine.
         private Label _bodyLabel = null;
 
+        [AutoLoad]
+        private Button _frameDemo = null;
+
         //This is where your scene is able to render content to the screen.
         //Treat this as a place to render your backdrop, since child components will render on-top of it.
         protected override void OnDraw(GameTime time, GraphicsContext gfx)
@@ -57,6 +60,8 @@ namespace PeaceEngine.DemoProject
 
             _button = _game.New<Button>();
             _uiPanel.Children.Add(_button);
+
+            _uiPanel.Children.Add(_frameDemo);
 
             _headingLabel = _game.New<Label>();
             _uiPanel.Children.Add(_headingLabel);
@@ -93,6 +98,13 @@ You are currently hovering over a Panel, which is a blank control you can place 
             _headingLabel.TextStyle = Plex.Engine.GameComponents.UI.Themes.TextStyle.Heading1;
 
             _ui.Theme = _game.New<UIDemoTheme>();
+
+            _frameDemo.Text = "Frame Demo";
+            _frameDemo.ToolTip = "Switch to the Frame Demo scene.";
+            _frameDemo.Click += (o, a) =>
+            {
+                LoadScene<FrameDemoScene>();
+            };
         }
 
         //This is called when the game exits or a new scene is about to be created.
@@ -127,6 +139,9 @@ You are currently hovering over a Panel, which is a blank control you can place 
             _bodyLabel.Y = _headingLabel.Y + _headingLabel.Height + 7;
             _bodyLabel.Width = _headingLabel.AutoSizeMaxWidth;
             _bodyLabel.Height = (_button.Y - 7) - _bodyLabel.Y;
+
+            _frameDemo.X = _button.X + _button.Width + 7;
+            _frameDemo.Y = _button.Y;
         }
     }
 }

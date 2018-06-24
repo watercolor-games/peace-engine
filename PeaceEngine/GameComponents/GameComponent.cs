@@ -175,6 +175,17 @@ namespace Plex.Engine.GameComponents
             Components = new ComponentCollection(this);
         }
 
+        public Vector2 ToLocal(Vector2 coordinates)
+        {
+            var parent = this;
+            while (parent != null)
+            {
+                coordinates -= new Vector2(parent.X, parent.Y);
+                parent = parent.Parent;
+            }
+            return coordinates;
+        }
+
         public Vector2 ToScreen(Vector2 coordinates)
         {
             var parent = this;
@@ -209,13 +220,16 @@ namespace Plex.Engine.GameComponents
 
         private Rectangle GetScissorRectangle()
         {
-            Rectangle bounds = Bounds;
+            var screen = ToScreen(Vector2.Zero);
+            Rectangle bounds = new Rectangle((int)screen.X, (int)screen.Y, Width, Height);
             var parent = this;
             while (parent != null)
             {
-                bounds = Rectangle.Intersect(bounds, parent.Bounds);
+                var pScreen = parent.ToScreen(Vector2.Zero);
+                bounds = Rectangle.Intersect(bounds, new Rectangle((int)pScreen.X, (int)pScreen.Y, parent.Width, parent.Height));
                 parent = parent.Parent;
             }
+            bounds = Rectangle.Intersect(bounds, new Rectangle(0, 0, Scene.Width, Scene.Height));
             return bounds;
         }
 

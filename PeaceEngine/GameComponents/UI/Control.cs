@@ -220,7 +220,7 @@ namespace Plex.Engine.GameComponents.UI
                 y += parent.Y;
                 parent = parent.Parent;
             }
-            return new Vector2(x, y);
+            return UserInterface.ToScreen(new Vector2(x, y));
         }
 
         public Rectangle Bounds
@@ -280,6 +280,8 @@ namespace Plex.Engine.GameComponents.UI
                     break;
                 parent = parent.Parent;
             }
+            if (parent == null)
+                bounds = Rectangle.Intersect(bounds, UserInterface.Bounds);
             return bounds;
         }
 
