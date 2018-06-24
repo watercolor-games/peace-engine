@@ -22,6 +22,9 @@ namespace PeaceEngine.DemoProject
         [AutoLoad]
         private Label _uiLabel = null;
 
+        [AutoLoad]
+        private Button _back = null;
+
         protected override void OnDraw(GameTime time, GraphicsContext gfx)
         {
             gfx.FillRectangle(_frame.Bounds, Color.DarkSlateBlue);
@@ -39,6 +42,14 @@ namespace PeaceEngine.DemoProject
 
             _uiLabel.MouseDragStart += _uiLabel_MouseDragStart;
             _uiLabel.MouseDrag += _uiLabel_MouseDrag;
+
+            _back.Text = "Leave";
+            _frameUI.Controls.Add(_back);
+
+            _back.Click += (o, a) =>
+            {
+                LoadScene<DemoScene>();
+            };
         }
 
         private void _uiLabel_MouseDrag(object sender, MonoGame.Extended.Input.InputListeners.MouseEventArgs e)
@@ -68,6 +79,8 @@ namespace PeaceEngine.DemoProject
             _frame.Height = Height / 2;
             _frame.Y = (Height - _frame.Height) / 2;
 
+            _back.X = 15;
+            _back.Y = _frameUI.Height - _back.Height - 15;
         }
     }
 }

@@ -285,6 +285,8 @@
     <Compile Include="GameComponents\UI\ToolTipComponent.cs" />
     <Compile Include="GameComponents\UI\UserInterface.cs" />
     <Compile Include="GameComponents\UI\VStacker.cs" />
+    <Compile Include="GameComponents\Windowing\Window.cs" />
+    <Compile Include="GameComponents\Windowing\WindowTheme.cs" />
     <Compile Include="GraphicsSubsystem\GraphicsContext.cs" />
     <Compile Include="GraphicsSubsystem\MgBatcher.cs" />
     <Compile Include="GraphicsSubsystem\MgRenderer.cs" />

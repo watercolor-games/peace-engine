@@ -44,6 +44,9 @@ namespace PeaceEngine.DemoProject
         [AutoLoad]
         private Button _frameDemo = null;
 
+        [AutoLoad]
+        private Button _windowDemo = null;
+
         //This is where your scene is able to render content to the screen.
         //Treat this as a place to render your backdrop, since child components will render on-top of it.
         protected override void OnDraw(GameTime time, GraphicsContext gfx)
@@ -105,6 +108,14 @@ You are currently hovering over a Panel, which is a blank control you can place 
             {
                 LoadScene<FrameDemoScene>();
             };
+
+            _uiPanel.Children.Add(_windowDemo);
+            _windowDemo.Text = "Windowing demo";
+
+            _windowDemo.Click += (o, a) =>
+            {
+                LoadScene<WindowingDemoScene>();
+            };
         }
 
         //This is called when the game exits or a new scene is about to be created.
@@ -142,6 +153,9 @@ You are currently hovering over a Panel, which is a blank control you can place 
 
             _frameDemo.X = _button.X + _button.Width + 7;
             _frameDemo.Y = _button.Y;
+
+            _windowDemo.X = _frameDemo.X + _frameDemo.Width + 7;
+            _windowDemo.Y = _button.Y;
         }
     }
 }

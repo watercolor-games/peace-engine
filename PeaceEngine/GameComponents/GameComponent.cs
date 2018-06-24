@@ -229,7 +229,8 @@ namespace Plex.Engine.GameComponents
                 bounds = Rectangle.Intersect(bounds, new Rectangle((int)pScreen.X, (int)pScreen.Y, parent.Width, parent.Height));
                 parent = parent.Parent;
             }
-            bounds = Rectangle.Intersect(bounds, new Rectangle(0, 0, Scene.Width, Scene.Height));
+            if(Scene!=null)
+                bounds = Rectangle.Intersect(bounds, new Rectangle(0, 0, Scene.Width, Scene.Height));
             return bounds;
         }
 
