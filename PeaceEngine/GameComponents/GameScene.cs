@@ -26,6 +26,21 @@ namespace Plex.Engine.GameComponents
             Components = new GameComponent.SceneComponentCollection(this);
         }
 
+        public T New<T>() where T : new()
+        {
+            return _game.New<T>();
+        }
+
+        public void LoadScene<T>() where T : GameScene
+        {
+            _game.SetScene<T>();
+        }
+
+        public void Exit()
+        {
+            _game.Exit();
+        }
+
         public void Update(GameTime time)
         {
             OnUpdate(time);
@@ -55,6 +70,12 @@ namespace Plex.Engine.GameComponents
                 field.SetValue(this, component);
                 Components.Add(component);
             }
+            foreach (var field in type.GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Where(x => x.GetCustomAttributes(true).Any(y => y is AutoLoadAttribute)))
+            {
+                var component = _game.New(field.FieldType);
+                field.SetValue(this, component);
+            }
+
         }
 
         internal void Load()

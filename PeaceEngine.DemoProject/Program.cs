@@ -14,8 +14,11 @@ namespace PeaceEngine.DemoProject
         [STAThread]
         static void Main(string[] args)
         {
-            var game = new EngineOptions();
-            game.GameName = "Peace Engine Demo";
+            var game = new EngineOptions()
+            {
+                GameName = "Peace Engine Demo",
+                Developer = "Watercolor Games"
+            };
             game.Start<DemoScene>(args);
         }
     }

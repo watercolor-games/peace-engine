@@ -57,6 +57,7 @@ namespace Plex.Engine.GameComponents.UI
 
         public string ToolTip { get; set; } = "";
 
+        public event EventHandler<KeyboardEventArgs> KeyEvent;
         public event EventHandler<MouseEventArgs> MouseUp;
         public event EventHandler<MouseEventArgs> MouseDown;
         public event EventHandler<MouseEventArgs> Click;
@@ -68,6 +69,7 @@ namespace Plex.Engine.GameComponents.UI
         public event EventHandler<MouseEventArgs> MouseDragEnd;
         public event EventHandler<MouseEventArgs> MouseDrag;
 
+        protected virtual void OnKeyEvent(KeyboardEventArgs e) { }
         protected virtual void OnMouseDown(MouseEventArgs e) { }
         protected virtual void OnMouseUp(MouseEventArgs e) { }
         protected virtual void OnClick(MouseEventArgs e) { }
@@ -84,6 +86,12 @@ namespace Plex.Engine.GameComponents.UI
         public bool RightButtonPressed { get; private set; } = false;
 
         public event EventHandler HasFocusedChanged;
+
+        internal void FireKeyEvent(KeyboardEventArgs e)
+        {
+            OnKeyEvent(e);
+            KeyEvent?.Invoke(this, e);
+        }
 
         internal void ResetButtonStates()
         {

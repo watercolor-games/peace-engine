@@ -94,7 +94,7 @@ namespace Plex.Engine
                     }
 
                 }
-                return sb.ToString();
+                return sb.ToString().Replace("\r", "");
             }
             else
             {

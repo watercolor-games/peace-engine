@@ -93,6 +93,7 @@ namespace Plex.Engine.GameComponents.UI
 
         protected override void OnSpawn()
         {
+            _GameLoop.OnKeyEvent += _GameLoop_OnKeyEvent;
             _GameLoop.MouseDragStart += _GameLoop_MouseDragStart;
             _GameLoop.MouseDrag += _GameLoop_MouseDrag;
             _GameLoop.MouseDragEnd += _GameLoop_MouseDragEnd;
@@ -113,8 +114,14 @@ namespace Plex.Engine.GameComponents.UI
             base.OnSpawn();
         }
 
+        private void _GameLoop_OnKeyEvent(object sender, KeyboardEventArgs e)
+        {
+            _focused?.FireKeyEvent(e);
+        }
+
         protected override void OnDespawn()
         {
+            _GameLoop.OnKeyEvent -= _GameLoop_OnKeyEvent;
             _GameLoop.MouseDragStart -= _GameLoop_MouseDragStart;
             _GameLoop.MouseDrag -= _GameLoop_MouseDrag;
             _GameLoop.MouseDragEnd -= _GameLoop_MouseDragEnd;

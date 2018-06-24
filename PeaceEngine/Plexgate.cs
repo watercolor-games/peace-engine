@@ -69,7 +69,7 @@ namespace Plex.Engine
 
         #region Events
 
-        public EventHandler<KeyboardEventArgs>      OnKeyEvent;
+        public event EventHandler<KeyboardEventArgs>      OnKeyEvent;
         public event EventHandler                   FrameDrawn;
         public event EventHandler<MouseEventArgs>   MouseMove;
         public event EventHandler<MouseEventArgs>   MouseDown;
@@ -130,6 +130,7 @@ namespace Plex.Engine
         public int                      BackBufferHeight => GraphicsDevice.PresentationParameters.BackBufferHeight;
         public float                    AspectRatio => (float)GraphicsDevice.PresentationParameters.BackBufferWidth / GraphicsDevice.PresentationParameters.BackBufferHeight;
         public string                   GameName { get; internal set; }
+        public string                   Developer { get; internal set; }
         internal Type                   StartingSceneType { get; set; }
 
         /// <summary>

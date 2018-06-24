@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PeaceEngine.DemoProject.Themes;
 using Plex.Engine;
 using Plex.Engine.GameComponents;
 using Plex.Engine.GameComponents.UI;
@@ -34,6 +35,12 @@ namespace PeaceEngine.DemoProject
         //Buttons are UI elements that can be clicked.
         private Button _button = null;
 
+        //This Label will act as our "title" text.
+        private Label _headingLabel = null;
+
+        //This label will tell the player a bit about the engine.
+        private Label _bodyLabel = null;
+
         //This is where your scene is able to render content to the screen.
         //Treat this as a place to render your backdrop, since child components will render on-top of it.
         protected override void OnDraw(GameTime time, GraphicsContext gfx)
@@ -51,11 +58,28 @@ namespace PeaceEngine.DemoProject
             _button = _game.New<Button>();
             _uiPanel.Children.Add(_button);
 
-            _button.Text = "Click me!";
-            _button.ToolTip = "What's this do? Click it and find out.";
+            _headingLabel = _game.New<Label>();
+            _uiPanel.Children.Add(_headingLabel);
+
+            _bodyLabel = _game.New<Label>();
+            _uiPanel.Children.Add(_bodyLabel);
+
+            _bodyLabel.AutoSize = false; //The UI engine will wrap text based on the Label's width, not its max width.
+            _bodyLabel.Text = @"Peace Engine is a modular and awesome game engine built on top of MonoGame.
+
+It is built with both modularity and ease of use in mind. Peace Engine is comprised of several different components that work together to make your game possible.
+
+1. Game Components - the meat and bones of your game, where you can write all your logic and rendering code.
+2. Engine Modules - mini libraries that are managed by the engine and can be used and depended on within other components.
+3. Game Services - game components that are treated like engine modules and exist across scenes and levels.
+
+We have coded a little demo project you can use to see how these components work to build an effective workflow and amazing 2D games.";
+
+            _button.Text = "UI demo";
+            _button.ToolTip = "Load the UI demo scene. This scene will show you all the different things you can do with our UI system.";
             _button.Click += (o, a) =>
             {
-                _game.Exit();
+                LoadScene<UIDemoScene>();
             };
             _button.AutoSize = true;
         
@@ -63,6 +87,12 @@ namespace PeaceEngine.DemoProject
             _uiPanel.ToolTip = @"This is a tool tip, used to convey contextual info about a UI element.
 
 You are currently hovering over a Panel, which is a blank control you can place other controls inside.";
+
+            _headingLabel.Text = "Welcome to Peace Engine!";
+
+            _headingLabel.TextStyle = Plex.Engine.GameComponents.UI.Themes.TextStyle.Heading1;
+
+            _ui.Theme = _game.New<UIDemoTheme>();
         }
 
         //This is called when the game exits or a new scene is about to be created.
@@ -82,6 +112,21 @@ You are currently hovering over a Panel, which is a blank control you can place 
             _uiPanel.X = (Width - _uiPanel.Width) / 2;
             _uiPanel.Y = (Height - _uiPanel.Height) / 2;
 
+            //Child UI elements' coordinates are relative to their parent.
+            _button.X = 15;
+            _button.Y = _uiPanel.Height - _button.Height - 15;
+
+            //Labels can be auto-sized.
+            _headingLabel.AutoSize = true;
+            _headingLabel.AutoSizeMaxWidth = _uiPanel.Width - 30;
+            _headingLabel.X = 15;
+            _headingLabel.Y = 15;
+
+            //Now we lay-out the body.
+            _bodyLabel.X = 15;
+            _bodyLabel.Y = _headingLabel.Y + _headingLabel.Height + 7;
+            _bodyLabel.Width = _headingLabel.AutoSizeMaxWidth;
+            _bodyLabel.Height = (_button.Y - 7) - _bodyLabel.Y;
         }
     }
 }

@@ -46,6 +46,8 @@
     <Compile Include="DemoScene.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Themes\UIDemoTheme.cs" />
+    <Compile Include="UiDemoScene.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Extended.Input, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
@@ -121,6 +123,11 @@
       <Project>{a069089a-8962-4607-b2b2-4cf4a371066e}</Project>
       <Name>WatercolorGames.Utilities</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\Textures\check.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />

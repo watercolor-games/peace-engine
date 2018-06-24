@@ -176,10 +176,13 @@ namespace Plex.Engine.Config
     {
         private string _path = "";
 
+        [Dependency]
+        private GameLoop _game = null;
+
         /// <inheritdoc/>
         public void Initiate()
         {
-            _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Watercolor Games", "Peacenet");
+            _path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), _game.Developer, _game.GameName);
             if (!Directory.Exists(_path))
                 Directory.CreateDirectory(_path);
         }
