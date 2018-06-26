@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using MonoGame.Extended.Input.InputListeners;
+using Plex.Engine.GameComponents.UI;
 using Plex.Engine.GraphicsSubsystem;
 using System;
 using System.Collections;
@@ -15,11 +17,201 @@ namespace Plex.Engine.GameComponents
         [Dependency]
         private GameLoop _game = null;
 
+        private GameComponent _focused = null;
+
+        private void SetFocus(GameComponent c)
+        {
+            _focused = c;
+        }
+
         private ContentManager _content = null;
 
         public ContentManager Content => _content;
 
         public readonly GameComponent.SceneComponentCollection Components = null;
+
+        protected virtual void OnKeyEvent(KeyboardEventArgs e) { }
+        protected virtual void OnMouseDown(MouseEventArgs e) { }
+        protected virtual void OnMouseUp(MouseEventArgs e) { }
+        protected virtual void OnClick(MouseEventArgs e) { }
+        protected virtual void OnDoubleClick(MouseEventArgs e) { }
+        protected virtual void OnMouseMove(MouseEventArgs e) { }
+        protected virtual void OnMouseEnter(MouseEventArgs e) { }
+        protected virtual void OnMouseLeave(MouseEventArgs e) { }
+        protected virtual void OnMouseDragStart(MouseEventArgs e) { }
+        protected virtual void OnMouseDrag(MouseEventArgs e) { }
+        protected virtual void OnMouseDragEnd(MouseEventArgs e) { }
+
+        internal void FireKeyEvent(KeyboardEventArgs e)
+        {
+            OnKeyEvent(e);
+            if (_focused != null)
+                _focused.FireKeyEvent(e);
+        }
+
+        internal void FireMouseDragEnd(MouseEventArgs e)
+        {
+            OnMouseDragEnd(e);
+            if (_dragging != null)
+            {
+                _dragging.FireMouseDragEnd(e);
+                _dragging = null;
+            }
+        }
+
+        internal void FireMouseDrag(MouseEventArgs e)
+        {
+            OnMouseDrag(e);
+            if (_dragging != null)
+                _dragging.FireMouseDrag(e);
+        }
+
+        internal void FireMouseDragStart(MouseEventArgs e)
+        {
+            OnMouseDragStart(e);
+            var hovered = GetHovered(e.Position.ToVector2());
+            if (hovered != null)
+            {
+                _dragging = hovered;
+                hovered.FireMouseDragStart(e);
+            }
+        }
+
+        internal void FireMouseDown(MouseEventArgs e)
+        {
+            OnMouseDown(e);
+            //Traverse the control hierarchy and find a control that the mouse is hovering over.
+            var hovered = GetHovered(e.Position.ToVector2());
+            //Set the control as the current focus. If we didn't find any, this will cause control focus to be lost - i.e, the player clicked somewhere other than in the UI.
+            SetFocus(hovered);
+            //If we DO have a new focused control, fire a click event on it.
+            if (hovered != null)
+                hovered.FireMouseDown(e);
+            _mousedown = hovered;
+        }
+
+        internal void FireMouseDoubleClick(MouseEventArgs e)
+        {
+            OnDoubleClick(e);
+            //Traverse the control hierarchy and find a control that the mouse is hovering over.
+            var hovered = GetHovered(e.Position.ToVector2());
+            //Is the mouse on a UI element?
+            if (hovered != null)
+            {
+                //Is it the focused UI element?
+                if (hovered == _focused)
+                {
+                    //Fire "mouse up" event.
+                    hovered.FireMouseDoubleClick(e);
+                }
+            }
+        }
+
+        internal void FireMouseMove(MouseEventArgs e)
+        {
+            OnMouseMove(e);
+
+            //Traverse the control hierarchy and find a control that the mouse is hovering over.
+            var hovered = GetHovered(e.Position.ToVector2());
+            if (HoveredComponent != hovered)
+            {
+                //If HoveredControl isn't null, fire a mouse leave event on it.
+                if (HoveredComponent != null)
+                    HoveredComponent.FireMouseLeave(e);
+                //If we're not null, fire a mouse enter event.
+                if (hovered != null)
+                {
+                    hovered.FireMouseEnter(e);
+                }
+            }
+
+            //Make it the "Hovered Control" so it renders as hovered.
+            HoveredComponent = hovered;
+
+            //Now we propagate the mouse move event if the control isn't null.
+            if (hovered != null)
+                hovered.FireMouseMove(e);
+        }
+
+        internal void FireScroll(MouseEventArgs e)
+        {
+            OnMouseScroll(e);
+            var scrollable = GetHovered(e.Position.ToVector2());
+
+            if (scrollable == null)
+                return;
+
+            scrollable.FireScroll(e);
+        }
+
+        protected virtual void OnMouseScroll(MouseEventArgs e) { }
+
+        internal void FireMouseClick(MouseEventArgs e)
+        {
+            OnClick(e);
+            //Traverse the control hierarchy and find a control that the mouse is hovering over.
+            var hovered = GetHovered(e.Position.ToVector2());
+            //Is the mouse on a UI element?
+            if (hovered != null)
+            {
+                //Is it the focused UI element?
+                if (hovered == _focused)
+                {
+                    //Fire "mouse up" event.
+                    hovered.FireMouseClick(e);
+                }
+            }
+        }
+
+        internal void FireMouseUp(MouseEventArgs e)
+        {
+            OnMouseUp(e);
+            //Traverse the control hierarchy and find a control that the mouse is hovering over.
+            var hovered = GetHovered(e.Position.ToVector2());
+            //Is the mouse on a UI element?
+            if (hovered != null)
+            {
+                //Is it the focused UI element?
+                if (hovered == _focused)
+                {
+                    //Fire "mouse up" event.
+                    hovered.FireMouseUp(e);
+                }
+            }
+
+            //If we do have a focused ui element, now would be a good time to make sure it's not rendering as "pressed"
+            _mousedown = null;
+        }
+
+        public GameComponent GetHovered(Vector2 mousePosition)
+        {
+            //The last control in the search iteration.
+            GameComponent last = null;
+            //Find a top-level that the mouse is in.
+            GameComponent current = Components.OrderByDescending(x => Array.IndexOf(Components.ToArray(), x)).FirstOrDefault(x => x.Visible && MouseInBounds(x, mousePosition));
+            //Walk down the control's children using the same search query until the current control is null.
+            while (current != null)
+            {
+                //Set the last control to the current
+                last = current;
+                //Search for a child.
+                current = current.Components.OrderByDescending(x => Array.IndexOf(current.Components.ToArray(), x)).FirstOrDefault(x => x.Visible && MouseInBounds(x, mousePosition));
+            }
+            //Return the last control
+            return last;
+        }
+
+        private bool MouseInBounds(GameComponent ctrl, Vector2 pos)
+        {
+            var controlScreen = ctrl.ToScreen(Vector2.Zero);
+            return (pos.X >= controlScreen.X && pos.Y >= controlScreen.Y && pos.X <= controlScreen.X + ctrl.Width && pos.Y <= controlScreen.Y + ctrl.Height);
+        }
+
+        private GameComponent _dragging = null;
+
+        public GameComponent HoveredComponent { get; private set; }
+
+        private GameComponent _mousedown = null;
 
         public GameScene()
         {

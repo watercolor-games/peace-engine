@@ -29,6 +29,9 @@ namespace Plex.Engine.GameComponents.Windowing
         private Hitbox _closeHitbox = new Hitbox();
         private Hitbox _minHitbox = new Hitbox();
         private Hitbox _maxHitbox = new Hitbox();
+        private Hitbox _rollHitbox = new Hitbox();
+
+        public event EventHandler Closed;
 
         private Vector2 _mouseLastPos = Vector2.Zero;
 
@@ -47,6 +50,16 @@ namespace Plex.Engine.GameComponents.Windowing
             _titleHitbox.Children.Add(_closeHitbox);
             _titleHitbox.Children.Add(_minHitbox);
             _titleHitbox.Children.Add(_maxHitbox);
+            _titleHitbox.Children.Add(_rollHitbox);
+
+            _closeHitbox.Click += (o, a) =>
+            {
+                Close();
+            };
+            _minHitbox.Click += (o, a) =>
+            {
+                Visible = false;
+            };
 
             _titleHitbox.MouseDragStart += _titleHitbox_MouseDragStart;
             _titleHitbox.MouseDrag += _titleHitbox_MouseDrag;
@@ -94,15 +107,25 @@ namespace Plex.Engine.GameComponents.Windowing
         public void Close()
         {
             if (Parent != null)
+            {
                 Parent.Components.Remove(this);
+                Closed?.Invoke(this, EventArgs.Empty);
+            }
             if (Scene != null)
+            {
                 Scene.Components.Remove(this);
+                Closed?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         protected sealed override void OnDraw(GameTime time, GraphicsContext gfx)
         {
             Theme.DrawBlankControlArea(gfx);
             WindowTheme.DrawWindowFrame(gfx, Title);
+            WindowTheme.DrawWindowButton(gfx, TitleButton.Close, _closeHitbox);
+            WindowTheme.DrawWindowButton(gfx, TitleButton.Minimize, _minHitbox);
+            WindowTheme.DrawWindowButton(gfx, TitleButton.Maximize, _maxHitbox);
+            WindowTheme.DrawWindowButton(gfx, TitleButton.Rollup, _rollHitbox);
         }
 
         protected sealed override void OnUpdate(GameTime time)
@@ -121,6 +144,32 @@ namespace Plex.Engine.GameComponents.Windowing
             _clientFrame.Y = WindowTheme.TitleHeight;
             _clientFrame.Width = Width - (WindowTheme.BorderSize * 2);
             _clientFrame.Height = Height - WindowTheme.TitleHeight - WindowTheme.BorderSize;
+
+            var closeRect = WindowTheme.GetButtonRect(TitleButton.Close, Width);
+            var maxRect = WindowTheme.GetButtonRect(TitleButton.Maximize, Width);
+            var minRect = WindowTheme.GetButtonRect(TitleButton.Minimize, Width);
+            var rollRect = WindowTheme.GetButtonRect(TitleButton.Rollup, Width);
+
+            _closeHitbox.X = closeRect.X;
+            _closeHitbox.Y = closeRect.Y;
+            _closeHitbox.Width = closeRect.Width;
+            _closeHitbox.Height = closeRect.Height;
+
+            _minHitbox.X = minRect.X;
+            _minHitbox.Y = minRect.Y;
+            _minHitbox.Width = minRect.Width;
+            _minHitbox.Height = minRect.Height;
+
+            _maxHitbox.X = maxRect.X;
+            _maxHitbox.Y = maxRect.Y;
+            _maxHitbox.Width = maxRect.Width;
+            _maxHitbox.Height = maxRect.Height;
+
+            _rollHitbox.X = rollRect.X;
+            _rollHitbox.Y = rollRect.Y;
+            _rollHitbox.Width = rollRect.Width;
+            _rollHitbox.Height = rollRect.Height;
+
 
             UpdateWindow(time);
             base.OnUpdate(time);

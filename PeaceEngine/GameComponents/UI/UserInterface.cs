@@ -113,17 +113,6 @@ namespace Plex.Engine.GameComponents.UI
 
         protected override void OnSpawn()
         {
-            _GameLoop.OnKeyEvent += _GameLoop_OnKeyEvent;
-            _GameLoop.MouseDragStart += _GameLoop_MouseDragStart;
-            _GameLoop.MouseDrag += _GameLoop_MouseDrag;
-            _GameLoop.MouseDragEnd += _GameLoop_MouseDragEnd;
-            _GameLoop.MouseDown += _GameLoop_MouseDown;
-            _GameLoop.MouseUp += _GameLoop_MouseUp;
-            _GameLoop.MouseMove += _GameLoop_MouseMove;
-            _GameLoop.MouseClicked += _GameLoop_MouseClicked;
-            _GameLoop.MouseDoubleClicked += _GameLoop_MouseDoubleClicked;
-            _GameLoop.MouseWheelMoved += _GameLoop_MouseWheelMoved;
-
             if(Theme == null)
                 Theme = _GameLoop.New<EngineTheme>();
 
@@ -134,24 +123,13 @@ namespace Plex.Engine.GameComponents.UI
             base.OnSpawn();
         }
 
-        private void _GameLoop_OnKeyEvent(object sender, KeyboardEventArgs e)
+        protected override void OnKeyEvent(KeyboardEventArgs e)
         {
             _focused?.FireKeyEvent(e);
         }
 
         protected override void OnDespawn()
         {
-            _GameLoop.OnKeyEvent -= _GameLoop_OnKeyEvent;
-            _GameLoop.MouseDragStart -= _GameLoop_MouseDragStart;
-            _GameLoop.MouseDrag -= _GameLoop_MouseDrag;
-            _GameLoop.MouseDragEnd -= _GameLoop_MouseDragEnd;
-            _GameLoop.MouseDown -= _GameLoop_MouseDown;
-            _GameLoop.MouseUp -= _GameLoop_MouseUp;
-            _GameLoop.MouseMove -= _GameLoop_MouseMove;
-            _GameLoop.MouseClicked -= _GameLoop_MouseClicked;
-            _GameLoop.MouseDoubleClicked -= _GameLoop_MouseDoubleClicked;
-            _GameLoop.MouseWheelMoved -= _GameLoop_MouseWheelMoved;
-
             Components.Remove(_tooltip);
 
             base.OnDespawn();
@@ -159,7 +137,7 @@ namespace Plex.Engine.GameComponents.UI
 
         private Control _dragging = null;
 
-        private void _GameLoop_MouseDragEnd(object sender, MouseEventArgs e)
+        protected override void OnMouseDragEnd(MouseEventArgs e)
         {
             if (_dragging != null)
             {
@@ -168,13 +146,13 @@ namespace Plex.Engine.GameComponents.UI
             }
         }
 
-        private void _GameLoop_MouseDrag(object sender, MouseEventArgs e)
+        protected override void OnMouseDrag(MouseEventArgs e)
         {
             if (_dragging != null)
                 _dragging.FireMouseDrag(e.OffsetPosition(_dragging.ToToplevel(0, 0)));
         }
 
-        private void _GameLoop_MouseDragStart(object sender, MouseEventArgs e)
+        protected override void OnMouseDragStart(MouseEventArgs e)
         {
             var hovered = GetHovered(e.Position.ToVector2());
             if (hovered != null)
@@ -191,7 +169,7 @@ namespace Plex.Engine.GameComponents.UI
         private Scrollable _smoothScrollUIElement = null;
 
 
-        private void _GameLoop_MouseWheelMoved(object sender, MouseEventArgs e)
+        protected override void OnMouseScroll(MouseEventArgs e)
         {
             bool doSmoothScroll = true;
 
@@ -215,7 +193,7 @@ namespace Plex.Engine.GameComponents.UI
 
         public Control HoveredControl { get; private set; }
 
-        private void _GameLoop_MouseMove(object sender, MouseEventArgs e)
+        protected override void OnMouseMove(MouseEventArgs e)
         {
             //Traverse the control hierarchy and find a control that the mouse is hovering over.
             var hovered = GetHovered(e.Position.ToVector2());
@@ -242,11 +220,20 @@ namespace Plex.Engine.GameComponents.UI
             _tooltip.Visible = !string.IsNullOrWhiteSpace(text) && (_dragging == null);
             _tooltip.Text = text;
             var localCoords = ToLocal(e.Position.ToVector2());
-            _tooltip.X = (int)localCoords.X;
-            _tooltip.Y = (int)localCoords.Y;
+            _tooltip.X = (int)localCoords.X+5;
+            _tooltip.Y = (int)localCoords.Y+5;
         }
 
-        private void _GameLoop_MouseDoubleClicked(object sender, MouseEventArgs e)
+        protected override void OnMouseLeave(MouseEventArgs e)
+        {
+            HoveredControl?.FireMouseLeave(e);
+            HoveredControl = null;
+            _mousedown?.ResetButtonStates();
+            _mousedown = null;
+            base.OnMouseLeave(e);
+        }
+
+        protected override void OnDoubleClick(MouseEventArgs e)
         {
             //Traverse the control hierarchy and find a control that the mouse is hovering over.
             var hovered = GetHovered(e.Position.ToVector2());
@@ -263,7 +250,7 @@ namespace Plex.Engine.GameComponents.UI
         }
 
 
-        private void _GameLoop_MouseClicked(object sender, MouseEventArgs e)
+        protected override void OnClick(MouseEventArgs e)
         {
             //Traverse the control hierarchy and find a control that the mouse is hovering over.
             var hovered = GetHovered(e.Position.ToVector2());
@@ -281,7 +268,7 @@ namespace Plex.Engine.GameComponents.UI
 
         private Control _mousedown = null;
 
-        private void _GameLoop_MouseUp(object sender, MouseEventArgs e)
+        protected override void OnMouseUp(MouseEventArgs e)
         {
             //Traverse the control hierarchy and find a control that the mouse is hovering over.
             var hovered = GetHovered(e.Position.ToVector2());
@@ -301,7 +288,7 @@ namespace Plex.Engine.GameComponents.UI
             _mousedown = null;
         }
 
-        private void _GameLoop_MouseDown(object sender, MouseEventArgs e)
+        protected override void OnMouseDown(MouseEventArgs e)
         {
             //Traverse the control hierarchy and find a control that the mouse is hovering over.
             var hovered = GetHovered(e.Position.ToVector2());

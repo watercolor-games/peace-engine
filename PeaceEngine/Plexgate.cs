@@ -450,6 +450,7 @@ namespace Plex.Engine
 
         private void _mouseListener_MouseWheelMoved(object sender, MouseEventArgs e)
         {
+            _scene?.FireScroll(e);
             MouseWheelMoved?.Invoke(sender, e);
 #if DEBUG
             Logger.Log("Mouse wheel moved.");
@@ -458,6 +459,7 @@ namespace Plex.Engine
 
         private void _mouseListener_MouseUp(object sender, MouseEventArgs e)
         {
+            _scene?.FireMouseUp(e);
             MouseUp?.Invoke(sender, e);
 #if DEBUG
             Logger.Log("Mouse up.");
@@ -466,6 +468,7 @@ namespace Plex.Engine
 
         private void _mouseListener_MouseMoved(object sender, MouseEventArgs e)
         {
+            _scene?.FireMouseMove(e);
             MouseMove?.Invoke(sender, e);
 #if DEBUG
             Logger.Log("Mouse moved.");
@@ -474,6 +477,7 @@ namespace Plex.Engine
 
         private void _mouseListener_MouseDragEnd(object sender, MouseEventArgs e)
         {
+            _scene?.FireMouseDragEnd(e);
             MouseDragEnd?.Invoke(sender, e);
 #if DEBUG
             Logger.Log("Mouse drag end.");
@@ -482,6 +486,7 @@ namespace Plex.Engine
 
         private void _mouseListener_MouseDragStart(object sender, MouseEventArgs e)
         {
+            _scene?.FireMouseDragStart(e);
             MouseDragStart?.Invoke(sender, e);
 #if DEBUG
             Logger.Log("Mouse drag start.");
@@ -490,6 +495,7 @@ namespace Plex.Engine
 
         private void _mouseListener_MouseDrag(object sender, MouseEventArgs e)
         {
+            _scene?.FireMouseDrag(e);
             MouseDrag?.Invoke(sender, e);
 #if DEBUG
             Logger.Log("Mouse drag.");
@@ -498,6 +504,7 @@ namespace Plex.Engine
 
         private void _mouseListener_MouseDown(object sender, MouseEventArgs e)
         {
+            _scene?.FireMouseDown(e);
             MouseDown?.Invoke(sender, e);
 #if DEBUG
             Logger.Log("Mouse down.");
@@ -506,6 +513,7 @@ namespace Plex.Engine
 
         private void _mouseListener_MouseDoubleClicked(object sender, MouseEventArgs e)
         {
+            _scene?.FireMouseDoubleClick(e);
             MouseDoubleClicked?.Invoke(sender, e);
 #if DEBUG
             Logger.Log("Mouse double-clicked.");
@@ -514,6 +522,7 @@ namespace Plex.Engine
 
         private void _mouseListener_MouseClicked(object sender, MouseEventArgs e)
         {
+            _scene?.FireMouseClick(e);
             MouseClicked?.Invoke(sender, e);
 #if DEBUG
             Logger.Log("Mouse clicked.");
@@ -630,6 +639,7 @@ namespace Plex.Engine
 
         private void KeyboardListener_KeyPressed(object sender, KeyboardEventArgs e)
         {
+            _scene?.FireKeyEvent(e);
             OnKeyEvent?.Invoke(this, e);
         }
 

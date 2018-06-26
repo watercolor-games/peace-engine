@@ -1,4 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
+using MonoGame.Extended.Input.InputListeners;
+using Plex.Engine.GameComponents.UI;
 using Plex.Engine.GraphicsSubsystem;
 using System;
 using System.Collections;
@@ -209,6 +211,84 @@ namespace Plex.Engine.GameComponents
         public int Y { get => _bounds.Y; set => _bounds.Y = value; }
         public int Width { get => _bounds.Width; set => _bounds.Width = value; }
         public int Height { get => _bounds.Height; set => _bounds.Height = value; }
+
+        protected virtual void OnKeyEvent(KeyboardEventArgs e) { }
+        protected virtual void OnMouseDown(MouseEventArgs e) { }
+        protected virtual void OnMouseUp(MouseEventArgs e) { }
+        protected virtual void OnClick(MouseEventArgs e) { }
+        protected virtual void OnDoubleClick(MouseEventArgs e) { }
+        protected virtual void OnMouseMove(MouseEventArgs e) { }
+        protected virtual void OnMouseEnter(MouseEventArgs e) { }
+        protected virtual void OnMouseLeave(MouseEventArgs e) { }
+        protected virtual void OnMouseDragStart(MouseEventArgs e) { }
+        protected virtual void OnMouseDrag(MouseEventArgs e) { }
+        protected virtual void OnMouseDragEnd(MouseEventArgs e) { }
+
+        internal void FireMouseEnter(MouseEventArgs e)
+        {
+            OnMouseEnter(e);
+        }
+
+        internal void FireMouseLeave(MouseEventArgs e)
+        {
+            OnMouseLeave(e);
+        }
+
+        internal void FireKeyEvent(KeyboardEventArgs e)
+        {
+            OnKeyEvent(e);
+        }
+
+        internal void FireMouseDragEnd(MouseEventArgs e)
+        {
+            OnMouseDragEnd(e);
+        }
+
+        internal void FireMouseDrag(MouseEventArgs e)
+        {
+            OnMouseDrag(e);
+        }
+
+        internal void FireMouseDragStart(MouseEventArgs e)
+        {
+            OnMouseDragStart(e);
+        }
+
+        internal void FireMouseDown(MouseEventArgs e)
+        {
+            OnMouseDown(e);
+        }
+
+        internal void FireMouseDoubleClick(MouseEventArgs e)
+        {
+            OnDoubleClick(e);
+        }
+
+        internal void FireMouseMove(MouseEventArgs e)
+        {
+            OnMouseMove(e);
+
+            foreach (var child in Components)
+                child.FireMouseMove(e.OffsetPosition(new Vector2(child.X, child.Y)));
+        }
+
+
+        internal void FireMouseClick(MouseEventArgs e)
+        {
+            OnClick(e);
+        }
+
+        internal void FireMouseUp(MouseEventArgs e)
+        {
+            OnMouseUp(e);
+        }
+
+        internal void FireScroll(MouseEventArgs e)
+        {
+            OnMouseScroll(e);
+        }
+
+        protected virtual void OnMouseScroll(MouseEventArgs e) { }
 
 
         public void Update(GameTime time)

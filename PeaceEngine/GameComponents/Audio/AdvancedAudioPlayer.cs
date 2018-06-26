@@ -1,20 +1,18 @@
-﻿using System;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using MonoGame.Extended.Input.InputListeners;
-using Plex.Engine.GraphicsSubsystem;
-using Plex.Engine.Interfaces;
-using System.IO;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
+using Microsoft.Xna.Framework.Graphics;
 using NVorbis;
+using Plex.Objects;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading;
-using System.Numerics;
+using System.Threading.Tasks;
 
-namespace Plex.Engine.Audio
+namespace Plex.Engine.GameComponents.Audio
 {
     public class AdvancedAudioPlayer : IDisposable
     {
@@ -66,6 +64,8 @@ namespace Plex.Engine.Audio
         float[] samps = null;
         byte[] data = null;
 
+        public float[] Samples => samps;
+
         long? fade = null;
 
         public TimeSpan Duration => aread.TotalTime;
@@ -95,6 +95,7 @@ namespace Plex.Engine.Audio
                 using (var read = new StreamReader(labels, Encoding.UTF8, true, 1024, !close))
                     this.labels = read.IterLines().Select(l => l.Split()).Where(s => s.Length == 3).Select(s => new Label(double.Parse(s[0]), double.Parse(s[1]), s[2] == "oneshot")).ToArray();
             aread = new VorbisReader(audio, close);
+
             AudioChannels channels;
             switch (aread.Channels)
             {
@@ -109,7 +110,7 @@ namespace Plex.Engine.Audio
             }
             if (this.labels?.Length > 0)
                 aread.DecodedTime = TimeSpan.FromSeconds(this.labels[0].Start);
-            samps = new float[aread.Channels * aread.SampleRate / 5];
+            samps = new float[aread.Channels * aread.SampleRate / 64];
             sfx = new DynamicSoundEffectInstance(aread.SampleRate, channels);
             sfx.BufferNeeded += update;
             readthread = new Thread(readthreadfun);
@@ -245,6 +246,8 @@ namespace Plex.Engine.Audio
             sfx.Play();
         }
 
+        public TimeSpan Position => aread.DecodedTime;
+
         /// <summary>
         /// Resumes playback.
         /// </summary>
@@ -253,7 +256,7 @@ namespace Plex.Engine.Audio
             sfx.Resume();
         }
 
-        SoundState State => sfx.State;
+        public SoundState State => sfx.State;
 
         /// <summary>
         /// Stops the player immediately.
@@ -291,13 +294,43 @@ namespace Plex.Engine.Audio
             labels = new[] { new Label(0, aread.TotalTime.TotalSeconds, !loop) };
         }
 
+        public string Album { get; private set; }
+        public string Title { get; private set; }
+        public string Artist { get; private set; }
+        public string AlbumArtist { get; private set; }
+        public string Composer { get; private set; }
+        public uint Year { get; private set; }
+        public Texture2D AlbumArt { get; private set; }
+
         /// <summary>
         /// Set up an AdvancedAudioPlayer from an Ogg Vorbis file alone.
         /// </summary>
         /// <param name="fname">The name of the song's Ogg Vorbis file.</param>
         /// <param name="loop">If set to <c>true</c>, the audio will loop.</param>
-        public AdvancedAudioPlayer(string fname, bool loop) : this(File.OpenRead(fname), loop, true)
+        public AdvancedAudioPlayer(string fname, bool loop)
         {
+            var f = TagLib.File.Create(fname);
+
+            var tag = f.Tag;
+            Album = tag.Album;
+            Title = tag.Title;
+
+            Artist = tag.FirstPerformer;
+            AlbumArtist = tag.FirstAlbumArtist;
+            Composer = tag.FirstComposer;
+
+            var art = tag.Pictures.FirstOrDefault(x => x.Type == TagLib.PictureType.FrontCover);
+            if(art != null)
+            {
+                
+            }
+
+            Year = tag.Year;
+
+            f.Dispose();
+
+            construct(File.OpenRead(fname), null, true);
+            labels = new[] { new Label(0, aread.TotalTime.TotalSeconds, !loop) };
         }
     }
 
@@ -310,5 +343,4 @@ namespace Plex.Engine.Audio
                 yield return line;
         }
     }
-
 }
